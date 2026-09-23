@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fair Odds — открытый журнал ставок</title>
-<meta name="description" content="Открытый журнал ставок бота «Честный коэффициент». Банк 100 → 123.40, 119 ставок, всё опубликовано до начала матча.">
+<meta name="description" content="Открытый журнал ставок бота «Честный коэффициент». Каждая ставка опубликована до начала матча.">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Fair Odds">
-<meta property="og:url" content="https://ravsk1983.github.io/journal/">
+<meta property="og:url" content="https://fairodds.github.io/journal/">
 <meta property="og:title" content="Fair Odds — открытый журнал ставок">
-<meta property="og:description" content="Банк 100 → 123.40 · 119 ставок · 64 зашло · всё опубликовано до начала матча.">
+<meta property="og:description" content="Открытый журнал ставок. Всё опубликовано до начала матча.">
 <meta name="twitter:card" content="summary_large_image">
 
 <style>
@@ -151,6 +151,9 @@
     background:var(--card);border:1px solid var(--line);border-radius:12px;
     display:flex;align-items:center;gap:12px;padding:11px 13px;
   }
+  .res.clickable, .card.clickable{cursor:pointer}
+  .res.clickable:hover, .card.clickable:hover{border-color:var(--amber)}
+  .res.clickable:focus-visible, .card.clickable:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
   .mark{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:700}
   .mark.w{background:var(--win-bg);color:var(--win)}
   .mark.l{background:var(--loss-bg);color:var(--loss)}
@@ -201,6 +204,28 @@
   .honest b{color:var(--ink)}
   footer{color:var(--muted);font-size:12.5px;text-align:center;font-family:"DM Mono",ui-monospace,monospace}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* карточка сигнала — модалка по тапу */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.5);
+    display:flex;align-items:flex-end;justify-content:center;z-index:50;
+  }
+  @media (min-width:600px){ .modal-backdrop{ align-items:center;padding:20px } }
+  .modal{
+    background:var(--card);color:var(--ink);width:100%;max-width:560px;max-height:85vh;
+    overflow-y:auto;border-radius:16px 16px 0 0;padding:22px 18px 18px;position:relative;
+  }
+  @media (min-width:600px){ .modal{ border-radius:16px } }
+  .modal-close{
+    position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;
+    border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:18px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;
+  }
+  .modal-close:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .modal-body{
+    font-size:14.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;padding-right:6px;
+  }
+  .modal-body b{color:var(--ink);font-weight:700}
 </style>
 
 <div class="wrap">
@@ -227,13 +252,13 @@
     <div class="stack" id="live"></div>
   </section>
 
-  <section>
+  <section id="d1-sec">
     <h2 id="d1-title"></h2>
     <div class="dayhead" id="d1sum"></div>
     <div class="stack" id="d1"></div>
   </section>
 
-  <section>
+  <section id="d2-sec">
     <h2 id="d2-title"></h2>
     <div class="dayhead" id="d2sum"></div>
     <div class="stack" id="d2"></div>
@@ -254,10 +279,15 @@
   <footer id="stamp"></footer>
 </div>
 
-<script>
-const D = {"bank": 123.4, "n": 119, "wins": 64, "curve": [101.25, 101.98, 102.79, 103.39, 104.49, 105.94, 106.75, 105.75, 104.75, 103.75, 102.75, 104.85, 107.1, 106.1, 105.1, 106.45, 108.3, 107.3, 106.3, 105.3, 106.8, 108.5, 109.95, 110.81, 112.91, 111.91, 113.26, 113.75, 114.51, 113.51, 115.14, 116.49, 117.94, 116.94, 115.94, 114.94, 116.79, 115.79, 114.79, 116.67, 115.67, 117.49, 118.44, 117.44, 118.13, 118.93, 119.78, 120.93, 121.89, 123.04, 124.52, 125.47, 124.47, 125.04, 124.04, 125.74, 124.74, 125.89, 124.89, 123.89, 122.89, 121.89, 123.34, 122.34, 121.34, 120.34, 122.0, 121.0, 120.0, 119.0, 118.0, 118.71, 117.71, 116.71, 117.32, 118.7, 117.7, 116.7, 117.65, 118.48, 117.48, 117.73, 119.83, 120.48, 122.03, 122.83, 123.07, 122.07, 123.27, 122.27, 123.82, 124.78, 123.78, 122.78, 123.44, 122.44, 121.44, 123.94, 122.94, 123.91, 122.91, 121.91, 120.91, 121.64, 122.69, 121.69, 120.69, 119.69, 118.69, 117.69, 120.09, 120.77, 119.77, 121.18, 122.2, 121.2, 120.2, 121.7, 123.4], "last_day": "2026-09-21", "prev_day": "2026-09-20", "last": [{"h": "Фредерісія", "a": "Вайле", "t": "Фредерісія", "o": 2.05, "w": 0, "s": "2 - 2", "l": "Данія 2 ліга"}, {"h": "Лідс", "a": "Кристал Пелас", "t": "Лідс", "o": 1.73, "w": 0, "s": "0 - 0", "l": "Англія. Прем'єр-ліга"}, {"h": "Ивердон", "a": "Лозанна-Уші", "t": "Ивердон", "o": 2.16, "w": 0, "s": "0 - 0", "l": "Швейцарія. Челлендж-ліга"}, {"h": "Вадуц", "a": "Тун", "t": "Вадуц", "o": 2.35, "w": 0, "s": "1 - 2", "l": "Швейцарія. Суперліга"}, {"h": "Маниса", "a": "Істанбулспор", "t": "Маниса", "o": 1.85, "w": 0, "s": "0 - 1", "l": "Туреччина. TFF 1. Лiг"}, {"h": "Ареццо", "a": "Зюдтіроль", "t": "Зюдтіроль", "o": 3.4, "w": 1, "s": "1 - 4", "l": "Італія. Серія Б"}, {"h": "Железнічар Панчево", "a": "Чукарички", "t": "Железнічар Панчево", "o": 1.68, "w": 1, "s": "2 - 1", "l": "Сербія"}, {"h": "Мачва", "a": "Младост", "t": "Мачва", "o": 2.55, "w": 0, "s": "1 - 2", "l": "Сербія"}, {"h": "Хабнарфьордур", "a": "Стьярнан", "t": "Хабнарфьордур", "o": 2.41, "w": 1, "s": "5 - 2", "l": "Ісландія"}, {"h": "Акранес", "a": "Брейдаблік", "t": "Акранес", "o": 2.02, "w": 1, "s": "4 - 1", "l": "Ісландія"}, {"h": "Вестманнаэйяр", "a": "Валюр", "t": "Вестманнаэйяр", "o": 2.24, "w": 0, "s": "1 - 1", "l": "Ісландія"}, {"h": "Сеута", "a": "Вальядолид", "t": "Вальядолид", "o": 2.7, "w": 0, "s": "1 - 1", "l": "Іспанія. Сегунда"}, {"h": "Ерзурумспор", "a": "Самсунспор", "t": "Ерзурумспор", "o": 2.5, "w": 1, "s": "1 - 0", "l": "Туреччина"}, {"h": "Мардін 1969", "a": "Кайсері", "t": "Кайсері", "o": 2.7, "w": 1, "s": "0 - 1", "l": "Туреччина. TFF 1. Лiг"}], "prevrows": [{"h": "Сан-Бернардо", "a": "Атлетико Гоияниенсе", "t": "Атлетико Гоияниенсе", "o": 2.75, "w": 0, "s": "1 - 0", "l": "Бразилія Серія B"}, {"h": "ФК Кимпхо", "a": "Пусан Ай", "t": "ФК Кимпхо", "o": 2.2, "w": 1, "s": "1 - 0", "l": "Південна Корея К Ліга 2"}, {"h": "Сеул Е-Лэнд", "a": "Тэгу", "t": "Тэгу", "o": 2.9, "w": 0, "s": "2 - 1", "l": "Південна Корея К Ліга 2"}, {"h": "Орхус Фремад", "a": "Відовре", "t": "Відовре", "o": 2.55, "w": 1, "s": "1 - 3", "l": "Данія 2 ліга"}, {"h": "Академік", "a": "Есб'єрг", "t": "Академік", "o": 1.96, "w": 1, "s": "3 - 0", "l": "Данія 2 ліга"}, {"h": "Туран", "a": "Зиря", "t": "Зиря", "o": 3.05, "w": 0, "s": "1 - 0", "l": "Азербайджан"}, {"h": "Нортхемптон", "a": "Ротерхем", "t": "Нортхемптон", "o": 2.25, "w": 0, "s": "0 - 1", "l": "Англія. Ліга 2"}, {"h": "Барнет", "a": "Флітвуд", "t": "Барнет", "o": 1.66, "w": 1, "s": "3 - 1", "l": "Англія. Ліга 2"}, {"h": "Лейтон Ориент", "a": "Стивенейдж", "t": "Стивенейдж", "o": 3.2, "w": 0, "s": "1 - 0", "l": "Англія. Ліга 1"}, {"h": "Шеффилд Уэнсдей", "a": "Стокпорт Каунти", "t": "Шеффилд Уэнсдей", "o": 3, "w": 0, "s": "0 - 0", "l": "Англія. Ліга 1"}, {"h": "Чорум ФК", "a": "Аланьяспор", "t": "Аланьяспор", "o": 3.5, "w": 1, "s": "1 - 2", "l": "Туреччина"}, {"h": "Кечьоренгюджю", "a": "Сивасспор", "t": "Кечьоренгюджю", "o": 1.95, "w": 0, "s": "1 - 1", "l": "Туреччина. TFF 1. Лiг"}, {"h": "Войтсберг", "a": "Аустрія Зальцбург", "t": "Войтсберг", "o": 1.97, "w": 1, "s": "2 - 1", "l": "Австрія 2 ліга"}, {"h": "Істра 1961", "a": "Гориця", "t": "Істра 1961", "o": 1.8, "w": 0, "s": "0 - 1", "l": "Хорватія"}, {"h": "Спарта Роттердам", "a": "Херенвен", "t": "Спарта Роттердам", "o": 2.5, "w": 0, "s": "0 - 4", "l": "Нідерланди"}, {"h": "Ерокспор", "a": "Фатіх Карагюмрюк", "t": "Ерокспор", "o": 1.91, "w": 0, "s": "0 - 2", "l": "Туреччина. TFF 1. Лiг"}, {"h": "Університатя Крайова", "a": "ФКСБ", "t": "Університатя Крайова", "o": 1.73, "w": 1, "s": "5 - 0", "l": "Румунія"}, {"h": "Мирассол", "a": "Ботафого", "t": "Мирассол", "o": 2.05, "w": 1, "s": "2 - 0", "l": "Бразилія. Серія А"}], "pending": [{"d": "23.09.26 02:30", "h": "Вашингтон", "a": "Коннектикут", "t": "Вашингтон", "o": 1.08, "l": "WNBA"}, {"d": "23.09.26 05:00", "h": "Portland Fire", "a": "Golden State Valkyries", "t": "Portland Fire", "o": 1.1, "l": "WNBA"}], "feed": [{"d": "2026-09-21", "h": "Мардін 1969", "a": "Кайсері", "t": "Кайсері", "o": 2.7, "w": 1, "s": "0 - 1", "l": "Туреччина. TFF 1. Лiг"}, {"d": "2026-09-21", "h": "Ерзурумспор", "a": "Самсунспор", "t": "Ерзурумспор", "o": 2.5, "w": 1, "s": "1 - 0", "l": "Туреччина"}, {"d": "2026-09-21", "h": "Сеута", "a": "Вальядолид", "t": "Вальядолид", "o": 2.7, "w": 0, "s": "1 - 1", "l": "Іспанія. Сегунда"}, {"d": "2026-09-21", "h": "Вестманнаэйяр", "a": "Валюр", "t": "Вестманнаэйяр", "o": 2.24, "w": 0, "s": "1 - 1", "l": "Ісландія"}, {"d": "2026-09-21", "h": "Акранес", "a": "Брейдаблік", "t": "Акранес", "o": 2.02, "w": 1, "s": "4 - 1", "l": "Ісландія"}, {"d": "2026-09-21", "h": "Хабнарфьордур", "a": "Стьярнан", "t": "Хабнарфьордур", "o": 2.41, "w": 1, "s": "5 - 2", "l": "Ісландія"}, {"d": "2026-09-21", "h": "Мачва", "a": "Младост", "t": "Мачва", "o": 2.55, "w": 0, "s": "1 - 2", "l": "Сербія"}, {"d": "2026-09-21", "h": "Железнічар Панчево", "a": "Чукарички", "t": "Железнічар Панчево", "o": 1.68, "w": 1, "s": "2 - 1", "l": "Сербія"}, {"d": "2026-09-21", "h": "Ареццо", "a": "Зюдтіроль", "t": "Зюдтіроль", "o": 3.4, "w": 1, "s": "1 - 4", "l": "Італія. Серія Б"}, {"d": "2026-09-21", "h": "Маниса", "a": "Істанбулспор", "t": "Маниса", "o": 1.85, "w": 0, "s": "0 - 1", "l": "Туреччина. TFF 1. Лiг"}, {"d": "2026-09-21", "h": "Вадуц", "a": "Тун", "t": "Вадуц", "o": 2.35, "w": 0, "s": "1 - 2", "l": "Швейцарія. Суперліга"}, {"d": "2026-09-21", "h": "Ивердон", "a": "Лозанна-Уші", "t": "Ивердон", "o": 2.16, "w": 0, "s": "0 - 0", "l": "Швейцарія. Челлендж-ліга"}, {"d": "2026-09-21", "h": "Лідс", "a": "Кристал Пелас", "t": "Лідс", "o": 1.73, "w": 0, "s": "0 - 0", "l": "Англія. Прем'єр-ліга"}, {"d": "2026-09-21", "h": "Фредерісія", "a": "Вайле", "t": "Фредерісія", "o": 2.05, "w": 0, "s": "2 - 2", "l": "Данія 2 ліга"}, {"d": "2026-09-20", "h": "Мирассол", "a": "Ботафого", "t": "Мирассол", "o": 2.05, "w": 1, "s": "2 - 0", "l": "Бразилія. Серія А"}, {"d": "2026-09-20", "h": "Університатя Крайова", "a": "ФКСБ", "t": "Університатя Крайова", "o": 1.73, "w": 1, "s": "5 - 0", "l": "Румунія"}, {"d": "2026-09-20", "h": "Ерокспор", "a": "Фатіх Карагюмрюк", "t": "Ерокспор", "o": 1.91, "w": 0, "s": "0 - 2", "l": "Туреччина. TFF 1. Лiг"}, {"d": "2026-09-20", "h": "Спарта Роттердам", "a": "Херенвен", "t": "Спарта Роттердам", "o": 2.5, "w": 0, "s": "0 - 4", "l": "Нідерланди"}, {"d": "2026-09-20", "h": "Істра 1961", "a": "Гориця", "t": "Істра 1961", "o": 1.8, "w": 0, "s": "0 - 1", "l": "Хорватія"}, {"d": "2026-09-20", "h": "Войтсберг", "a": "Аустрія Зальцбург", "t": "Войтсберг", "o": 1.97, "w": 1, "s": "2 - 1", "l": "Австрія 2 ліга"}, {"d": "2026-09-20", "h": "Кечьоренгюджю", "a": "Сивасспор", "t": "Кечьоренгюджю", "o": 1.95, "w": 0, "s": "1 - 1", "l": "Туреччина. TFF 1. Лiг"}, {"d": "2026-09-20", "h": "Чорум ФК", "a": "Аланьяспор", "t": "Аланьяспор", "o": 3.5, "w": 1, "s": "1 - 2", "l": "Туреччина"}, {"d": "2026-09-20", "h": "Шеффилд Уэнсдей", "a": "Стокпорт Каунти", "t": "Шеффилд Уэнсдей", "o": 3, "w": 0, "s": "0 - 0", "l": "Англія. Ліга 1"}, {"d": "2026-09-20", "h": "Лейтон Ориент", "a": "Стивенейдж", "t": "Стивенейдж", "o": 3.2, "w": 0, "s": "1 - 0", "l": "Англія. Ліга 1"}, {"d": "2026-09-20", "h": "Барнет", "a": "Флітвуд", "t": "Барнет", "o": 1.66, "w": 1, "s": "3 - 1", "l": "Англія. Ліга 2"}], "first": "2026-09-04", "roi_fb": 19.6, "n_fb": 118};
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Карточка сигнала">
+    <button type="button" class="modal-close" id="modalClose" aria-label="Закрыть">✕</button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
 
-/* ---------- languages ---------- */
+<script>
+/* ---------- языки ---------- */
 const LANGS = [ ['ru','RU'], ['en','EN'] ];
 
 const T = {
@@ -268,9 +298,9 @@ ru:{brand:'Честный коэффициент', sub:'Открытый жур�
  live:'Сейчас в игре', nolive:'Открытых ставок нет',
  bet:'Ставка', dayb:'{n} {w}', dwon:'выиграно',
  feed:'Последние ставки', upd:'Обновлено {d}', updtop:'Данные на {d}',
- src:'Источник: автоматический журнал бота · обновление каждую ночь в 03:00',
+ src:'Источник: автоматический журнал бота · обновление каждую ночь в 03:10',
  honest:'<b>Честно о цифре сверху.</b> {n} ставок — это ещё мало. Такой плюс пока может быть и от метода, и от везения: отличить одно от другого можно примерно с 300–500 ставок. Поэтому здесь показано всё подряд, вместе с плохими днями, и эта строка отсюда не исчезнет, пока выборка не вырастет.',
- how:'Метод',
+ how:'Метод', tapHint:'Нажмите на матч, чтобы увидеть полную карточку',
  h1:'<b>Банк</b> — условный счёт, который начался со 100. На каждую ставку идёт ровно одна единица, всегда одинаково — это называется флет. Зашла ставка на 2.30 — банк вырос на 1.30, не зашла — упал на 1.',
  h2:'<b>Коэффициент</b> рядом со ставкой — тот, что стоял у букмекера в момент публикации, а не тот, что был потом.',
  h3:'<b>Почему заходит примерно половина.</b> Это нормально и даже хорошо, потому что ставки берутся по высокой цене. Сорок процентов попаданий при коэффициенте 2.8 дают плюс, а пятьдесят при 1.9 — минус. Смотреть надо на банк, а не на процент.',
@@ -284,17 +314,17 @@ en:{brand:'Fair Odds', sub:'Open betting record',
  live:'Live Bets', nolive:'No open bets',
  bet:'Pick', dayb:'{n} {w}', dwon:'won',
  feed:'Recent Bets', upd:'Last updated {d}', updtop:'Data as of {d}',
- src:'Source: the bot\u2019s automatic record · updated nightly at 03:00',
+ src:'Source: the bot’s automatic record · updated nightly at 03:10',
  honest:'<b>Honestly about the number above.</b> {n} bets is still a small sample. This profit could come from the method or from luck — telling them apart takes roughly 300–500 bets. That is why everything is shown here, losing days included, and this line stays until the sample grows.',
- how:'Method',
+ how:'Method', tapHint:'Tap a match to see the full signal card',
  h1:'<b>Bankroll</b> is a notional account that started at 100. Every bet stakes exactly one unit, always the same — a flat stake. A winning bet at 2.30 adds 1.30; a losing one subtracts 1.',
  h2:'<b>The odds</b> next to a bet are the ones the bookmaker showed at the moment of publication, not later.',
  h3:'<b>Why only about half win.</b> That is normal and even good, because the bets are taken at high prices. Forty percent at odds of 2.8 is a profit; fifty percent at 1.9 is a loss. Watch the bankroll, not the percentage.',
- h4:'<b>Where the bets come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker\u2019s, a signal appears.',
+ h4:'<b>Where the bets come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker’s, a signal appears.',
  plural:['bet','bets','bets']}
 };
 
-/* human-readable names — the API spelling is never shown as-is in English */
+/* человеческие названия — то, как API их отдаёт, никогда не показывается как есть */
 const LG = {
  'WNBA':['WNBA','WNBA'],
  'Ісландія':['Исландия','Icelandic Premier League'],
@@ -365,9 +395,9 @@ const TEAMS = {
 };
 
 const el = id => document.getElementById(id);
-const f2 = n => n.toFixed(2);
-const dd = s => s.split('-').reverse().join('.');
-const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const f2 = n => Number(n).toFixed(2);
+const dd = s => (s || '').split('-').reverse().join('.');
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
 let lang = 'ru';
 try{
@@ -386,7 +416,7 @@ function tr(key, vars){
 }
 function pick(map, name){
   const pair = map[name];
-  if (!pair) return name;               // невідоме ім'я — показуємо як є
+  if (!pair) return name;
   return lang === 'ru' ? pair[0] : pair[1];
 }
 const league = n => pick(LG, n);
@@ -402,30 +432,68 @@ function plural(n){
   return n === 1 ? p[0] : p[1];
 }
 
-/* ---------- sparkline (language-independent) ---------- */
-(function(){
-  const c = D.curve, W = 480, H = 68;
-  const lo = Math.min(...c, 100), hi = Math.max(...c, 100);
-  const x = i => i / (c.length - 1) * W;
-  const y = v => H - (v - lo) / (hi - lo || 1) * (H - 6) - 3;
-  const line = c.map((v,i) => (i?'L':'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
-  el('spark').innerHTML =
-    '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="68" preserveAspectRatio="none" role="img">'
-    + '<line x1="0" x2="' + W + '" y1="' + y(100).toFixed(1) + '" y2="' + y(100).toFixed(1)
-    + '" stroke="rgba(255,255,255,.22)" stroke-width="1" stroke-dasharray="4 5"/>'
-    + '<path d="' + line + '" fill="none" stroke="var(--amber)" stroke-width="2.5" '
-    + 'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
-})();
+/* ---------- карточка сигнала (модалка по тапу) ---------- */
+let CARDS = [];
+function registerCard(text){ CARDS.push(text); return CARDS.length - 1; }
+function mdToHtml(s){
+  if (!s) return '';
+  let t = esc(s);
+  t = t.replace(/\*(.+?)\*/g, '<b>$1</b>');
+  t = t.replace(/\n/g, '<br>');
+  return t;
+}
+function openCard(idx){
+  const text = CARDS[idx];
+  if (text == null) return;
+  el('modalBody').innerHTML = mdToHtml(text);
+  el('modalBackdrop').hidden = false;
+}
+function closeCard(){
+  el('modalBackdrop').hidden = true;
+}
+el('modalClose').addEventListener('click', closeCard);
+el('modalBackdrop').addEventListener('click', e => {
+  if (e.target === el('modalBackdrop')) closeCard();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !el('modalBackdrop').hidden) closeCard();
+});
+document.addEventListener('click', e => {
+  const row = e.target.closest('[data-card]');
+  if (!row) return;
+  openCard(+row.dataset.card);
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const row = e.target.closest('[data-card]');
+  if (row) openCard(+row.dataset.card);
+});
 
-/* ---------- render ---------- */
+/* ---------- рендер ---------- */
+function cardAttrs(text){
+  if (!text) return '';
+  const idx = registerCard(text);
+  return ' data-card="' + idx + '" tabindex="0" role="button"';
+}
+
 function rowHTML(r){
   const profit = r.w ? (r.o - 1) : -1;
-  return '<div class="res">'
+  const clickable = r.c ? ' clickable' : '';
+  return '<div class="res' + clickable + '"' + cardAttrs(r.c) + '>'
     + '<div class="mark ' + (r.w?'w':'l') + '">' + (r.w?'✓':'✕') + '</div>'
     + '<div class="body"><div class="t">' + esc(team(r.h)) + ' — ' + esc(team(r.a)) + '</div>'
     + '<div class="m">' + tr('bet') + ': ' + esc(team(r.t)) + (r.s ? ' · ' + esc(r.s) : '') + '</div></div>'
     + '<div class="r">' + f2(r.o) + '<b>' + (profit>0?'+':'') + profit.toFixed(2) + '</b></div>'
     + '</div>';
+}
+function pendingHTML(p){
+  const clickable = p.c ? ' clickable' : '';
+  return '<div class="card live' + clickable + '"' + cardAttrs(p.c) + '>'
+    + '<div class="when">' + esc(p.d) + '</div>'
+    + '<div class="match">' + esc(team(p.h)) + ' — ' + esc(team(p.a)) + '</div>'
+    + '<div class="league">' + esc(league(p.l)) + '</div>'
+    + '<div class="pick"><span class="what">' + esc(team(p.t)) + '</span>'
+    + '<span class="odd">' + f2(p.o) + '</span></div></div>';
 }
 function dayHead(rows){
   const w = rows.filter(r=>r.w).length;
@@ -436,7 +504,26 @@ function dayHead(rows){
     + '<span class="pl ' + (p>=0?'p':'n') + '">' + (p>0?'+':'') + p.toFixed(2) + '</span>';
 }
 
+let D = null;
+
+function drawSpark(){
+  const c = (D.curve && D.curve.length) ? D.curve : [100];
+  const W = 480, H = 68;
+  const lo = Math.min(...c, 100), hi = Math.max(...c, 100);
+  const x = i => c.length > 1 ? i / (c.length - 1) * W : 0;
+  const y = v => H - (v - lo) / (hi - lo || 1) * (H - 6) - 3;
+  const line = c.map((v,i) => (i?'L':'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+  el('spark').innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="68" preserveAspectRatio="none" role="img">'
+    + '<line x1="0" x2="' + W + '" y1="' + y(100).toFixed(1) + '" y2="' + y(100).toFixed(1)
+    + '" stroke="rgba(255,255,255,.22)" stroke-width="1" stroke-dasharray="4 5"/>'
+    + '<path d="' + line + '" fill="none" stroke="var(--amber)" stroke-width="2.5" '
+    + 'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+}
+
 function render(){
+  if (!D) return;
+  CARDS = [];
   document.documentElement.lang = lang;
 
   el('langs').innerHTML = LANGS.map(([c,label]) =>
@@ -447,49 +534,62 @@ function render(){
   el('tagline').textContent = tr('tag');
   el('cap').textContent     = tr('bank');
   el('bank').textContent    = f2(D.bank);
-  el('from').textContent    = tr('from', {d: dd(D.first)});
+  el('from').textContent    = D.first ? tr('from', {d: dd(D.first)}) : '';
 
+  drawSpark();
+
+  const n = D.n || 0;
+  const wins = D.wins || 0;
   el('hrow').innerHTML =
-    '<div><b>' + D.n + '</b><span>' + tr('bets') + '</span></div>' +
-    '<div><b>' + D.wins + '</b><span>' + tr('won') + '</span></div>' +
-    '<div><b>' + (D.wins / D.n * 100).toFixed(0) + '%</b><span>' + tr('hit') + '</span></div>' +
-    '<div><b>+' + ((D.bank - 100) / D.n * 100).toFixed(1) + '%</b><span>' + tr('roi') + '</span></div>' +
-    '<div><b>+' + f2(D.bank - 100) + '</b><span>' + tr('profit') + '</span></div>';
+    '<div><b>' + n + '</b><span>' + tr('bets') + '</span></div>' +
+    '<div><b>' + wins + '</b><span>' + tr('won') + '</span></div>' +
+    '<div><b>' + (n ? (wins / n * 100).toFixed(0) : '0') + '%</b><span>' + tr('hit') + '</span></div>' +
+    '<div><b>' + (n ? (((D.bank - 100) / n * 100) >= 0 ? '+' : '') + ((D.bank - 100) / n * 100).toFixed(1) : '0') + '%</b><span>' + tr('roi') + '</span></div>' +
+    '<div><b>' + ((D.bank - 100) >= 0 ? '+' : '') + f2(D.bank - 100) + '</b><span>' + tr('profit') + '</span></div>';
 
-  el('meta').innerHTML = tr('updtop', {d: dd(D.last_day)}) + '<br>' + tr('src');
+  el('meta').innerHTML = (D.last_day ? tr('updtop', {d: dd(D.last_day)}) + '<br>' : '') + tr('src');
 
   el('live-title').textContent = tr('live');
-  if (D.pending.length){
+  if (D.pending && D.pending.length){
     el('live-sec').hidden = false;
-    el('live').innerHTML = D.pending.map(p =>
-      '<div class="card live"><div class="when">' + esc(p.d) + '</div>'
-      + '<div class="match">' + esc(team(p.h)) + ' — ' + esc(team(p.a)) + '</div>'
-      + '<div class="league">' + esc(league(p.l)) + '</div>'
-      + '<div class="pick"><span class="what">' + esc(team(p.t)) + '</span>'
-      + '<span class="odd">' + f2(p.o) + '</span></div></div>').join('');
+    el('live').innerHTML = D.pending.map(pendingHTML).join('');
   } else {
+    el('live-sec').hidden = false;
     el('live').innerHTML = '<div class="card">' + tr('nolive') + '</div>';
   }
 
-  el('d1-title').innerHTML = dd(D.last_day) + ' <span class="count">· '
-    + tr('dayb', {n: D.last.length, w: plural(D.last.length)}) + '</span>';
-  el('d2-title').innerHTML = dd(D.prev_day) + ' <span class="count">· '
-    + tr('dayb', {n: D.prevrows.length, w: plural(D.prevrows.length)}) + '</span>';
-  el('d1').innerHTML = D.last.map(rowHTML).join('');
-  el('d2').innerHTML = D.prevrows.map(rowHTML).join('');
-  el('d1sum').innerHTML = dayHead(D.last);
-  el('d2sum').innerHTML = dayHead(D.prevrows);
+  const last = D.last || [], prevrows = D.prevrows || [];
 
-  el('honest').innerHTML = tr('honest', {n: D.n});
+  if (D.last_day){
+    el('d1-sec').hidden = false;
+    el('d1-title').innerHTML = dd(D.last_day) + ' <span class="count">· '
+      + tr('dayb', {n: last.length, w: plural(last.length)}) + '</span>';
+    el('d1').innerHTML = last.map(rowHTML).join('');
+    el('d1sum').innerHTML = dayHead(last);
+  } else {
+    el('d1-sec').hidden = true;
+  }
+
+  if (D.prev_day){
+    el('d2-sec').hidden = false;
+    el('d2-title').innerHTML = dd(D.prev_day) + ' <span class="count">· '
+      + tr('dayb', {n: prevrows.length, w: plural(prevrows.length)}) + '</span>';
+    el('d2').innerHTML = prevrows.map(rowHTML).join('');
+    el('d2sum').innerHTML = dayHead(prevrows);
+  } else {
+    el('d2-sec').hidden = true;
+  }
+
+  el('honest').innerHTML = tr('honest', {n: n});
   el('how-title').textContent = tr('how');
-  el('how-body').innerHTML = ['h1','h2','h3','h4'].map(k => '<p>' + tr(k) + '</p>').join('');
+  el('how-body').innerHTML = ['h1','h2','h3','h4'].map(k => '<p>' + tr(k) + '</p>').join('')
+    + '<p style="color:var(--muted);font-size:13px">' + tr('tapHint') + '</p>';
 
+  const feed = D.feed || [];
   el('feed-title').textContent = tr('feed');
-  el('feed').innerHTML = D.feed.map(rowHTML).join('');
-  el('stamp').textContent = tr('upd', {d: dd(D.last_day)});
+  el('feed').innerHTML = feed.map(rowHTML).join('');
+  el('stamp').textContent = D.last_day ? tr('upd', {d: dd(D.last_day)}) : '';
 }
-
-render();
 
 el('langs').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -497,6 +597,17 @@ el('langs').addEventListener('click', e => {
   try{ localStorage.setItem('fk_lang', lang); }catch(err){}
   render();
 });
+
+async function loadData(){
+  try{
+    const res = await fetch('public.json', {cache:'no-store'});
+    D = await res.json();
+  }catch(e){
+    D = {bank:100, n:0, wins:0, curve:[100], last_day:null, prev_day:null, last:[], prevrows:[], pending:[], feed:[], first:null};
+  }
+  render();
+}
+loadData();
 </script>
 
 </body>
