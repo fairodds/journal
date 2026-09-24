@@ -74,7 +74,7 @@
   }
   .wrap{max-width:560px;margin:0 auto;padding-block:20px 48px;display:flex;flex-direction:column;gap:24px}
 
-  /* language bar */
+  /* language bar / sport switcher — общий стиль */
   .langs{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
   .langs button{
     font-family:"DM Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.06em;
@@ -83,6 +83,15 @@
   }
   .langs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
   .langs button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+  .sports{display:flex;gap:6px;justify-content:center}
+  .sports button{
+    font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:600;font-size:13.5px;
+    padding:8px 14px;border-radius:10px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink-2);cursor:pointer;flex:1;
+  }
+  .sports button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .sports button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
   h1{
     font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:700;
@@ -205,7 +214,7 @@
   footer{color:var(--muted);font-size:12.5px;text-align:center;font-family:"DM Mono",ui-monospace,monospace}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-  /* карточка сигнала — модалка по тапу */
+  /* карточка сигнала — модалка по тапу (только если нет прямой ссылки в Telegram) */
   .modal-backdrop{
     position:fixed;inset:0;background:rgba(0,0,0,.5);
     display:flex;align-items:flex-end;justify-content:center;z-index:50;
@@ -238,6 +247,8 @@
     <p class="tagline" id="tagline"></p>
     <p class="meta" id="meta"></p>
   </header>
+
+  <nav class="sports" id="sports" aria-label="Спорт"></nav>
 
   <div class="hero">
     <p class="cap" id="cap"></p>
@@ -290,6 +301,9 @@
 /* ---------- языки ---------- */
 const LANGS = [ ['ru','RU'], ['en','EN'] ];
 
+/* ---------- виды спорта ---------- */
+const SPORTS = [ ['all','sportAll'], ['football','sportFootball'], ['basketball','sportBasketball'] ];
+
 const T = {
 ru:{brand:'Честный коэффициент', sub:'Открытый журнал ставок',
  tag:'Каждая ставка опубликована до начала матча. Ничего не дописано после.',
@@ -300,12 +314,13 @@ ru:{brand:'Честный коэффициент', sub:'Открытый жур�
  feed:'Последние ставки', upd:'Обновлено {d}', updtop:'Данные на {d}',
  src:'Источник: автоматический журнал бота · обновление каждую ночь в 03:10',
  honest:'<b>Честно о цифре сверху.</b> {n} ставок — это ещё мало. Такой плюс пока может быть и от метода, и от везения: отличить одно от другого можно примерно с 300–500 ставок. Поэтому здесь показано всё подряд, вместе с плохими днями, и эта строка отсюда не исчезнет, пока выборка не вырастет.',
- how:'Метод', tapHint:'Нажмите на матч, чтобы увидеть полную карточку',
+ how:'Метод', tapHint:'Нажмите на матч, чтобы открыть сообщение в Telegram',
  h1:'<b>Банк</b> — условный счёт, который начался со 100. На каждую ставку идёт ровно одна единица, всегда одинаково — это называется флет. Зашла ставка на 2.30 — банк вырос на 1.30, не зашла — упал на 1.',
  h2:'<b>Коэффициент</b> рядом со ставкой — тот, что стоял у букмекера в момент публикации, а не тот, что был потом.',
  h3:'<b>Почему заходит примерно половина.</b> Это нормально и даже хорошо, потому что ставки берутся по высокой цене. Сорок процентов попаданий при коэффициенте 2.8 дают плюс, а пятьдесят при 1.9 — минус. Смотреть надо на банк, а не на процент.',
  h4:'<b>Откуда берутся ставки.</b> Бот считает собственную справедливую цену матча по рейтингу команд, форме и личным встречам. Когда она сильно расходится с ценой букмекера — появляется сигнал.',
- plural:['ставка','ставки','ставок']},
+ plural:['ставка','ставки','ставок'],
+ sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол'},
 
 en:{brand:'Fair Odds', sub:'Open betting record',
  tag:'Every pick is published before the match starts. Nothing is added after.',
@@ -316,12 +331,13 @@ en:{brand:'Fair Odds', sub:'Open betting record',
  feed:'Recent Bets', upd:'Last updated {d}', updtop:'Data as of {d}',
  src:'Source: the bot’s automatic record · updated nightly at 03:10',
  honest:'<b>Honestly about the number above.</b> {n} bets is still a small sample. This profit could come from the method or from luck — telling them apart takes roughly 300–500 bets. That is why everything is shown here, losing days included, and this line stays until the sample grows.',
- how:'Method', tapHint:'Tap a match to see the full signal card',
+ how:'Method', tapHint:'Tap a match to open the original Telegram message',
  h1:'<b>Bankroll</b> is a notional account that started at 100. Every bet stakes exactly one unit, always the same — a flat stake. A winning bet at 2.30 adds 1.30; a losing one subtracts 1.',
  h2:'<b>The odds</b> next to a bet are the ones the bookmaker showed at the moment of publication, not later.',
  h3:'<b>Why only about half win.</b> That is normal and even good, because the bets are taken at high prices. Forty percent at odds of 2.8 is a profit; fifty percent at 1.9 is a loss. Watch the bankroll, not the percentage.',
  h4:'<b>Where the bets come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker’s, a signal appears.',
- plural:['bet','bets','bets']}
+ plural:['bet','bets','bets'],
+ sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball'}
 };
 
 /* человеческие названия — то, как API их отдаёт, никогда не показывается как есть */
@@ -409,6 +425,12 @@ try{
   }
 }catch(e){}
 
+let sport = 'all';
+try{
+  const savedSport = localStorage.getItem('fk_sport');
+  if (savedSport && ['all','football','basketball'].includes(savedSport)) sport = savedSport;
+}catch(e){}
+
 function tr(key, vars){
   let s = T[lang][key] ?? T.ru[key] ?? '';
   if (vars) for (const k in vars) s = s.split('{'+k+'}').join(vars[k]);
@@ -432,7 +454,7 @@ function plural(n){
   return n === 1 ? p[0] : p[1];
 }
 
-/* ---------- карточка сигнала (модалка по тапу) ---------- */
+/* ---------- карточка сигнала (модалка по тапу, если нет ссылки на Telegram) ---------- */
 let CARDS = [];
 function registerCard(text){ CARDS.push(text); return CARDS.length - 1; }
 function mdToHtml(s){
@@ -459,27 +481,39 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !el('modalBackdrop').hidden) closeCard();
 });
 document.addEventListener('click', e => {
+  const linkRow = e.target.closest('[data-link]');
+  if (linkRow){ window.open(linkRow.dataset.link, '_blank', 'noopener'); return; }
   const row = e.target.closest('[data-card]');
   if (!row) return;
   openCard(+row.dataset.card);
 });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
+  const linkRow = e.target.closest('[data-link]');
+  if (linkRow){ window.open(linkRow.dataset.link, '_blank', 'noopener'); return; }
   const row = e.target.closest('[data-card]');
   if (row) openCard(+row.dataset.card);
 });
 
 /* ---------- рендер ---------- */
-function cardAttrs(text){
-  if (!text) return '';
-  const idx = registerCard(text);
-  return ' data-card="' + idx + '" tabindex="0" role="button"';
+function cardAttrs(r){
+  // Приоритет — прямая ссылка на сообщение в Telegram (r.link). Если
+  // её нет (старые записи без message_id/channel) — открываем модалку
+  // с текстом карточки (r.c), как раньше.
+  if (r.link){
+    return ' data-link="' + esc(r.link) + '" tabindex="0" role="link"';
+  }
+  if (r.c){
+    const idx = registerCard(r.c);
+    return ' data-card="' + idx + '" tabindex="0" role="button"';
+  }
+  return '';
 }
 
 function rowHTML(r){
   const profit = r.w ? (r.o - 1) : -1;
-  const clickable = r.c ? ' clickable' : '';
-  return '<div class="res' + clickable + '"' + cardAttrs(r.c) + '>'
+  const clickable = (r.link || r.c) ? ' clickable' : '';
+  return '<div class="res' + clickable + '"' + cardAttrs(r) + '>'
     + '<div class="mark ' + (r.w?'w':'l') + '">' + (r.w?'✓':'✕') + '</div>'
     + '<div class="body"><div class="t">' + esc(team(r.h)) + ' — ' + esc(team(r.a)) + '</div>'
     + '<div class="m">' + tr('bet') + ': ' + esc(team(r.t)) + (r.s ? ' · ' + esc(r.s) : '') + '</div></div>'
@@ -487,8 +521,8 @@ function rowHTML(r){
     + '</div>';
 }
 function pendingHTML(p){
-  const clickable = p.c ? ' clickable' : '';
-  return '<div class="card live' + clickable + '"' + cardAttrs(p.c) + '>'
+  const clickable = (p.link || p.c) ? ' clickable' : '';
+  return '<div class="card live' + clickable + '"' + cardAttrs(p) + '>'
     + '<div class="when">' + esc(p.d) + '</div>'
     + '<div class="match">' + esc(team(p.h)) + ' — ' + esc(team(p.a)) + '</div>'
     + '<div class="league">' + esc(league(p.l)) + '</div>'
@@ -506,8 +540,18 @@ function dayHead(rows){
 
 let D = null;
 
+function currentData(){
+  // Новый формат отдаёт D.sports.{all|football|basketball}. Старый
+  // (до разделения банка) — только плоские поля на верхнем уровне,
+  // которые совпадают со срезом "all". Если D.sports нет — используем
+  // D целиком, чтобы страница не сломалась на старом public.json.
+  if (D && D.sports && D.sports[sport]) return D.sports[sport];
+  return D || {};
+}
+
 function drawSpark(){
-  const c = (D.curve && D.curve.length) ? D.curve : [100];
+  const S = currentData();
+  const c = (S.curve && S.curve.length) ? S.curve : [100];
   const W = 480, H = 68;
   const lo = Math.min(...c, 100), hi = Math.max(...c, 100);
   const x = i => c.length > 1 ? i / (c.length - 1) * W : 0;
@@ -529,25 +573,32 @@ function render(){
   el('langs').innerHTML = LANGS.map(([c,label]) =>
     '<button type="button" data-l="' + c + '" aria-pressed="' + (c===lang) + '">' + label + '</button>').join('');
 
+  el('sports').innerHTML = SPORTS.map(([s,key]) =>
+    '<button type="button" data-s="' + s + '" aria-pressed="' + (s===sport) + '">' + tr(key) + '</button>').join('');
+
   el('brand').textContent   = tr('brand');
   el('sub').textContent      = tr('sub');
   el('tagline').textContent = tr('tag');
   el('cap').textContent     = tr('bank');
-  el('bank').textContent    = f2(D.bank);
-  el('from').textContent    = D.first ? tr('from', {d: dd(D.first)}) : '';
+
+  const S = currentData();
+
+  el('bank').textContent    = f2(S.bank ?? 100);
+  el('from').textContent    = S.first ? tr('from', {d: dd(S.first)}) : '';
 
   drawSpark();
 
-  const n = D.n || 0;
-  const wins = D.wins || 0;
+  const n = S.n || 0;
+  const wins = S.wins || 0;
+  const bank = S.bank ?? 100;
   el('hrow').innerHTML =
     '<div><b>' + n + '</b><span>' + tr('bets') + '</span></div>' +
     '<div><b>' + wins + '</b><span>' + tr('won') + '</span></div>' +
     '<div><b>' + (n ? (wins / n * 100).toFixed(0) : '0') + '%</b><span>' + tr('hit') + '</span></div>' +
-    '<div><b>' + (n ? (((D.bank - 100) / n * 100) >= 0 ? '+' : '') + ((D.bank - 100) / n * 100).toFixed(1) : '0') + '%</b><span>' + tr('roi') + '</span></div>' +
-    '<div><b>' + ((D.bank - 100) >= 0 ? '+' : '') + f2(D.bank - 100) + '</b><span>' + tr('profit') + '</span></div>';
+    '<div><b>' + (n ? (((bank - 100) / n * 100) >= 0 ? '+' : '') + ((bank - 100) / n * 100).toFixed(1) : '0') + '%</b><span>' + tr('roi') + '</span></div>' +
+    '<div><b>' + ((bank - 100) >= 0 ? '+' : '') + f2(bank - 100) + '</b><span>' + tr('profit') + '</span></div>';
 
-  el('meta').innerHTML = (D.last_day ? tr('updtop', {d: dd(D.last_day)}) + '<br>' : '') + tr('src');
+  el('meta').innerHTML = (S.last_day ? tr('updtop', {d: dd(S.last_day)}) + '<br>' : '') + tr('src');
 
   el('live-title').textContent = tr('live');
   if (D.pending && D.pending.length){
@@ -558,11 +609,11 @@ function render(){
     el('live').innerHTML = '<div class="card">' + tr('nolive') + '</div>';
   }
 
-  const last = D.last || [], prevrows = D.prevrows || [];
+  const last = S.last || [], prevrows = S.prevrows || [];
 
-  if (D.last_day){
+  if (S.last_day){
     el('d1-sec').hidden = false;
-    el('d1-title').innerHTML = dd(D.last_day) + ' <span class="count">· '
+    el('d1-title').innerHTML = dd(S.last_day) + ' <span class="count">· '
       + tr('dayb', {n: last.length, w: plural(last.length)}) + '</span>';
     el('d1').innerHTML = last.map(rowHTML).join('');
     el('d1sum').innerHTML = dayHead(last);
@@ -570,9 +621,9 @@ function render(){
     el('d1-sec').hidden = true;
   }
 
-  if (D.prev_day){
+  if (S.prev_day){
     el('d2-sec').hidden = false;
-    el('d2-title').innerHTML = dd(D.prev_day) + ' <span class="count">· '
+    el('d2-title').innerHTML = dd(S.prev_day) + ' <span class="count">· '
       + tr('dayb', {n: prevrows.length, w: plural(prevrows.length)}) + '</span>';
     el('d2').innerHTML = prevrows.map(rowHTML).join('');
     el('d2sum').innerHTML = dayHead(prevrows);
@@ -585,10 +636,10 @@ function render(){
   el('how-body').innerHTML = ['h1','h2','h3','h4'].map(k => '<p>' + tr(k) + '</p>').join('')
     + '<p style="color:var(--muted);font-size:13px">' + tr('tapHint') + '</p>';
 
-  const feed = D.feed || [];
+  const feed = S.feed || [];
   el('feed-title').textContent = tr('feed');
   el('feed').innerHTML = feed.map(rowHTML).join('');
-  el('stamp').textContent = D.last_day ? tr('upd', {d: dd(D.last_day)}) : '';
+  el('stamp').textContent = S.last_day ? tr('upd', {d: dd(S.last_day)}) : '';
 }
 
 el('langs').addEventListener('click', e => {
@@ -598,12 +649,22 @@ el('langs').addEventListener('click', e => {
   render();
 });
 
+el('sports').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  sport = b.dataset.s;
+  try{ localStorage.setItem('fk_sport', sport); }catch(err){}
+  render();
+});
+
 async function loadData(){
   try{
     const res = await fetch('public.json', {cache:'no-store'});
     D = await res.json();
   }catch(e){
-    D = {bank:100, n:0, wins:0, curve:[100], last_day:null, prev_day:null, last:[], prevrows:[], pending:[], feed:[], first:null};
+    D = {bank:100, n:0, wins:0, curve:[100], last_day:null, prev_day:null, last:[], prevrows:[], pending:[], feed:[], first:null,
+         sports:{all:{bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null},
+                  football:{bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null},
+                  basketball:{bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null}}};
   }
   render();
 }
