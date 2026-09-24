@@ -127,10 +127,34 @@
   }
   .hero .row div{display:flex;flex-direction:column}
   .hero .row b{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:17px;font-weight:500;
+    font-family:"DM Mono",ui-monospace,monospace;font-size:22px;font-weight:500;
     font-variant-numeric:tabular-nums;
   }
   .hero .row span{color:var(--hero-muted);font-size:12px}
+  .hero .subrow{
+    margin-top:10px;color:var(--hero-muted);font-size:12.5px;
+    font-family:"DM Mono",ui-monospace,monospace;
+  }
+
+  .stats-card{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;
+  }
+  .stats-card h2{margin-bottom:12px}
+  .stats-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;
+  }
+  .stats-grid .item{display:flex;flex-direction:column;gap:2px}
+  .stats-grid .item .lbl{font-size:12.5px;color:var(--muted)}
+  .stats-grid .item .val{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:17px;font-weight:500;
+    font-variant-numeric:tabular-nums;
+  }
+  .stats-grid .item .val.p{color:var(--win)}
+  .stats-grid .item .val.n{color:var(--loss)}
+  .stats-sep{
+    grid-column:1/-1;border-top:1px solid var(--line);margin:2px 0;
+  }
 
   .card{
     background:var(--card);border:1px solid var(--line);border-radius:14px;
@@ -256,7 +280,13 @@
     <p class="from" id="from"></p>
     <div class="spark" id="spark"></div>
     <div class="row" id="hrow"></div>
+    <p class="subrow" id="subrow"></p>
   </div>
+
+  <section class="stats-card">
+    <h2 id="stats-title"></h2>
+    <div class="stats-grid" id="stats-grid"></div>
+  </section>
 
   <section id="live-sec">
     <h2 id="live-title"></h2>
@@ -308,7 +338,8 @@ const T = {
 ru:{brand:'Честный коэффициент', sub:'Открытый журнал ставок',
  tag:'Каждая ставка опубликована до начала матча. Ничего не дописано после.',
  bank:'Банк', from:'со 100 единиц, с {d}',
- bets:'Ставки', won:'Зашло', hit:'Точность', profit:'Прибыль', roi:'ROI',
+ bets:'Ставки', profit:'Прибыль', roi:'ROI',
+ hitrow:'{pct}% точность ({wins} из {n})',
  live:'Сейчас в игре', nolive:'Открытых ставок нет',
  bet:'Ставка', dayb:'{n} {w}', dwon:'выиграно',
  feed:'Последние ставки', upd:'Обновлено {d}', updtop:'Данные на {d}',
@@ -320,12 +351,17 @@ ru:{brand:'Честный коэффициент', sub:'Открытый жур�
  h3:'<b>Почему заходит примерно половина.</b> Это нормально и даже хорошо, потому что ставки берутся по высокой цене. Сорок процентов попаданий при коэффициенте 2.8 дают плюс, а пятьдесят при 1.9 — минус. Смотреть надо на банк, а не на процент.',
  h4:'<b>Откуда берутся ставки.</b> Бот считает собственную справедливую цену матча по рейтингу команд, форме и личным встречам. Когда она сильно расходится с ценой букмекера — появляется сигнал.',
  plural:['ставка','ставки','ставок'],
- sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол'},
+ sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол',
+ statsTitle:'Статистика системы',
+ avgOdd:'Средний кэф', avgOddWins:'Средний кэф побед', maxDD:'Макс. просадка',
+ bestStreak:'Лучшая серия побед', worstStreak:'Худшая серия', curStreak:'Текущая серия',
+ na:'—', units:'ед.'},
 
 en:{brand:'Fair Odds', sub:'Open betting record',
  tag:'Every pick is published before the match starts. Nothing is added after.',
  bank:'Bankroll', from:'from 100 units, since {d}',
- bets:'Bets', won:'Won', hit:'Win Rate', profit:'Profit', roi:'ROI',
+ bets:'Bets', profit:'Profit', roi:'ROI',
+ hitrow:'{pct}% win rate ({wins} of {n})',
  live:'Live Bets', nolive:'No open bets',
  bet:'Pick', dayb:'{n} {w}', dwon:'won',
  feed:'Recent Bets', upd:'Last updated {d}', updtop:'Data as of {d}',
@@ -337,7 +373,11 @@ en:{brand:'Fair Odds', sub:'Open betting record',
  h3:'<b>Why only about half win.</b> That is normal and even good, because the bets are taken at high prices. Forty percent at odds of 2.8 is a profit; fifty percent at 1.9 is a loss. Watch the bankroll, not the percentage.',
  h4:'<b>Where the bets come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker’s, a signal appears.',
  plural:['bet','bets','bets'],
- sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball'}
+ sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball',
+ statsTitle:'System Stats',
+ avgOdd:'Average odds', avgOddWins:'Average odds (wins)', maxDD:'Max drawdown',
+ bestStreak:'Best win streak', worstStreak:'Worst streak', curStreak:'Current streak',
+ na:'—', units:'u.'}
 };
 
 /* человеческие названия — то, как API их отдаёт, никогда не показывается как есть */
@@ -565,6 +605,42 @@ function drawSpark(){
     + 'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
 }
 
+function statItem(label, valueHtml, sign){
+  const cls = sign === 'p' ? ' p' : (sign === 'n' ? ' n' : '');
+  return '<div class="item"><span class="lbl">' + label + '</span><span class="val' + cls + '">' + valueHtml + '</span></div>';
+}
+
+function renderStats(S){
+  const na = tr('na');
+  const units = tr('units');
+
+  const avgOdd = (S.avg_odd != null) ? f2(S.avg_odd) : na;
+  const avgOddWins = (S.avg_odd_wins != null) ? f2(S.avg_odd_wins) : na;
+
+  const dd_ = S.max_drawdown || 0;
+  const ddText = dd_ < 0 ? (dd_.toFixed(2) + ' ' + units) : ('0.00 ' + units);
+  const ddSign = dd_ < 0 ? 'n' : '';
+
+  const best = S.best_streak || 0;
+  const worst = S.worst_streak || 0;
+  const cur = S.current_streak || 0;
+
+  const bestText = best > 0 ? ('+' + best) : String(best);
+  const worstText = String(worst);
+  const curText = cur > 0 ? ('+' + cur) : String(cur);
+  const curSign = cur > 0 ? 'p' : (cur < 0 ? 'n' : '');
+
+  el('stats-title').textContent = tr('statsTitle');
+  el('stats-grid').innerHTML =
+    statItem(tr('avgOdd'), avgOdd) +
+    statItem(tr('avgOddWins'), avgOddWins) +
+    statItem(tr('maxDD'), ddText, ddSign) +
+    '<div class="stats-sep"></div>' +
+    statItem(tr('bestStreak'), bestText, best > 0 ? 'p' : '') +
+    statItem(tr('worstStreak'), worstText, worst < 0 ? 'n' : '') +
+    statItem(tr('curStreak'), curText, curSign);
+}
+
 function render(){
   if (!D) return;
   CARDS = [];
@@ -591,12 +667,22 @@ function render(){
   const n = S.n || 0;
   const wins = S.wins || 0;
   const bank = S.bank ?? 100;
+  const roiPct = n ? ((bank - 100) / n * 100) : 0;
+  const profit = bank - 100;
+  const hitPct = n ? (wins / n * 100) : 0;
+
+  // ИЗМЕНЕНО 24.09 (по просьбе Игоря): раньше первой и самой крупной
+  // цифрой в hero была "Точность" — для ставок это вводит в заблуждение
+  // без среднего кэфа рядом. Теперь на первом месте ROI и прибыль,
+  // количество ставок — третьим, а точность ушла в маленькую строку
+  // под таблицей (hitrow), она всё ещё видна, но не главная.
   el('hrow').innerHTML =
-    '<div><b>' + n + '</b><span>' + tr('bets') + '</span></div>' +
-    '<div><b>' + wins + '</b><span>' + tr('won') + '</span></div>' +
-    '<div><b>' + (n ? (wins / n * 100).toFixed(0) : '0') + '%</b><span>' + tr('hit') + '</span></div>' +
-    '<div><b>' + (n ? (((bank - 100) / n * 100) >= 0 ? '+' : '') + ((bank - 100) / n * 100).toFixed(1) : '0') + '%</b><span>' + tr('roi') + '</span></div>' +
-    '<div><b>' + ((bank - 100) >= 0 ? '+' : '') + f2(bank - 100) + '</b><span>' + tr('profit') + '</span></div>';
+    '<div><b>' + (roiPct >= 0 ? '+' : '') + roiPct.toFixed(1) + '%</b><span>' + tr('roi') + '</span></div>' +
+    '<div><b>' + (profit >= 0 ? '+' : '') + f2(profit) + '</b><span>' + tr('profit') + '</span></div>' +
+    '<div><b>' + n + '</b><span>' + tr('bets') + '</span></div>';
+  el('subrow').textContent = n ? tr('hitrow', {pct: hitPct.toFixed(0), wins: wins, n: n}) : '';
+
+  renderStats(S);
 
   el('meta').innerHTML = (S.last_day ? tr('updtop', {d: dd(S.last_day)}) + '<br>' : '') + tr('src');
 
@@ -661,10 +747,10 @@ async function loadData(){
     const res = await fetch('public.json', {cache:'no-store'});
     D = await res.json();
   }catch(e){
+    const empty = {bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null,
+                   avg_odd:null,avg_odd_wins:null,max_drawdown:0,best_streak:0,worst_streak:0,current_streak:0};
     D = {bank:100, n:0, wins:0, curve:[100], last_day:null, prev_day:null, last:[], prevrows:[], pending:[], feed:[], first:null,
-         sports:{all:{bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null},
-                  football:{bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null},
-                  basketball:{bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null}}};
+         sports:{all: {...empty}, football: {...empty}, basketball: {...empty}}};
   }
   render();
 }
