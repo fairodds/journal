@@ -87,8 +87,9 @@
   .sports{display:flex;gap:6px;justify-content:center}
   .sports button{
     font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:600;font-size:13.5px;
-    padding:8px 14px;border-radius:10px;border:1px solid var(--line);
+    padding:8px 8px;border-radius:10px;border:1px solid var(--line);
     background:var(--card);color:var(--ink-2);cursor:pointer;flex:1;
+    white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;
   }
   .sports button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
   .sports button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
@@ -332,7 +333,8 @@
 const LANGS = [ ['ru','RU'], ['en','EN'] ];
 
 /* ---------- виды спорта ---------- */
-const SPORTS = [ ['all','sportAll'], ['football','sportFootball'], ['basketball','sportBasketball'] ];
+/* ИЗМЕНЕНО 13.10: вид «Все» убран, добавлен «Читаем кф» — у каждого вида свой банк */
+const SPORTS = [ ['football','sportFootball'], ['basketball','sportBasketball'], ['readodds','sportReadOdds'] ];
 
 const T = {
 ru:{brand:'Честный коэффициент', sub:'Открытый журнал ставок',
@@ -351,7 +353,9 @@ ru:{brand:'Честный коэффициент', sub:'Открытый жур�
  h3:'<b>Почему заходит примерно половина.</b> Это нормально и даже хорошо, потому что ставки берутся по высокой цене. Сорок процентов попаданий при коэффициенте 2.8 дают плюс, а пятьдесят при 1.9 — минус. Смотреть надо на банк, а не на процент.',
  h4:'<b>Откуда берутся ставки.</b> Бот считает собственную справедливую цену матча по рейтингу команд, форме и личным встречам. Когда она сильно расходится с ценой букмекера — появляется сигнал.',
  plural:['ставка','ставки','ставок'],
- sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол',
+ sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол', sportReadOdds:'📐 Читаем кф',
+ h3ro:'<b>Почему заходит больше половины.</b> Здесь ставка всегда на фаворита букмекера со средним кэфом около 1.9, поэтому для плюса попадать нужно чаще, чем в половине случаев. Смотреть надо на банк, а не на процент.',
+ h4ro:'<b>Откуда берутся ставки.</b> Бот считает собственную цену матча по месту команд в таблице и форме последних матчей. Ставка идёт на фаворита букмекера с кэфом от 1.49 до 2.30 — когда самое сильное расхождение между ценой бота и букмекера приходится именно на этого фаворита.',
  statsTitle:'Статистика системы',
  avgOdd:'Средний кэф', avgOddWins:'Средний кэф побед', maxDD:'Макс. просадка',
  bestStreak:'Лучшая серия побед', worstStreak:'Худшая серия', curStreak:'Текущая серия',
@@ -373,7 +377,9 @@ en:{brand:'Fair Odds', sub:'Open betting record',
  h3:'<b>Why only about half win.</b> That is normal and even good, because the bets are taken at high prices. Forty percent at odds of 2.8 is a profit; fifty percent at 1.9 is a loss. Watch the bankroll, not the percentage.',
  h4:'<b>Where the bets come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker’s, a signal appears.',
  plural:['bet','bets','bets'],
- sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball',
+ sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball', sportReadOdds:'📐 Odds reading',
+ h3ro:'<b>Why more than half win.</b> Here the pick is always the bookmaker’s favourite at average odds of about 1.9, so a profit needs a win rate above one half. Watch the bankroll, not the percentage.',
+ h4ro:'<b>Where the bets come from.</b> The bot works out its own price for a match from the teams’ league positions and recent form. The pick is the bookmaker’s favourite at odds from 1.49 to 2.30 — when the biggest gap between the bot’s price and the bookmaker’s falls on that favourite.',
  statsTitle:'System Stats',
  avgOdd:'Average odds', avgOddWins:'Average odds (wins)', maxDD:'Max drawdown',
  bestStreak:'Best win streak', worstStreak:'Worst streak', curStreak:'Current streak',
@@ -465,10 +471,10 @@ try{
   }
 }catch(e){}
 
-let sport = 'all';
+let sport = 'football';
 try{
   const savedSport = localStorage.getItem('fk_sport');
-  if (savedSport && ['all','football','basketball'].includes(savedSport)) sport = savedSport;
+  if (savedSport && SPORTS.some(([k]) => k === savedSport)) sport = savedSport;
 }catch(e){}
 
 function tr(key, vars){
@@ -687,9 +693,12 @@ function render(){
   el('meta').innerHTML = (S.last_day ? tr('updtop', {d: dd(S.last_day)}) + '<br>' : '') + tr('src');
 
   el('live-title').textContent = tr('live');
-  if (D.pending && D.pending.length){
+  // ИЗМЕНЕНО 13.10: открытые ставки — свои у каждого вида (S.pending);
+  // старый public.json без них — общий список D.pending, как раньше.
+  const pend = Array.isArray(S.pending) ? S.pending : (D.pending || []);
+  if (pend.length){
     el('live-sec').hidden = false;
-    el('live').innerHTML = D.pending.map(pendingHTML).join('');
+    el('live').innerHTML = pend.map(pendingHTML).join('');
   } else {
     el('live-sec').hidden = false;
     el('live').innerHTML = '<div class="card">' + tr('nolive') + '</div>';
@@ -719,7 +728,8 @@ function render(){
 
   el('honest').innerHTML = tr('honest', {n: n});
   el('how-title').textContent = tr('how');
-  el('how-body').innerHTML = ['h1','h2','h3','h4'].map(k => '<p>' + tr(k) + '</p>').join('')
+  const howKeys = sport === 'readodds' ? ['h1','h2','h3ro','h4ro'] : ['h1','h2','h3','h4'];
+  el('how-body').innerHTML = howKeys.map(k => '<p>' + tr(k) + '</p>').join('')
     + '<p style="color:var(--muted);font-size:13px">' + tr('tapHint') + '</p>';
 
   const feed = S.feed || [];
@@ -750,7 +760,7 @@ async function loadData(){
     const empty = {bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null,
                    avg_odd:null,avg_odd_wins:null,max_drawdown:0,best_streak:0,worst_streak:0,current_streak:0};
     D = {bank:100, n:0, wins:0, curve:[100], last_day:null, prev_day:null, last:[], prevrows:[], pending:[], feed:[], first:null,
-         sports:{all: {...empty}, football: {...empty}, basketball: {...empty}}};
+         sports:{all: {...empty}, football: {...empty}, basketball: {...empty}, readodds: {...empty}}};
   }
   render();
 }
