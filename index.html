@@ -84,7 +84,7 @@
   .langs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
   .langs button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
-  .sports{display:flex;gap:6px;justify-content:center}
+  .sports{display:grid;grid-template-columns:1fr 1fr;gap:6px}
   .sports button{
     font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:600;font-size:13.5px;
     padding:8px 8px;border-radius:10px;border:1px solid var(--line);
@@ -334,7 +334,7 @@ const LANGS = [ ['ru','RU'], ['en','EN'] ];
 
 /* ---------- виды спорта ---------- */
 /* ИЗМЕНЕНО 13.10: вид «Все» убран, добавлен «Читаем кф» — у каждого вида свой банк */
-const SPORTS = [ ['football','sportFootball'], ['basketball','sportBasketball'], ['readodds','sportReadOdds'] ];
+const SPORTS = [ ['football','sportFootball'], ['basketball','sportBasketball'], ['readodds','sportReadOdds'], ['supersignal','sportSuper'] ];
 
 const T = {
 ru:{brand:'Честный коэффициент', sub:'Открытый журнал ставок',
@@ -353,7 +353,8 @@ ru:{brand:'Честный коэффициент', sub:'Открытый жур�
  h3:'<b>Почему заходит примерно половина.</b> Это нормально и даже хорошо, потому что ставки берутся по высокой цене. Сорок процентов попаданий при коэффициенте 2.8 дают плюс, а пятьдесят при 1.9 — минус. Смотреть надо на банк, а не на процент.',
  h4:'<b>Откуда берутся ставки.</b> Бот считает собственную справедливую цену матча по рейтингу команд, форме и личным встречам. Когда она сильно расходится с ценой букмекера — появляется сигнал.',
  plural:['ставка','ставки','ставок'],
- sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол', sportReadOdds:'📐 Читаем кф',
+ sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол', sportReadOdds:'📐 Читаем кф', sportSuper:'🎯 Суперсигнал',
+ h4ss:'<b>Откуда берутся ставки.</b> Суперсигнал появляется, когда две независимые стратегии бота — «Стратегия ТВ» и «Читаем коэффициенты» — называют одну и ту же команду.',
  h3ro:'<b>Почему заходит больше половины.</b> Здесь ставка всегда на фаворита букмекера со средним кэфом около 1.9, поэтому для плюса попадать нужно чаще, чем в половине случаев. Смотреть надо на банк, а не на процент.',
  h4ro:'<b>Откуда берутся ставки.</b> Бот считает собственную цену матча по месту команд в таблице и форме последних матчей. Ставка идёт на фаворита букмекера с кэфом от 1.49 до 2.30 — когда самое сильное расхождение между ценой бота и букмекера приходится именно на этого фаворита.',
  statsTitle:'Статистика системы',
@@ -377,7 +378,8 @@ en:{brand:'Fair Odds', sub:'Open betting record',
  h3:'<b>Why only about half win.</b> That is normal and even good, because the bets are taken at high prices. Forty percent at odds of 2.8 is a profit; fifty percent at 1.9 is a loss. Watch the bankroll, not the percentage.',
  h4:'<b>Where the bets come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker’s, a signal appears.',
  plural:['bet','bets','bets'],
- sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball', sportReadOdds:'📐 Odds reading',
+ sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball', sportReadOdds:'📐 Odds reading', sportSuper:'🎯 Supersignal',
+ h4ss:'<b>Where the bets come from.</b> A supersignal appears when two independent strategies of the bot — the TV strategy and Odds reading — pick the same team.',
  h3ro:'<b>Why more than half win.</b> Here the pick is always the bookmaker’s favourite at average odds of about 1.9, so a profit needs a win rate above one half. Watch the bankroll, not the percentage.',
  h4ro:'<b>Where the bets come from.</b> The bot works out its own price for a match from the teams’ league positions and recent form. The pick is the bookmaker’s favourite at odds from 1.49 to 2.30 — when the biggest gap between the bot’s price and the bookmaker’s falls on that favourite.',
  statsTitle:'System Stats',
@@ -728,7 +730,8 @@ function render(){
 
   el('honest').innerHTML = tr('honest', {n: n});
   el('how-title').textContent = tr('how');
-  const howKeys = sport === 'readodds' ? ['h1','h2','h3ro','h4ro'] : ['h1','h2','h3','h4'];
+  const howKeys = sport === 'readodds' ? ['h1','h2','h3ro','h4ro']
+                : sport === 'supersignal' ? ['h1','h2','h3','h4ss'] : ['h1','h2','h3','h4'];
   el('how-body').innerHTML = howKeys.map(k => '<p>' + tr(k) + '</p>').join('')
     + '<p style="color:var(--muted);font-size:13px">' + tr('tapHint') + '</p>';
 
@@ -760,7 +763,7 @@ async function loadData(){
     const empty = {bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null,
                    avg_odd:null,avg_odd_wins:null,max_drawdown:0,best_streak:0,worst_streak:0,current_streak:0};
     D = {bank:100, n:0, wins:0, curve:[100], last_day:null, prev_day:null, last:[], prevrows:[], pending:[], feed:[], first:null,
-         sports:{all: {...empty}, football: {...empty}, basketball: {...empty}, readodds: {...empty}}};
+         sports:{all: {...empty}, football: {...empty}, basketball: {...empty}, readodds: {...empty}, supersignal: {...empty}}};
   }
   render();
 }
