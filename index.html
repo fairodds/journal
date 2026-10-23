@@ -334,7 +334,8 @@ const LANGS = [ ['ru','RU'], ['en','EN'] ];
 
 /* ---------- виды спорта ---------- */
 /* ИЗМЕНЕНО 13.10: вид «Все» убран, добавлен «Читаем кф» — у каждого вида свой банк */
-const SPORTS = [ ['football','sportFootball'], ['basketball','sportBasketball'], ['readodds','sportReadOdds'], ['supersignal','sportSuper'] ];
+/* ИЗМЕНЕНО 23.10.26: добавлены «Правила лиг» и «Мягкий коридор» — у каждого свой банк */
+const SPORTS = [ ['football','sportFootball'], ['basketball','sportBasketball'], ['readodds','sportReadOdds'], ['supersignal','sportSuper'], ['rules','sportRules'], ['soft','sportSoft'] ];
 
 const T = {
 ru:{brand:'Честный коэффициент', sub:'Открытый журнал ставок',
@@ -354,6 +355,12 @@ ru:{brand:'Честный коэффициент', sub:'Открытый жур�
  h4:'<b>Откуда берутся ставки.</b> Бот считает собственную справедливую цену матча по рейтингу команд, форме и личным встречам. Когда она сильно расходится с ценой букмекера — появляется сигнал.',
  plural:['ставка','ставки','ставок'],
  sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол', sportReadOdds:'📐 Читаем кф', sportSuper:'🎯 Суперсигнал',
+ sportRules:'📚 Правила лиг', sportSoft:'🔎 Мягкий коридор',
+ h3ru:'<b>Почему процент попаданий разный.</b> Правила играют на разные рынки: ничьи с кэфом 3–4 заходят примерно в трети случаев, победы фаворита с кэфом 1.4–1.6 — в трёх из четырёх. Плюс даёт сочетание цены и частоты, поэтому смотреть надо на банк, а не на процент. Фора 0 при ничьей — возврат ставки.',
+ h4ru:'<b>Откуда берутся ставки.</b> По истории 2018–2026 найдены лиги, где один рынок в узком диапазоне кэфа стабильно давал плюс — например, ничья в Египте при кэфе 2.80–3.30. Правила искали на старых годах и проверяли на свежих. Сейчас их 13, таблица заморожена: бот ставит, когда кэф матча попадает в диапазон правила.',
+ h3sc:'<b>Почему процент попаданий разный.</b> Ставка идёт на тот рынок, который в похожих матчах прошлого был в плюсе по цене этого матча, — это может быть и ничья, и тотал, и фора. Смотреть надо на банк, а не на процент. Фора 0 при ничьей — возврат ставки.',
+ h4sc:'<b>Откуда берутся ставки.</b> Для каждого матча бот находит в базе 2018–2026 (около 124 тысяч игр) матчи с похожими кэфами — «коридор» — и смотрит, какой рынок в них заходил чаще, чем закладывает цена букмекера. Ставка — только если коридор подтверждается и в широком, и в узком варианте.',
+ push:'возврат',
  h4ss:'<b>Откуда берутся ставки.</b> Суперсигнал появляется, когда две независимые стратегии бота — «Стратегия ТВ» и «Читаем коэффициенты» — называют одну и ту же команду.',
  h3ro:'<b>Почему заходит больше половины.</b> Здесь ставка всегда на фаворита букмекера со средним кэфом около 1.9, поэтому для плюса попадать нужно чаще, чем в половине случаев. Смотреть надо на банк, а не на процент.',
  h4ro:'<b>Откуда берутся ставки.</b> Бот считает собственную цену матча по месту команд в таблице и форме последних матчей. Ставка идёт на фаворита букмекера с кэфом от 1.49 до 2.30 — когда самое сильное расхождение между ценой бота и букмекера приходится именно на этого фаворита.',
@@ -379,6 +386,12 @@ en:{brand:'Fair Odds', sub:'Open betting record',
  h4:'<b>Where the bets come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker’s, a signal appears.',
  plural:['bet','bets','bets'],
  sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball', sportReadOdds:'📐 Odds reading', sportSuper:'🎯 Supersignal',
+ sportRules:'📚 League rules', sportSoft:'🔎 Soft corridor',
+ h3ru:'<b>Why the win rate varies.</b> The rules play different markets: draws at odds 3–4 land about a third of the time, a favourite at 1.4–1.6 three times out of four. Profit comes from price and frequency together, so watch the bankroll, not the percentage. Draw-no-bet is refunded on a draw.',
+ h4ru:'<b>Where the bets come from.</b> In 2018–2026 data we found leagues where one market in a narrow odds band was steadily profitable — for example, the draw in Egypt at odds 2.80–3.30. The rules were found on older seasons and checked on recent ones. There are 13 of them and the table is frozen: the bot bets when a match falls into a rule’s odds band.',
+ h3sc:'<b>Why the win rate varies.</b> The pick is whichever market was profitable at this match’s price in similar past matches — a draw, a total or a draw-no-bet. Watch the bankroll, not the percentage. Draw-no-bet is refunded on a draw.',
+ h4sc:'<b>Where the bets come from.</b> For each match the bot finds games with similar odds in a 2018–2026 database of about 124,000 matches — a “corridor” — and checks which market landed more often than the bookmaker’s price implies. A bet is made only when both the wide and the narrow corridor agree.',
+ push:'refund',
  h4ss:'<b>Where the bets come from.</b> A supersignal appears when two independent strategies of the bot — the TV strategy and Odds reading — pick the same team.',
  h3ro:'<b>Why more than half win.</b> Here the pick is always the bookmaker’s favourite at average odds of about 1.9, so a profit needs a win rate above one half. Watch the bankroll, not the percentage.',
  h4ro:'<b>Where the bets come from.</b> The bot works out its own price for a match from the teams’ league positions and recent form. The pick is the bookmaker’s favourite at odds from 1.49 to 2.30 — when the biggest gap between the bot’s price and the bookmaker’s falls on that favourite.',
@@ -409,6 +422,10 @@ const LG = {
  'Туреччина':['Турция','Turkish Süper Lig'],
  'Туреччина. TFF 1. Лiг':['Турция, TFF 1. Lig','Turkish First League'],
  'Хорватія':['Хорватия','Croatian HNL'],
+ 'Єгипет':['Египет','Egyptian Premier League'], 'Польща':['Польша','Polish Ekstraklasa'],
+ 'Італія':['Италия, Серия A','Italian Serie A'], 'Китай':['Китай','Chinese Super League'],
+ 'Іспанія':['Испания, Ла Лига','Spanish La Liga'], 'Німеччина':['Германия, Бундеслига','German Bundesliga'],
+ 'Норвегія 1 дивізіон':['Норвегия, 1-й дивизион','Norwegian 1. divisjon'],
  'Швейцарія. Суперліга':['Швейцария, Суперлига','Swiss Super League'],
  'Швейцарія. Челлендж-ліга':['Швейцария, Челлендж-лига','Swiss Challenge League']
 };
@@ -457,6 +474,15 @@ const TEAMS = {
  'Golden State Valkyries':['Голден Стэйт Валькирис','Golden State Valkyries'],
  'Portland Fire':['Портленд Файр','Portland Fire']
 };
+
+/* ДОБАВЛЕНО 23.10.26: названия рынков для «Правил лиг» и «Мягкого коридора» (поле r.k) */
+const MK = {
+ p1:['П1 (победа хозяев)','Home win'], x:['Ничья','Draw'], p2:['П2 (победа гостей)','Away win'],
+ f1:['Ф1(0) (хозяева, возврат при ничьей)','Home draw-no-bet'], f2:['Ф2(0) (гости, возврат при ничьей)','Away draw-no-bet'],
+ tm:['Тотал меньше 2.5','Under 2.5 goals'], tb:['Тотал больше 2.5','Over 2.5 goals'], oz:['Обе забьют — да','Both teams to score']
+};
+const betLabel = r => (r.k && MK[r.k]) ? (lang === 'ru' ? MK[r.k][0] : MK[r.k][1]) : team(r.t);
+const rowProfit = r => r.p ? 0 : (r.w ? r.o - 1 : -1);
 
 const el = id => document.getElementById(id);
 const f2 = n => Number(n).toFixed(2);
@@ -559,12 +585,14 @@ function cardAttrs(r){
 }
 
 function rowHTML(r){
-  const profit = r.w ? (r.o - 1) : -1;
+  const profit = rowProfit(r);
   const clickable = (r.link || r.c) ? ' clickable' : '';
+  const mark = r.p ? '<div class="mark" title="' + tr('push') + '">↩</div>'
+                   : '<div class="mark ' + (r.w?'w':'l') + '">' + (r.w?'✓':'✕') + '</div>';
   return '<div class="res' + clickable + '"' + cardAttrs(r) + '>'
-    + '<div class="mark ' + (r.w?'w':'l') + '">' + (r.w?'✓':'✕') + '</div>'
+    + mark
     + '<div class="body"><div class="t">' + esc(team(r.h)) + ' — ' + esc(team(r.a)) + '</div>'
-    + '<div class="m">' + tr('bet') + ': ' + esc(team(r.t)) + (r.s ? ' · ' + esc(r.s) : '') + '</div></div>'
+    + '<div class="m">' + tr('bet') + ': ' + esc(betLabel(r)) + (r.s ? ' · ' + esc(r.s) : '') + '</div></div>'
     + '<div class="r">' + f2(r.o) + '<b>' + (profit>0?'+':'') + profit.toFixed(2) + '</b></div>'
     + '</div>';
 }
@@ -574,12 +602,12 @@ function pendingHTML(p){
     + '<div class="when">' + esc(p.d) + '</div>'
     + '<div class="match">' + esc(team(p.h)) + ' — ' + esc(team(p.a)) + '</div>'
     + '<div class="league">' + esc(league(p.l)) + '</div>'
-    + '<div class="pick"><span class="what">' + esc(team(p.t)) + '</span>'
+    + '<div class="pick"><span class="what">' + esc(betLabel(p)) + '</span>'
     + '<span class="odd">' + f2(p.o) + '</span></div></div>';
 }
 function dayHead(rows){
   const w = rows.filter(r=>r.w).length;
-  const p = rows.reduce((s,r)=> s + (r.w ? r.o-1 : -1), 0);
+  const p = rows.reduce((s,r)=> s + rowProfit(r), 0);
   const pct = rows.length ? (w/rows.length*100).toFixed(1) : '0';
   return '<span class="big">' + w + ' / ' + rows.length + '</span>'
     + '<span class="sm">' + tr('dwon') + ' · ' + pct + '%</span>'
@@ -594,6 +622,9 @@ function currentData(){
   // которые совпадают со срезом "all". Если D.sports нет — используем
   // D целиком, чтобы страница не сломалась на старом public.json.
   if (D && D.sports && D.sports[sport]) return D.sports[sport];
+  // ДОБАВЛЕНО 23.10.26: новый вид, которого ещё нет в public.json (бот не
+  // успел опубликовать), — пустой срез, а не данные «всех» ставок.
+  if (D && D.sports) return {bank:100, n:0, wins:0, curve:[100], last:[], prevrows:[], feed:[], pending:[]};
   return D || {};
 }
 
@@ -731,7 +762,9 @@ function render(){
   el('honest').innerHTML = tr('honest', {n: n});
   el('how-title').textContent = tr('how');
   const howKeys = sport === 'readodds' ? ['h1','h2','h3ro','h4ro']
-                : sport === 'supersignal' ? ['h1','h2','h3','h4ss'] : ['h1','h2','h3','h4'];
+                : sport === 'supersignal' ? ['h1','h2','h3','h4ss']
+                : sport === 'rules' ? ['h1','h2','h3ru','h4ru']
+                : sport === 'soft' ? ['h1','h2','h3sc','h4sc'] : ['h1','h2','h3','h4'];
   el('how-body').innerHTML = howKeys.map(k => '<p>' + tr(k) + '</p>').join('')
     + '<p style="color:var(--muted);font-size:13px">' + tr('tapHint') + '</p>';
 
@@ -763,7 +796,7 @@ async function loadData(){
     const empty = {bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null,
                    avg_odd:null,avg_odd_wins:null,max_drawdown:0,best_streak:0,worst_streak:0,current_streak:0};
     D = {bank:100, n:0, wins:0, curve:[100], last_day:null, prev_day:null, last:[], prevrows:[], pending:[], feed:[], first:null,
-         sports:{all: {...empty}, football: {...empty}, basketball: {...empty}, readodds: {...empty}, supersignal: {...empty}}};
+         sports:{all: {...empty}, football: {...empty}, basketball: {...empty}, readodds: {...empty}, supersignal: {...empty}, rules: {...empty}, soft: {...empty}}};
   }
   render();
 }
