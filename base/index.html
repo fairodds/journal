@@ -576,7 +576,7 @@ function render(){
       if ((c.k === 'bo' || c.k === 'mk') && r.res === 'w') cl.push('won');
       if ((c.k === 'bo' || c.k === 'mk') && r.res === 'l') cl.push('lost');
       let v;
-      if (c.k === 'km') v = `<button type="button" class="km" data-km="k" data-ts="${r.ts}" data-h="${esc(r.h)}">К${DATA.filter(d => corr(r, d)).length}</button><button type="button" class="km" data-km="m" data-ts="${r.ts}" data-h="${esc(r.h)}">М${DATA.filter(d => mm(r, d)).length}</button>`;
+      if (c.k === 'km') v = `<button type="button" class="km" data-km="k" data-i="${r._i}">К${DATA.filter(d => corr(r, d)).length}</button><button type="button" class="km" data-km="m" data-i="${r._i}">М${DATA.filter(d => mm(r, d)).length}</button>`;
       else if (c.k === 'pair'){ v = `<div class="ln">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
       else if (c.k === 'kc'){ const L1 = LET(r.ch_), L2 = LET(r.ca); v = c.stack.map(f => `<div class="ln">${f(r)}</div>`).join(''); if (L1 !== '?' && L2 !== '?'){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="kc" data-fv="=${L1}/${L2}" title="Хозяева / гости">${v}</td>`; } }
       else if (c.stack){ const sv = STV[c.k] ? STV[c.k](r) : []; v = c.stack.map((f, i) => sv[i] != null && sv[i] !== '—' && sv[i] !== '?' ? `<div class="ln"><span class="tg" data-fk="${c.k}" data-fv="=${esc(sv[i])}">${f(r)}</span></div>` : `<div class="ln">${f(r)}</div>`).join(''); }
@@ -616,7 +616,7 @@ el('tbl').tBodies[0].addEventListener('click', e => {
     document.querySelectorAll('#tbl [data-k="ch"]:is(input,select)').forEach(i => { i.value = v; i.classList.add('on'); });
     if (!DATA.some(d => d.ch === t.dataset.ch && VIEWS.find(x => x[0] === view)[2](d))){ view = t.dataset.sp === 'f' ? 'fall' : 'bsk'; buildTabs(); }
     page = 0; render(); el('wrap').scrollTop = 0; return;
-  } const b = e.target.closest('button.km'); if (!b) return; const r = DATA.find(d => String(d.ts) === b.dataset.ts && d.h === b.dataset.h); if (r) applyKM(r, b.dataset.km); });
+  } const b = e.target.closest('button.km'); if (!b) return; const r = DATA[+b.dataset.i]; if (r) applyKM(r, b.dataset.km); });
 el('clrk').onclick = () => { KF.forEach(k => { delete filters[k]; document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = ''; i.classList.remove('on'); }); }); page = 0; render(); };
 
 /* ===== Сохранённые фильтры и комбо фильтр ===== */
@@ -713,6 +713,8 @@ window.addEventListener('hashchange', () => { route(); window.scrollTo(0, 0); })
 route();
 function boot(d){
   DATA = d;
+  // у одного матча бывает несколько карточек (ТВ + Правило + Мягкий) с тем же временем и хозяевами — К/М ищут строку по номеру
+  DATA.forEach((r, i) => { r._i = i; });
   const last = DATA.reduce((m, r) => Math.max(m, r.ts || 0), 0);
   const ds = last ? new Date(last * 1000).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'2-digit'}) : '';
   const up = UPD && !isNaN(UPD) ? ' · обновлено ' + UPD.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}).replace(',', '') : '';
