@@ -167,6 +167,7 @@ td.tapk{cursor:pointer}
 .sct.ht{color:var(--muted)}
 .acts{gap:8px}
 .clear.primary{background:var(--brand);color:var(--head-ink);border-color:var(--brand)}
+[hidden]{display:none!important}
 .mkp{max-width:640px;margin:12px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
 .mkrow{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .mkrow label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);flex:1 1 180px}
@@ -214,7 +215,6 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
   <h1>База карточек</h1>
   <span class="sub" id="stamp">Загрузка базы…</span>
 </div>
-<div class="tgbar"><svg class="tg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.2 1.3-.2 1.6l4.8 1.5 1.8 5.6c.2.7.4.9.9.9s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.8-.8l3.2-15.1c.3-1.3-.5-1.9-1.8-1.7Zm-3.7 3.6-8.4 7.6-.3 3.4-1.5-4.7 9.7-6.1c.4-.3.8 0 .5-.2Z"/></svg><span>Карточки выходят в Telegram до начала матча:</span><a href="https://t.me/chesnyi_koef_channel" target="_blank" rel="noopener">Футбол · @chesnyi_koef_channel</a><a href="https://t.me/chesnyi_koef_basketball" target="_blank" rel="noopener">Баскетбол · @chesnyi_koef_basketball</a></div>
 <div class="tabs" id="tabs" role="group" aria-label="Набор карточек"></div>
 <div class="tools">
   <label class="srch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" type="search" placeholder="Поиск: команда, чемпионат, дата" autocomplete="off" aria-label="Поиск"></label>
@@ -413,18 +413,23 @@ const shown = (c, r) => { const v = raw(c, r); return c.f ? c.f(v) : (v == null 
 const dig = v => v == null ? null : String(Math.floor(v)) + '.';
 const dig2 = v => v == null ? null : (Math.floor(v * 10 + 1e-9) / 10).toFixed(1);
 const K_KEYS = ['p1','x','p2'], M_KEYS = ['p1','x','p2','f1','f2','tm','tb','oz'];
-const corr = (r, d) => d.sp === r.sp && K_KEYS.every(k => r[k] == null || dig2(d[k]) === dig2(r[k]));
-const mm = (r, d) => d.sp === r.sp && d.ch === r.ch && M_KEYS.every(k => r[k] == null || dig(d[k]) === dig(r[k]));
+// К/М сравнивают только те рынки, колонки которых видны во вкладке этого вида карточек:
+// фильтр по скрытой колонке таблица не применяет, и число на кнопке разошлось бы со строками
+const VIEW_OF = {f:'fall', b:'bsk', r:'lr', s:'sc'};
+const colIn = (k, v) => { const c = COLS.find(x => x.k === k); return !!c && !(c.hide && c.hide.includes(v)) && !(c.only && !c.only.includes(v)); };
+const kmKeys = (keys, sp) => keys.filter(k => colIn(k, VIEW_OF[sp] || 'fall'));
+const corr = (r, d) => d.sp === r.sp && kmKeys(K_KEYS, r.sp).every(k => r[k] == null || dig2(d[k]) === dig2(r[k]));
+const mm = (r, d) => d.sp === r.sp && d.ch === r.ch && kmKeys(M_KEYS, r.sp).every(k => r[k] == null || dig(d[k]) === dig(r[k]));
 function applyKM(r, mode){
   for (const k in filters) delete filters[k];
   document.querySelectorAll('#tbl input, #tbl select').forEach(i => { i.value = ''; i.classList.remove('on'); });
   const set = (k, v) => { filters[k] = v.toLowerCase(); document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = v; i.classList.add('on'); }); };
-  if (mode === 'k') K_KEYS.forEach(k => { if (r[k] != null) set(k, dig2(r[k])); });
-  else { M_KEYS.forEach(k => { if (r[k] != null) set(k, dig(r[k])); }); set('ch', '=' + r.ch); }
+  if (mode === 'k') kmKeys(K_KEYS, r.sp).forEach(k => { if (r[k] != null) set(k, dig2(r[k])); });
+  else { kmKeys(M_KEYS, r.sp).forEach(k => { if (r[k] != null) set(k, dig(r[k])); }); set('ch', '=' + r.ch); }
   // К/М считают по всей базе — поэтому сбрасываем и поиск, и день (Все/Вчера/Сегодня/Завтра),
   // иначе число на кнопке и число строк после нажатия расходятся
   Q = ''; el('q').value = ''; DQ = 'all'; syncDQ();
-  view = r.sp === 'f' ? 'fall' : 'bsk'; buildTabs(); page = 0; render();
+  view = VIEW_OF[r.sp] || 'fall'; buildTabs(); page = 0; render();
   el('wrap').scrollTop = 0; el('wrap').scrollIntoView({block:'start'});
 }
 
