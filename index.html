@@ -237,6 +237,20 @@
   }
   .honest b{color:var(--ink)}
   footer{color:var(--muted);font-size:12.5px;text-align:center;font-family:"DM Mono",ui-monospace,monospace}
+
+  /* ДОБАВЛЕНО 27.10.26: кнопка на сайт «База карточек» (папка base/) */
+  .baza{
+    display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);
+    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--amber);
+    border-radius:12px;padding:12px 14px;
+  }
+  .baza:hover{border-color:var(--amber)}
+  .baza:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .baza .bz-ic{flex:0 0 auto;font-size:20px;line-height:1}
+  .baza .bz-tx{flex:1;min-width:0;display:flex;flex-direction:column}
+  .baza .bz-tx b{font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:600;font-size:15px}
+  .baza .bz-tx span{font-size:12.5px;color:var(--muted)}
+  .baza .bz-ar{flex:0 0 auto;color:var(--amber);font-family:"DM Mono",ui-monospace,monospace;font-size:18px}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
   /* карточка сигнала — модалка по тапу (только если нет прямой ссылки в Telegram) */
@@ -272,6 +286,12 @@
     <p class="tagline" id="tagline"></p>
     <p class="meta" id="meta"></p>
   </header>
+
+  <a class="baza" id="baza" href="base/">
+    <span class="bz-ic" aria-hidden="true">📊</span>
+    <span class="bz-tx"><b id="baza-t"></b><span id="baza-s"></span></span>
+    <span class="bz-ar" aria-hidden="true">→</span>
+  </a>
 
   <nav class="sports" id="sports" aria-label="Спорт"></nav>
 
@@ -364,6 +384,7 @@ ru:{brand:'Честный коэффициент', sub:'Открытый жур�
  h4ss:'<b>Откуда берутся ставки.</b> Суперсигнал появляется, когда две независимые стратегии бота — «Стратегия ТВ» и «Читаем коэффициенты» — называют одну и ту же команду.',
  h3ro:'<b>Почему заходит больше половины.</b> Здесь ставка всегда на фаворита букмекера со средним кэфом около 1.9, поэтому для плюса попадать нужно чаще, чем в половине случаев. Смотреть надо на банк, а не на процент.',
  h4ro:'<b>Откуда берутся ставки.</b> Бот считает собственную цену матча по месту команд в таблице и форме последних матчей. Ставка идёт на фаворита букмекера с кэфом от 1.49 до 2.30 — когда самое сильное расхождение между ценой бота и букмекера приходится именно на этого фаворита.',
+ bazaT:'База карточек', bazaS:'Все карточки агента с кэфами и результатами, с фильтрами',
  statsTitle:'Статистика системы',
  avgOdd:'Средний кэф', avgOddWins:'Средний кэф побед', maxDD:'Макс. просадка',
  bestStreak:'Лучшая серия побед', worstStreak:'Худшая серия', curStreak:'Текущая серия',
@@ -395,6 +416,7 @@ en:{brand:'Fair Odds', sub:'Open betting record',
  h4ss:'<b>Where the bets come from.</b> A supersignal appears when two independent strategies of the bot — the TV strategy and Odds reading — pick the same team.',
  h3ro:'<b>Why more than half win.</b> Here the pick is always the bookmaker’s favourite at average odds of about 1.9, so a profit needs a win rate above one half. Watch the bankroll, not the percentage.',
  h4ro:'<b>Where the bets come from.</b> The bot works out its own price for a match from the teams’ league positions and recent form. The pick is the bookmaker’s favourite at odds from 1.49 to 2.30 — when the biggest gap between the bot’s price and the bookmaker’s falls on that favourite.',
+ bazaT:'Card database', bazaS:'Every card the agent published, with odds and results — filterable',
  statsTitle:'System Stats',
  avgOdd:'Average odds', avgOddWins:'Average odds (wins)', maxDD:'Max drawdown',
  bestStreak:'Best win streak', worstStreak:'Worst streak', curStreak:'Current streak',
@@ -695,6 +717,8 @@ function render(){
   el('sub').textContent      = tr('sub');
   el('tagline').textContent = tr('tag');
   el('cap').textContent     = tr('bank');
+  el('baza-t').textContent  = tr('bazaT');
+  el('baza-s').textContent  = tr('bazaS');
 
   const S = currentData();
 
