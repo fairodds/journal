@@ -1,831 +1,723 @@
 <!doctype html>
 <html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fair Odds — открытый журнал ставок</title>
-<meta name="description" content="Открытый журнал ставок бота «Честный коэффициент». Каждая ставка опубликована до начала матча.">
-
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Fair Odds">
-<meta property="og:url" content="https://fairodds.github.io/journal/">
-<meta property="og:title" content="Fair Odds — открытый журнал ставок">
-<meta property="og:description" content="Открытый журнал ставок. Всё опубликовано до начала матча.">
-<meta name="twitter:card" content="summary_large_image">
-
-<style>
-  :root{ color-scheme: light dark; }
-  html,body{margin:0}
-  img{max-width:100%}
-  [hidden]{display:none!important}
-</style>
-</head>
-<body>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2048%2048%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%2246%22%20height%3D%2246%22%20rx%3D%2211%22%20fill%3D%22%237cc243%22/%3E%3Crect%20x%3D%224.5%22%20y%3D%224.5%22%20width%3D%2239%22%20height%3D%2239%22%20rx%3D%228%22%20fill%3D%22none%22%20stroke%3D%22%230d1310%22%20stroke-opacity%3D%22.25%22%20stroke-width%3D%221%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%230d1310%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M24%2011v25M16%2038h16M11%2016h26%22/%3E%3Cpath%20d%3D%22M14%2016l-5%2010M14%2016l5%2010M34%2016l-5%2010M34%2016l5%2010%22/%3E%3C/g%3E%3Cg%20fill%3D%22%230d1310%22%3E%3Cpath%20d%3D%22M8%2026h12a6%204%200%200%201-12%200Z%22/%3E%3Cpath%20d%3D%22M28%2026h12a6%204%200%200%201-12%200Z%22/%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%2211%22%20r%3D%222.6%22/%3E%3C/g%3E%3C/svg%3E">
+<title>База Честного Коэффициента</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  :root{
-    --bg:#f3f5f7;
-    --card:#ffffff;
-    --ink:#16202b;
-    --ink-2:#44505e;
-    --muted:#79838f;
-    --line:#e2e7eb;
-    --hero:#16202b;
-    --hero-ink:#f1f3f5;
-    --hero-muted:#8d99a6;
-    --amber:#d98b1f;
-    --win:#1d7f55;
-    --loss:#b8433a;
-    --win-bg:#e6f1eb;
-    --loss-bg:#f8e6e4;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#0e141b;
-      --card:#182029;
-      --ink:#e9edf1;
-      --ink-2:#bcc5cf;
-      --muted:#8794a1;
-      --line:#28323d;
-      --hero:#1d2733;
-      --hero-ink:#f1f3f5;
-      --hero-muted:#93a0ad;
-      --amber:#e8a94a;
-      --win:#5ec191;
-      --loss:#e28a82;
-      --win-bg:#16291f;
-      --loss-bg:#2a1a19;
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#0e141b; --card:#182029; --ink:#e9edf1; --ink-2:#bcc5cf; --muted:#8794a1;
-    --line:#28323d; --hero:#1d2733; --hero-ink:#f1f3f5; --hero-muted:#93a0ad;
-    --amber:#e8a94a; --win:#5ec191; --loss:#e28a82; --win-bg:#16291f; --loss-bg:#2a1a19;
-  }
-
-  *{box-sizing:border-box}
-  body{
-    background:var(--bg);color:var(--ink);
-    font-family:"Source Sans 3",system-ui,-apple-system,sans-serif;
-    font-size:16px;line-height:1.5;
-    padding-inline:16px;padding-block:0;
-  }
-  .wrap{max-width:560px;margin:0 auto;padding-block:20px 48px;display:flex;flex-direction:column;gap:24px}
-
-  /* language bar / sport switcher — общий стиль */
-  .langs{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
-  .langs button{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.06em;
-    padding:4px 9px;border-radius:8px;border:1px solid var(--line);
-    background:var(--card);color:var(--muted);cursor:pointer;
-  }
-  .langs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-  .langs button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-
-  .sports{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-  .sports button{
-    font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:600;font-size:13.5px;
-    padding:8px 8px;border-radius:10px;border:1px solid var(--line);
-    background:var(--card);color:var(--ink-2);cursor:pointer;flex:1;
-    white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;
-  }
-  .sports button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-  .sports button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-
-  h1{
-    font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:700;
-    font-size:22px;letter-spacing:-.01em;margin:0;
-  }
-  .sub{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:12px;
-    letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin:6px 0 0;
-  }
-  .tagline{color:var(--muted);font-size:14px;margin:6px 0 0}
-
-  h2{
-    font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:600;
-    font-size:15px;letter-spacing:.02em;margin:0 0 10px;color:var(--ink-2);
-  }
-  h2 .count{color:var(--muted);font-weight:500}
-
-  .hero{background:var(--hero);color:var(--hero-ink);border-radius:16px;padding:22px 20px 16px}
-  .hero .cap{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:11px;
-    letter-spacing:.14em;text-transform:uppercase;color:var(--hero-muted);margin:0;
-  }
-  .hero .num{
-    font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:700;
-    font-size:clamp(46px,13vw,60px);line-height:1;letter-spacing:-.03em;
-    margin:8px 0 0;font-variant-numeric:tabular-nums;
-  }
-  .hero .from{color:var(--hero-muted);font-size:14px;margin:6px 0 0}
-  .hero .spark{margin-top:14px}
-  .hero .row{
-    display:flex;gap:22px;margin-top:14px;padding-top:14px;
-    border-top:1px solid rgba(255,255,255,.12);flex-wrap:wrap;
-  }
-  .hero .row div{display:flex;flex-direction:column}
-  .hero .row b{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:22px;font-weight:500;
-    font-variant-numeric:tabular-nums;
-  }
-  .hero .row span{color:var(--hero-muted);font-size:12px}
-  .hero .subrow{
-    margin-top:10px;color:var(--hero-muted);font-size:12.5px;
-    font-family:"DM Mono",ui-monospace,monospace;
-  }
-
-  .stats-card{
-    background:var(--card);border:1px solid var(--line);border-radius:14px;
-    padding:16px 18px;
-  }
-  .stats-card h2{margin-bottom:12px}
-  .stats-grid{
-    display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;
-  }
-  .stats-grid .item{display:flex;flex-direction:column;gap:2px}
-  .stats-grid .item .lbl{font-size:12.5px;color:var(--muted)}
-  .stats-grid .item .val{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:17px;font-weight:500;
-    font-variant-numeric:tabular-nums;
-  }
-  .stats-grid .item .val.p{color:var(--win)}
-  .stats-grid .item .val.n{color:var(--loss)}
-  .stats-sep{
-    grid-column:1/-1;border-top:1px solid var(--line);margin:2px 0;
-  }
-
-  .card{
-    background:var(--card);border:1px solid var(--line);border-radius:14px;
-    padding:16px;display:flex;flex-direction:column;gap:2px;
-  }
-  .live{border-color:var(--amber);border-width:1.5px}
-  .live .when{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:12px;color:var(--amber);letter-spacing:.05em;
-  }
-  .match{
-    font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:600;
-    font-size:18px;line-height:1.25;margin-top:4px;
-  }
-  .league{font-size:12.5px;color:var(--muted);margin-top:2px}
-  .pick{
-    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
-    margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
-  }
-  .pick .what{font-weight:600;font-size:16px}
-  .pick .odd{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:20px;font-weight:500;
-    font-variant-numeric:tabular-nums;
-  }
-  .stack{display:flex;flex-direction:column;gap:10px}
-
-  .res{
-    background:var(--card);border:1px solid var(--line);border-radius:12px;
-    display:flex;align-items:center;gap:12px;padding:11px 13px;
-  }
-  .res.clickable, .card.clickable{cursor:pointer}
-  .res.clickable:hover, .card.clickable:hover{border-color:var(--amber)}
-  .res.clickable:focus-visible, .card.clickable:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-  .mark{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:700}
-  .mark.w{background:var(--win-bg);color:var(--win)}
-  .mark.l{background:var(--loss-bg);color:var(--loss)}
-  .res .body{flex:1;min-width:0}
-  .res .t{font-size:15px;line-height:1.3}
-  .res .m{font-size:12.5px;color:var(--muted);margin-top:1px}
-  .res .r{
-    text-align:right;font-family:"DM Mono",ui-monospace,monospace;
-    font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);flex:0 0 auto;
-  }
-  .res .r b{display:block;font-size:15px;font-weight:500;color:var(--ink)}
-
-  .meta{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:11.5px;color:var(--muted);
-    margin:10px 0 0;line-height:1.6;
-  }
-  .dayhead{
-    display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;
-    margin:0 0 10px;padding:10px 13px;
-    background:var(--card);border:1px solid var(--line);border-radius:12px;
-  }
-  .dayhead .big{
-    font-family:"DM Mono",ui-monospace,monospace;font-size:19px;font-weight:500;
-    font-variant-numeric:tabular-nums;
-  }
-  .dayhead .sm{font-size:12.5px;color:var(--muted)}
-  .dayhead .pl{font-family:"DM Mono",ui-monospace,monospace;font-size:15px;font-weight:500;margin-left:auto}
-  .dayhead .pl.p{color:var(--win)} .dayhead .pl.n{color:var(--loss)}
-
-  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-  details[open] summary{margin-bottom:10px}
-  summary{
-    font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:600;font-size:15px;
-    cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;
-  }
-  summary::-webkit-details-marker{display:none}
-  summary::after{content:"+";color:var(--muted);font-family:"DM Mono",monospace}
-  details[open] summary::after{content:"−"}
-  summary:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:4px}
-  details p{margin:0 0 10px;font-size:14.5px;color:var(--ink-2)}
-  details p:last-child{margin-bottom:0}
-  details b{color:var(--ink)}
-
-  .honest{
-    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--amber);
-    border-radius:12px;padding:14px 16px;font-size:14.5px;color:var(--ink-2);
-  }
-  .honest b{color:var(--ink)}
-  footer{color:var(--muted);font-size:12.5px;text-align:center;font-family:"DM Mono",ui-monospace,monospace}
-
-  /* ДОБАВЛЕНО 27.10.26: кнопка на сайт «База карточек» (папка base/) */
-  .baza{
-    display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);
-    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--amber);
-    border-radius:12px;padding:12px 14px;
-  }
-  .baza:hover{border-color:var(--amber)}
-  .baza:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-  .baza .bz-ic{flex:0 0 auto;font-size:20px;line-height:1}
-  .baza .bz-tx{flex:1;min-width:0;display:flex;flex-direction:column}
-  .baza .bz-tx b{font-family:"Familjen Grotesk",system-ui,sans-serif;font-weight:600;font-size:15px}
-  .baza .bz-tx span{font-size:12.5px;color:var(--muted)}
-  .baza .bz-ar{flex:0 0 auto;color:var(--amber);font-family:"DM Mono",ui-monospace,monospace;font-size:18px}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-
-  /* карточка сигнала — модалка по тапу (только если нет прямой ссылки в Telegram) */
-  .modal-backdrop{
-    position:fixed;inset:0;background:rgba(0,0,0,.5);
-    display:flex;align-items:flex-end;justify-content:center;z-index:50;
-  }
-  @media (min-width:600px){ .modal-backdrop{ align-items:center;padding:20px } }
-  .modal{
-    background:var(--card);color:var(--ink);width:100%;max-width:560px;max-height:85vh;
-    overflow-y:auto;border-radius:16px 16px 0 0;padding:22px 18px 18px;position:relative;
-  }
-  @media (min-width:600px){ .modal{ border-radius:16px } }
-  .modal-close{
-    position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;
-    border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:18px;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;
-  }
-  .modal-close:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-  .modal-body{
-    font-size:14.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;padding-right:6px;
-  }
-  .modal-body b{color:var(--ink);font-weight:700}
+/* Плотная таблица как на Бет-Базе: строка фильтров под шапкой, итог по отфильтрованным строкам сверху */
+:root{
+  /* Светлый «кассовый» лист: зелёная шапка, белые таблицы, золотой знак категории */
+  --bg:#f3f5f1; --panel:#ffffff; --ink:#16211b; --muted:#66746b; --line:#dce3dd;
+  --head:#18211c; --head-ink:#eef3ef; --brand:#0d1310; --gold:#7cc243; --hit:#2f8a57; --hit-ink:#ffffff; --hit-soft:#dcefe3;
+  --miss-soft:#f6e1de; --miss:#b23b2f; --accent:#d1a12c; --zebra:#f9fbfa;
+  --f-ui:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-ui);font-size:13px;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--brand)}
+.in{max-width:1500px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--brand);color:var(--head-ink)}
+header.site .in{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none}
+.logo{width:44px;height:44px;flex:none;display:block}
+.ck{flex:1 1 auto;text-align:center;font:800 34px/1 var(--f-ui);color:var(--gold);letter-spacing:.06em;user-select:none}
+.mark{display:grid;place-items:center;width:38px;height:38px;border-radius:8px;background:var(--gold);color:var(--brand);font:700 15px var(--f-num);letter-spacing:-.04em}
+.bt{display:flex;flex-direction:column;line-height:1.15}
+.bt b{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.bt small{font-size:12px;opacity:.75;letter-spacing:.04em;text-transform:uppercase}
+nav.menu{display:flex;flex-wrap:wrap;gap:4px}
+.mbtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.25);border-radius:6px;width:40px;height:36px;color:var(--head-ink);cursor:pointer;place-items:center}
+.mbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+@media (max-width:760px){
+  header.site .in{padding-block:8px;flex-wrap:wrap;column-gap:10px}
+  .brand{flex:1 1 0;min-width:0}
+  .bt{min-width:0}
+  .bt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .mbtn{flex:none}
+  .logo{width:34px;height:34px}
+  .bt b{font-size:16px}
+  .bt small{display:none}
+  header.site .in{position:relative}
+  .ck{position:absolute;left:50%;top:8px;height:36px;display:flex;align-items:center;transform:translateX(-50%);font-size:30px}
+  .mbtn{display:grid}
+  nav.menu{display:none;width:100%;flex-direction:column;gap:2px;padding-bottom:6px}
+  header.site.open nav.menu{display:flex}
+  nav.menu a{padding:10px 12px}
+  nav.menu a.tgbtn{align-self:flex-start;margin-top:4px}
+  .hero img{max-width:260px!important}
+}
+nav.menu a{color:var(--head-ink);text-decoration:none;font:600 14px var(--f-ui);padding:8px 12px;border-radius:6px;opacity:.85}
+nav.menu a:hover{opacity:1;background:rgba(255,255,255,.08)}
+nav.menu a[aria-current="page"]{opacity:1;background:rgba(255,255,255,.14);box-shadow:inset 0 -2px 0 var(--gold)}
+nav.menu a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.hero{background:#000;display:flex;justify-content:center;padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.hero img{display:block;width:100%;max-width:420px;height:auto}
+@media (min-width:700px){.hero img{width:auto;height:160px;max-width:none}}
+main .in{padding-block:16px 40px}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+footer .in{padding-block:16px 28px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.tg{width:16px;height:16px;fill:currentColor;flex:none}
+nav.menu a.tgbtn{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:var(--brand);opacity:1}
+nav.menu a.tgbtn:hover{background:#8fd357}
+.tgbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid #2a9fd8;border-radius:0;padding:9px 12px;margin:2px 0 12px;font-size:13.5px}
+.tgbar .tg{color:#2a9fd8}
+.tgbar a{color:var(--brand);font-weight:600;text-decoration:none;border-bottom:1px solid var(--line)}
+.tgbar a:hover{border-color:var(--brand)}
+footer a,.about a{color:var(--brand)}
+.about{max-width:68ch;font-size:15.5px;line-height:1.6}
+.about h2{font-size:24px;margin:8px 0 4px;text-wrap:balance}
+.about h3{font-size:17px;margin:26px 0 6px;color:var(--brand)}
+.about p{margin:0 0 10px}
+.about dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:6px 0 12px}
+.about dt{font:600 13px var(--f-num);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:2px 7px;align-self:start;white-space:nowrap}
+.about dd{margin:0}
+@media (max-width:560px){.about dl{grid-template-columns:1fr;gap:2px 0}.about dt{justify-self:start;margin-top:8px}}
+.about .lead{font-size:17px;color:var(--muted)}
+.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:10px}
+h1{font-size:20px;font-weight:700;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);font-size:12.5px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.tabs button{font:600 13px var(--f-ui);padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--head);color:var(--head-ink);border-color:var(--head)}
+.tabs button:focus-visible,.clear:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sum{display:flex;margin-left:auto}
+.tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:0 0 10px}
+.srch{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:0 8px;flex:1 1 240px;max-width:380px}
+.srch svg{width:16px;height:16px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;flex:none}
+.srch input{border:0;outline:0;background:transparent;font:500 14px var(--f-ui);padding:8px 0;width:100%;color:var(--ink)}
+.srch:focus-within{border-color:var(--hit)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--panel)}
+.seg button{font:600 13px var(--f-ui);padding:7px 10px;border:0;border-right:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--head);color:var(--head-ink)}
+.per{font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.per select{font:600 13px var(--f-ui);padding:5px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.pin{position:sticky;z-index:1}
+tbody td.pin{background:var(--panel)}
+tbody tr:nth-child(even) td.pin{background:var(--zebra)}
+thead th.pin,tfoot th.pin{z-index:4}
+td.pin.sh{box-shadow:4px 0 6px -4px rgba(0,0,0,.25)}
+.sum div{display:flex;flex-direction:column}
+.sum b{font:500 18px var(--f-num);font-variant-numeric:tabular-nums}
+.sum span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.sum .p{color:var(--hit)} .sum .n{color:var(--miss)}
+.clear{margin-left:auto;font:600 12.5px var(--f-ui);padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.note{color:var(--muted);font-size:12px;margin:0 0 8px;max-width:90ch}
+.wrap{overflow:auto;max-height:calc(100vh - 210px);min-height:320px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table{border-collapse:separate;border-spacing:0;width:max-content}
+thead tr.f th{max-width:0}
+thead tr.f input{width:calc(100% - 2px);min-width:40px}
+th,td{padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:center}
+thead th{position:sticky;background:var(--head);color:var(--head-ink);font-weight:600;font-size:12px;z-index:2}
+thead tr.h th{top:0;cursor:pointer;user-select:none}
+thead tr.f th{top:27px;padding:3px 3px;background:var(--head)}
+thead tr.h th[aria-sort="ascending"]::after{content:" ▲";font-size:9px}
+thead tr.h th[aria-sort="descending"]::after{content:" ▼";font-size:9px}
+thead input{width:100%;min-width:34px;max-width:100%;font:500 12px var(--f-num);padding:3px 4px;border-radius:4px;border:1px solid transparent;background:var(--panel);color:var(--ink)}
+tfoot th{position:sticky;bottom:0;background:var(--head);padding:3px 3px;z-index:2;max-width:0}
+tfoot input{width:calc(100% - 2px);min-width:40px;font:500 12px var(--f-num);padding:3px 4px;border-radius:4px;border:1px solid transparent;background:var(--panel);color:var(--ink)}
+tfoot input.on,tfoot select.on{background:var(--hit-soft);border-color:var(--hit)}
+tfoot select,thead select{width:100%;min-width:52px;font:500 12px var(--f-ui);padding:3px 2px;border-radius:4px;border:1px solid transparent;background:var(--panel);color:var(--ink)}
+thead select.on{background:var(--hit-soft);border-color:var(--hit)}
+thead input:focus,thead select:focus{outline:2px solid var(--accent);outline-offset:0}
+thead input.on{background:var(--hit-soft);border-color:var(--hit)}
+tbody tr:nth-child(even) td{background:var(--zebra)}
+td.num{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12.5px}
+td.txt{text-align:left}
+td.team{text-align:left;line-height:1.25}
+td.team small{display:block;color:var(--muted)}
+td.team strong{font-weight:700;color:var(--ink)}
+td.team .lt{font:600 11px var(--f-num);color:var(--accent)}
+.ln{line-height:1.45;white-space:nowrap}
+td.stk{font:500 12.5px var(--f-num);text-align:center}
+.tm{display:grid;grid-template-columns:20px minmax(150px,1fr) 70px 58px;align-items:center;gap:6px;line-height:1.35}
+.tm .nm{white-space:nowrap}
+.tm .mt{font:500 12px var(--f-num);text-align:right;color:var(--ink)}
+.tm .mt span{font:400 10px var(--f-ui);color:var(--muted)}
+.cat{display:inline-flex;justify-content:center;width:18px;height:18px;line-height:18px;border-radius:4px;font:700 11px var(--f-ui)}
+.cГ{background:var(--hit);color:#fff}.cС{background:var(--accent);color:#1d1600}.cА{background:#d63c2f;color:#fff}.c\?{background:transparent;color:var(--muted)}
+th .hl{display:block;font-weight:400;font-size:10px;opacity:.8}
+td.hit{background:var(--hit)!important;color:var(--hit-ink)}
+td.won{background:var(--hit-soft)!important;color:var(--hit);font-weight:600}
+td.lost{background:var(--miss-soft)!important;color:var(--miss);font-weight:600}
+td.sep{border-left:2px solid var(--line)}
+.pill{display:inline-block;font:600 11px var(--f-ui);padding:1px 6px;border-radius:9px;background:var(--line);color:var(--ink)}
+.pill.tv3{background:var(--head);color:var(--head-ink)}
+.pager{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:10px;color:var(--muted);font-size:12.5px}
+.pager button{font:600 13px var(--f-ui);min-width:40px;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.pager button[disabled]{opacity:.4;cursor:default}
+.pager{justify-content:center}
+.pager .rec{width:100%;text-align:center}
+.pager .pn{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px}
+.pager button[aria-current]{background:var(--head);color:var(--head-ink);border-color:var(--head)}
+.km{font:600 12px var(--f-num);padding:5px 8px;margin:0 2px;border-radius:4px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.km:active{background:var(--hit-soft)}
+.acts{display:flex;justify-content:center;margin-top:12px}
+.acts .clear{margin:0;padding:10px 18px;font-size:14px}
+td.tapk{cursor:pointer}
+.sct,.tg{cursor:pointer;border-radius:3px;padding:1px 2px}
+.tg:hover{outline:1px solid var(--gold)}
+.sct:hover{outline:1px solid var(--gold)}
+.sct.ht{color:var(--muted)}
+.acts{gap:8px}
+.clear.primary{background:var(--brand);color:var(--head-ink);border-color:var(--brand)}
+.mkp{max-width:640px;margin:12px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.mkrow{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.mkrow label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);flex:1 1 180px}
+.mkrow input,.mkrow select{font:500 14px var(--f-ui);padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+.mkerr{margin:0;color:var(--miss);font-size:13px}
+.mkchips,.chips{display:flex;flex-wrap:wrap;gap:4px 6px}
+.chip{display:inline-block;background:#fff3b0;color:#3d3200;border-radius:4px;padding:2px 7px;font:500 12.5px var(--f-ui);white-space:nowrap}
+.toast{text-align:center;color:var(--hit);font-weight:600;margin:10px 0 0}
+.fw{max-height:none;min-height:0}
+table.lt2{width:100%}
+table.lt2 td{text-align:left;white-space:normal;vertical-align:middle}
+table.lt2 td.c{text-align:center;white-space:nowrap}
+.ico{border:1px solid var(--line);background:var(--bg);border-radius:6px;width:34px;height:30px;cursor:pointer;display:inline-grid;place-items:center;margin-right:4px;color:var(--ink)}
+.ico svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ico.warn{background:var(--miss-soft);color:var(--miss);width:auto;padding:0 8px;font:600 12px var(--f-ui)}
+.fname{font-weight:700;color:var(--brand);cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;background:none;border:0;padding:0;font:inherit}
+.chk{display:inline-flex;gap:6px;align-items:center;margin:0 0 10px;font-size:13.5px}
+tr.flg td:first-child{background:#ffe680!important;box-shadow:inset 3px 0 0 #d4a900}
+.lt2 b.p{color:var(--hit)} .lt2 b.n{color:var(--miss)}
+.emptyx{padding:22px;text-align:center;color:var(--muted)}
+td.tapk:hover{outline:1px solid var(--gold);outline-offset:-1px}
+td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underline-offset:3px}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+@media (max-width:600px){ .wrap{max-height:none} h1{font-size:18px} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<div class="wrap">
-
-  <nav class="langs" id="langs" aria-label="Язык"></nav>
-
-  <header>
-    <h1 id="brand"></h1>
-    <p class="sub" id="sub"></p>
-    <p class="tagline" id="tagline"></p>
-    <p class="meta" id="meta"></p>
-  </header>
-
-  <a class="baza" id="baza" href="base/">
-    <span class="bz-ic" aria-hidden="true">📊</span>
-    <span class="bz-tx"><b id="baza-t"></b><span id="baza-s"></span></span>
-    <span class="bz-ar" aria-hidden="true">→</span>
-  </a>
-
-  <nav class="sports" id="sports" aria-label="Спорт"></nav>
-
-  <div class="hero">
-    <p class="cap" id="cap"></p>
-    <p class="num" id="bank">—</p>
-    <p class="from" id="from"></p>
-    <div class="spark" id="spark"></div>
-    <div class="row" id="hrow"></div>
-    <p class="subrow" id="subrow"></p>
-  </div>
-
-  <section class="stats-card">
-    <h2 id="stats-title"></h2>
-    <div class="stats-grid" id="stats-grid"></div>
-  </section>
-
-  <section id="live-sec">
-    <h2 id="live-title"></h2>
-    <div class="stack" id="live"></div>
-  </section>
-
-  <section id="d1-sec">
-    <h2 id="d1-title"></h2>
-    <div class="dayhead" id="d1sum"></div>
-    <div class="stack" id="d1"></div>
-  </section>
-
-  <section id="d2-sec">
-    <h2 id="d2-title"></h2>
-    <div class="dayhead" id="d2sum"></div>
-    <div class="stack" id="d2"></div>
-  </section>
-
-  <div class="honest" id="honest"></div>
-
-  <details id="how">
-    <summary id="how-title"></summary>
-    <div id="how-body"></div>
-  </details>
-
-  <section>
-    <h2 id="feed-title"></h2>
-    <div class="stack" id="feed"></div>
-  </section>
-
-  <footer id="stamp"></footer>
+<header class="site"><div class="in">
+  <a class="brand" href="#baza" aria-label="База Честного Коэффициента"><svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect x="1" y="1" width="46" height="46" rx="11" fill="#7cc243"/><rect x="4.5" y="4.5" width="39" height="39" rx="8" fill="none" stroke="#0d1310" stroke-opacity=".25" stroke-width="1"/><g fill="none" stroke="#0d1310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 11v25M16 38h16M11 16h26"/><path d="M14 16l-5 10M14 16l5 10M34 16l-5 10M34 16l5 10"/></g><g fill="#0d1310"><path d="M8 26h12a6 4 0 0 1-12 0Z"/><path d="M28 26h12a6 4 0 0 1-12 0Z"/><circle cx="24" cy="11" r="2.6"/></g></svg></a>
+  <span class="ck" aria-hidden="true">ЧК</span>
+  <button type="button" class="mbtn" id="mbtn" aria-label="Меню" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <nav class="menu" aria-label="Разделы">
+    <a href="#baza" data-sec="baza">База</a>
+    <a href="#filters" data-sec="filters">Фильтры</a>
+    <a href="#combo" data-sec="combo">Комбо фильтр</a>
+    <a href="https://fairodds.github.io/journal/" target="_blank" rel="noopener">Журнал Fair Odds ↗</a>
+    <a href="#about" data-sec="about">Как читать</a>
+    <a class="tgbtn" href="https://t.me/chesnyi_koef_channel" target="_blank" rel="noopener"><svg class="tg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.2 1.3-.2 1.6l4.8 1.5 1.8 5.6c.2.7.4.9.9.9s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.8-.8l3.2-15.1c.3-1.3-.5-1.9-1.8-1.7Zm-3.7 3.6-8.4 7.6-.3 3.4-1.5-4.7 9.7-6.1c.4-.3.8 0 .5-.2Z"/></svg>Telegram</a>
+  </nav>
+</div></header>
+<div class="hero"><img src="logo-banner.jpg" alt="Честный коэффициент. Статистика. Анализ. Справедливость." width="854" height="582"></div>
+<main>
+<section id="v-baza"><div class="in">
+<div class="top">
+  <h1>База карточек</h1>
+  <span class="sub" id="stamp">Загрузка базы…</span>
 </div>
-
-<div class="modal-backdrop" id="modalBackdrop" hidden>
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Карточка сигнала">
-    <button type="button" class="modal-close" id="modalClose" aria-label="Закрыть">✕</button>
-    <div class="modal-body" id="modalBody"></div>
-  </div>
+<div class="tgbar"><svg class="tg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.2 1.3-.2 1.6l4.8 1.5 1.8 5.6c.2.7.4.9.9.9s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.8-.8l3.2-15.1c.3-1.3-.5-1.9-1.8-1.7Zm-3.7 3.6-8.4 7.6-.3 3.4-1.5-4.7 9.7-6.1c.4-.3.8 0 .5-.2Z"/></svg><span>Карточки выходят в Telegram до начала матча:</span><a href="https://t.me/chesnyi_koef_channel" target="_blank" rel="noopener">Футбол · @chesnyi_koef_channel</a><a href="https://t.me/chesnyi_koef_basketball" target="_blank" rel="noopener">Баскетбол · @chesnyi_koef_basketball</a></div>
+<div class="tabs" id="tabs" role="group" aria-label="Набор карточек"></div>
+<div class="tools">
+  <label class="srch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" type="search" placeholder="Поиск: команда, чемпионат, дата" autocomplete="off" aria-label="Поиск"></label>
+  <div class="seg" id="dq" role="group" aria-label="Даты"><button type="button" data-d="all" aria-pressed="true">Все</button><button type="button" data-d="y">Вчера</button><button type="button" data-d="t">Сегодня</button><button type="button" data-d="m">Завтра</button></div>
+  <label class="per">Показать <select id="per"><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="0">Все</option></select> записей</label>
+  <button type="button" class="clear" id="tgm" aria-expanded="false">Модель · Аналитика · H2H ▾</button>
+  <div class="sum" id="sum"></div>
 </div>
+<div class="wrap" id="wrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+<div class="pager" id="pager"></div>
+<div class="acts"><button type="button" class="clear" id="clrk">Очистить кф</button><button type="button" class="clear" id="mkf">Создать фильтр</button></div>
+<form class="mkp" id="mkp" hidden>
+  <div class="mkchips" id="mkchips"></div>
+  <div class="mkrow">
+    <label>Название<input id="mkname" maxlength="40" autocomplete="off" placeholder="Например: Х 3.4 Хорватия"></label>
+    <label>Ставка<select id="mkbet"><option value="p1">П1</option><option value="x">Х</option><option value="p2">П2</option><option value="f1">Ф1(0)</option><option value="f2">Ф2(0)</option><option value="tm">ТМ2.5</option><option value="tb">ТБ2.5</option><option value="oz">ОЗ-да</option></select></label>
+  </div>
+  <p class="mkerr" id="mkerr" hidden></p>
+  <div class="mkrow"><button type="submit" class="clear primary">Сохранить</button><button type="button" class="clear" id="mkcancel">Отмена</button></div>
+</form>
+<p class="toast" id="toast" hidden></p>
+</div></section>
+<section id="v-filters" hidden><div class="in">
+  <div class="top"><h1>Мои фильтры</h1><span class="sub">Сохраняются в этом браузере. Настройте фильтр в «Базе» и нажмите «Создать фильтр».</span></div>
+  <div class="wrap fw"><table class="lt2"><thead><tr><th>Название</th><th>Действие</th><th>Значения</th><th>Вкладка</th><th>Матчей</th><th>Ставка</th></tr></thead><tbody id="ftb"></tbody></table></div>
+</div></section>
+<section id="v-combo" hidden><div class="in">
+  <div class="top"><h1>Комбо фильтр</h1><span class="sub">Матчи, которые подходят под ваши сохранённые фильтры.</span></div>
+  <label class="chk"><input type="checkbox" id="cplayed"> Показывать и сыгранные</label>
+  <div class="wrap fw"><table class="lt2"><thead><tr><th>Фильтр</th><th>ДН</th><th>Чемпионат</th><th>Дата</th><th>Счёт</th><th>Пари</th><th>Ставка</th></tr></thead><tbody id="ctb"></tbody></table></div>
+  <p class="sub" id="cnote"></p>
+</div></section>
+<section id="v-about" hidden><div class="in"><article class="about"><h2>Как читать базу</h2>
+<p class="lead">Здесь собраны все карточки, которые агент «Честный коэффициент» выпустил в канал до начала матча. Ничего не удаляется и не правится задним числом: выигрыши и проигрыши лежат рядом.</p>
+
+<h3>Разделы сайта</h3>
+<dl>
+  <dt>База</dt><dd>Таблица всех карточек агента с фильтрами, как на Бет-Базе. Разбита на вкладки по видам ставок.</dd>
+  <dt>Фильтры</dt><dd>Ваши сохранённые фильтры: значения, сколько матчей под них подходит и выбранная ставка. Хранятся только в вашем браузере.</dd>
+  <dt>Комбо фильтр</dt><dd>Несыгранные матчи, которые подходят под ваши сохранённые фильтры. Можно включить и сыгранные, чтобы посмотреть историю.</dd>
+  <dt>Журнал</dt><dd>Журнал Fair Odds: открытый учёт ставок, у каждой стратегии свой банк. Открывается на отдельном сайте.</dd>
+  <dt>Как читать</dt><dd>Эта страница с пояснениями.</dd>
+  <dt>Telegram</dt><dd>Каналы, куда карточки выходят до начала матча.</dd>
+</dl>
+
+<h3>Вкладки базы</h3>
+<dl>
+  <dt>Футбол — все</dt><dd>Все футбольные карточки стратегий ТВ и «Расхождение» вместе. Та же выборка, что в ежедневном отчёте агента в канале.</dd>
+  <dt>ТВ футбол</dt><dd>Только карточки «Теории вероятности». Ставка на исход, с которым согласились 2 или 3 метода агента.</dd>
+  <dt>Расхождение</dt><dd>Карточки, где агент видит фаворита не там, где его ставит букмекер. Ставка на команду, которую букмекер недооценивает.</dd>
+  <dt>Баскетбол</dt><dd>Карточки ТВ по баскетболу: П1 и П2, основной тотал (линия, ТМ, ТБ) и основная фора (линия на хозяев, Ф1, Ф2). Основная линия — та, где кэфы ближе всего к 2.00.</dd>
+  <dt>📚 Правила лиг</dt><dd>Ставки по правилам чемпионатов: рынок и коридор кэфа, которые давали плюс в истории этой лиги. Своя колонка «Правило».</dd>
+  <dt>🔎 Мягкий коридор</dt><dd>Ставки по коридорам кэфов из большой базы матчей всех лиг. Свои колонки «Большой кор.» и «Узкий кор.».</dd>
+</dl>
+<p>У каждой вкладки свои колонки: то, чего у стратегии нет, на её вкладке не показывается.</p>
+
+<h3>Что такое карточка</h3>
+<p>Агент каждый день сканирует линию и сравнивает кэф букмекера со своей оценкой силы команд. Когда оценки расходятся, он выпускает карточку со ставкой на исход: П1 или П2.</p>
+<dl>
+  <dt>ТВ</dt><dd>Основная стратегия «Теория вероятности». Голоса 2/3 или 3/3 показывают, сколько независимых методов согласились со ставкой.</dd>
+  <dt>Расх</dt><dd>«Расхождение»: агент видит фаворита не там, где его ставит букмекер.</dd>
+</dl>
+
+<h3>Колонки таблицы</h3>
+<dl>
+  <dt>ДН</dt><dd>День недели. Под заголовком можно выбрать один день, как на Бет-Базе.</dd>
+  <dt>Счёт</dt><dd>Итоговый счёт, в скобках счёт первого тайма.</dd>
+  <dt>Пари</dt><dd>Хозяева сверху, гости снизу. Жирным выделена команда, на которую была ставка.</dd>
+  <dt>Кат</dt><dd>Категория команды по рейтингу за 10 сезонов: Г гранд, С середняк, А аутсайдер.</dd>
+  <dt>Рейт</dt><dd>Рейтинг за 10 сезонов. Чем меньше число, тем сильнее команда.</dd>
+  <dt>Место</dt><dd>Место в турнирной таблице на момент карточки.</dd>
+  <dt>П1 Х П2</dt><dd>Кэфы на исход. Зелёная клетка значит, что этот исход зашёл.</dd>
+  <dt>Ф1(0) Ф2(0)</dt><dd>Фора 0 на хозяев и на гостей.</dd>
+  <dt>ТМ ТБ 2.5</dt><dd>Тотал меньше и больше 2.5 гола.</dd>
+  <dt>ОЗ-Да</dt><dd>Обе забьют.</dd>
+  <dt>Мод. Ан. H2H</dt><dd>Честные кэфы агента по модели, по аналитике и по очным встречам.</dd>
+  <dt>Ставка</dt><dd>Исход, на который была карточка: ✓ зашла, ✕ не зашла, … матч ещё не сыгран.</dd>
+</dl>
+
+<h3>Правила лиг и Мягкий коридор</h3>
+<p>Это две отдельные стратегии агента со своими вкладками. Они ставят не только на П1 и П2, но и на ничью, фору 0 и тоталы.</p>
+<dl>
+  <dt>📚 Правила</dt><dd>Правило найдено по истории чемпионата за 2018–2026 и проверено на свежих сезонах. Колонка «Правило» показывает рынок и коридор кэфа, например «Х 3.40–4.00».</dd>
+  <dt>🔎 Мягкий</dt><dd>Коридоры по всей базе матчей вокруг кэфов этого матча. «Большой кор.» и «Узкий кор.» показывают число матчей в коридоре и ROI по кэфу матча.</dd>
+  <dt>↩</dt><dd>Возврат: ставка на фору 0 при ничьей.</dd>
+</dl>
+
+<h3>Фильтры</h3>
+<p>Фильтр стоит под каждой колонкой, сверху и снизу таблицы. Для кэфов вписывается начало числа: «2.» найдёт всё от 2.00 до 2.99, «2.1» найдёт от 2.10 до 2.19. Нажатие на название чемпионата оставляет только его матчи. «Очистить кф» убирает фильтры по кэфам и оставляет остальные.</p>
+
+<h3>Как сохранить фильтр</h3>
+<p>Задайте фильтры в таблице: кэфы, день, чемпионат. Нажмите «Создать фильтр» под таблицей, дайте название и выберите ставку. Матчи, которые подходят под сохранённые фильтры, подсвечиваются жёлтым в колонке ДН.</p>
+
+<h3>Коридор и мат-модель</h3>
+<dl>
+  <dt>К</dt><dd>Коридор. Карточки, где П1, Х и П2 совпадают с этим матчем до второй цифры, во всех чемпионатах.</dd>
+  <dt>М</dt><dd>Мат-модель. Карточки из того же чемпионата, где все рынки совпадают по первой цифре.</dd>
+</dl>
+<p>Число на кнопке показывает, сколько таких карточек в базе. Пока база молодая, коридоры маленькие. Они растут вместе с ней.</p>
+
+<h3>Где смотреть карточки</h3>
+<p>Каждая карточка сначала выходит в Telegram, до начала матча, и только потом попадает в базу. Футбол: <a href="https://t.me/chesnyi_koef_channel" target="_blank" rel="noopener">@chesnyi_koef_channel</a>. Баскетбол: <a href="https://t.me/chesnyi_koef_basketball" target="_blank" rel="noopener">@chesnyi_koef_basketball</a>.</p>
+
+<h3>Как пополняется база</h3>
+<p>Агент записывает кэфы в момент выпуска карточки, после матча дописывает счёт, а каждую ночь выкладывает обновлённую базу на сайт.</p>
+</article></div></section>
+</main>
+<footer><div class="in"><span>Честный коэффициент · открытая база карточек агента</span><span class="fl">Telegram: <a href="https://t.me/chesnyi_koef_channel" target="_blank" rel="noopener">@chesnyi_koef_channel</a> · <a href="https://t.me/chesnyi_koef_basketball" target="_blank" rel="noopener">@chesnyi_koef_basketball</a></span><span id="fstamp"></span></div></footer>
 
 <script>
-/* ---------- языки ---------- */
-const LANGS = [ ['ru','RU'], ['en','EN'] ];
+let DATA = [];
 
-/* ---------- виды спорта ---------- */
-/* ИЗМЕНЕНО 13.10: вид «Все» убран, добавлен «Читаем кф» — у каждого вида свой банк */
-/* ИЗМЕНЕНО 23.10.26: добавлены «Правила лиг» и «Мягкий коридор» — у каждого свой банк */
-const SPORTS = [ ['football','sportFootball'], ['basketball','sportBasketball'], ['readodds','sportReadOdds'], ['supersignal','sportSuper'], ['rules','sportRules'], ['soft','sportSoft'] ];
+const VIEWS = [
+  ['fall', 'Футбол — все (как в отчёте)', r => r.sp === 'f'],
+  ['tvf', 'ТВ футбол', r => r.sp === 'f' && (r.ty === 'ТВ' || r.ty === 'ТВ*')],
+  ['rxf', 'Расхождение футбол', r => r.sp === 'f' && (r.ty === 'Расх' || r.ty === 'Расх*')],
+  ['bsk', 'Баскетбол', r => r.sp === 'b'],
+  ['lr', '📚 Правила лиг', r => r.sp === 'r'],
+  ['sc', '🔎 Мягкий коридор', r => r.sp === 's'],
+];
 
-const T = {
-ru:{brand:'Честный коэффициент', sub:'Открытый журнал ставок',
- tag:'Каждая ставка опубликована до начала матча. Ничего не дописано после.',
- bank:'Банк', from:'со 100 единиц, с {d}',
- bets:'Ставки', profit:'Прибыль', roi:'ROI',
- hitrow:'{pct}% точность ({wins} из {n})',
- live:'Сейчас в игре', nolive:'Открытых ставок нет',
- bet:'Ставка', dayb:'{n} {w}', dwon:'выиграно',
- feed:'Последние ставки', upd:'Обновлено {d}', updtop:'Данные на {d}',
- src:'Источник: автоматический журнал бота · обновление каждую ночь в 03:10',
- honest:'<b>Честно о цифре сверху.</b> {n} ставок — это ещё мало. Такой плюс пока может быть и от метода, и от везения: отличить одно от другого можно примерно с 300–500 ставок. Поэтому здесь показано всё подряд, вместе с плохими днями, и эта строка отсюда не исчезнет, пока выборка не вырастет.',
- how:'Метод', tapHint:'Нажмите на матч, чтобы открыть сообщение в Telegram',
- h1:'<b>Банк</b> — условный счёт, который начался со 100. На каждую ставку идёт ровно одна единица, всегда одинаково — это называется флет. Зашла ставка на 2.30 — банк вырос на 1.30, не зашла — упал на 1.',
- h2:'<b>Коэффициент</b> рядом со ставкой — тот, что стоял у букмекера в момент публикации, а не тот, что был потом.',
- h3:'<b>Почему заходит примерно половина.</b> Это нормально и даже хорошо, потому что ставки берутся по высокой цене. Сорок процентов попаданий при коэффициенте 2.8 дают плюс, а пятьдесят при 1.9 — минус. Смотреть надо на банк, а не на процент.',
- h4:'<b>Откуда берутся ставки.</b> Бот считает собственную справедливую цену матча по рейтингу команд, форме и личным встречам. Когда она сильно расходится с ценой букмекера — появляется сигнал.',
- plural:['ставка','ставки','ставок'],
- sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол', sportReadOdds:'📐 Читаем кф', sportSuper:'🎯 Суперсигнал',
- sportRules:'📚 Правила лиг', sportSoft:'🔎 Мягкий коридор',
- h3ru:'<b>Почему процент попаданий разный.</b> Правила играют на разные рынки: ничьи с кэфом 3–4 заходят примерно в трети случаев, победы фаворита с кэфом 1.4–1.6 — в трёх из четырёх. Плюс даёт сочетание цены и частоты, поэтому смотреть надо на банк, а не на процент. Фора 0 при ничьей — возврат ставки.',
- h4ru:'<b>Откуда берутся ставки.</b> По истории 2018–2026 найдены лиги, где один рынок в узком диапазоне кэфа стабильно давал плюс — например, ничья в Египте при кэфе 2.80–3.30. Правила искали на старых годах и проверяли на свежих. Сейчас их 13, таблица заморожена: бот ставит, когда кэф матча попадает в диапазон правила.',
- h3sc:'<b>Почему процент попаданий разный.</b> Ставка идёт на тот рынок, который в похожих матчах прошлого был в плюсе по цене этого матча, — это может быть и ничья, и тотал, и фора. Смотреть надо на банк, а не на процент. Фора 0 при ничьей — возврат ставки.',
- h4sc:'<b>Откуда берутся ставки.</b> Для каждого матча бот находит в базе 2018–2026 (около 124 тысяч игр) матчи с похожими кэфами — «коридор» — и смотрит, какой рынок в них заходил чаще, чем закладывает цена букмекера. Ставка — только если коридор подтверждается и в широком, и в узком варианте.',
- push:'возврат',
- h4ss:'<b>Откуда берутся ставки.</b> Суперсигнал появляется, когда две независимые стратегии бота — «Стратегия ТВ» и «Читаем коэффициенты» — называют одну и ту же команду.',
- h3ro:'<b>Почему заходит больше половины.</b> Здесь ставка всегда на фаворита букмекера со средним кэфом около 1.9, поэтому для плюса попадать нужно чаще, чем в половине случаев. Смотреть надо на банк, а не на процент.',
- h4ro:'<b>Откуда берутся ставки.</b> Бот считает собственную цену матча по месту команд в таблице и форме последних матчей. Ставка идёт на фаворита букмекера с кэфом от 1.49 до 2.30 — когда самое сильное расхождение между ценой бота и букмекера приходится именно на этого фаворита.',
- bazaT:'База карточек', bazaS:'Все карточки агента с кэфами и результатами, с фильтрами',
- statsTitle:'Статистика системы',
- avgOdd:'Средний кэф', avgOddWins:'Средний кэф побед', maxDD:'Макс. просадка',
- bestStreak:'Лучшая серия побед', worstStreak:'Худшая серия', curStreak:'Текущая серия',
- na:'—', units:'ед.'},
-
-en:{brand:'Fair Odds', sub:'Open betting record',
- tag:'Every pick is published before the match starts. Nothing is added after.',
- bank:'Bankroll', from:'from 100 units, since {d}',
- bets:'Bets', profit:'Profit', roi:'ROI',
- hitrow:'{pct}% win rate ({wins} of {n})',
- live:'Live Bets', nolive:'No open bets',
- bet:'Pick', dayb:'{n} {w}', dwon:'won',
- feed:'Recent Bets', upd:'Last updated {d}', updtop:'Data as of {d}',
- src:'Source: the bot’s automatic record · updated nightly at 03:10',
- honest:'<b>Honestly about the number above.</b> {n} bets is still a small sample. This profit could come from the method or from luck — telling them apart takes roughly 300–500 bets. That is why everything is shown here, losing days included, and this line stays until the sample grows.',
- how:'Method', tapHint:'Tap a match to open the original Telegram message',
- h1:'<b>Bankroll</b> is a notional account that started at 100. Every bet stakes exactly one unit, always the same — a flat stake. A winning bet at 2.30 adds 1.30; a losing one subtracts 1.',
- h2:'<b>The odds</b> next to a bet are the ones the bookmaker showed at the moment of publication, not later.',
- h3:'<b>Why only about half win.</b> That is normal and even good, because the bets are taken at high prices. Forty percent at odds of 2.8 is a profit; fifty percent at 1.9 is a loss. Watch the bankroll, not the percentage.',
- h4:'<b>Where the bets come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker’s, a signal appears.',
- plural:['bet','bets','bets'],
- sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball', sportReadOdds:'📐 Odds reading', sportSuper:'🎯 Supersignal',
- sportRules:'📚 League rules', sportSoft:'🔎 Soft corridor',
- h3ru:'<b>Why the win rate varies.</b> The rules play different markets: draws at odds 3–4 land about a third of the time, a favourite at 1.4–1.6 three times out of four. Profit comes from price and frequency together, so watch the bankroll, not the percentage. Draw-no-bet is refunded on a draw.',
- h4ru:'<b>Where the bets come from.</b> In 2018–2026 data we found leagues where one market in a narrow odds band was steadily profitable — for example, the draw in Egypt at odds 2.80–3.30. The rules were found on older seasons and checked on recent ones. There are 13 of them and the table is frozen: the bot bets when a match falls into a rule’s odds band.',
- h3sc:'<b>Why the win rate varies.</b> The pick is whichever market was profitable at this match’s price in similar past matches — a draw, a total or a draw-no-bet. Watch the bankroll, not the percentage. Draw-no-bet is refunded on a draw.',
- h4sc:'<b>Where the bets come from.</b> For each match the bot finds games with similar odds in a 2018–2026 database of about 124,000 matches — a “corridor” — and checks which market landed more often than the bookmaker’s price implies. A bet is made only when both the wide and the narrow corridor agree.',
- push:'refund',
- h4ss:'<b>Where the bets come from.</b> A supersignal appears when two independent strategies of the bot — the TV strategy and Odds reading — pick the same team.',
- h3ro:'<b>Why more than half win.</b> Here the pick is always the bookmaker’s favourite at average odds of about 1.9, so a profit needs a win rate above one half. Watch the bankroll, not the percentage.',
- h4ro:'<b>Where the bets come from.</b> The bot works out its own price for a match from the teams’ league positions and recent form. The pick is the bookmaker’s favourite at odds from 1.49 to 2.30 — when the biggest gap between the bot’s price and the bookmaker’s falls on that favourite.',
- bazaT:'Card database', bazaS:'Every card the agent published, with odds and results — filterable',
- statsTitle:'System Stats',
- avgOdd:'Average odds', avgOddWins:'Average odds (wins)', maxDD:'Max drawdown',
- bestStreak:'Best win streak', worstStreak:'Worst streak', curStreak:'Current streak',
- na:'—', units:'u.'}
+/* результат матча для подсветки рынков */
+function goals(r){
+  if (!r.sc) return null;
+  const m = String(r.sc).match(/(\d+)\s*[-:]\s*(\d+)/); if (!m) return null;
+  return [+m[1], +m[2]];
+}
+const HIT = {
+  p1: g => g[0] > g[1], x: g => g[0] === g[1], p2: g => g[1] > g[0],
+  f1: g => g[0] > g[1], f2: g => g[1] > g[0], tm: g => g[0] + g[1] < 3, tb: g => g[0] + g[1] > 2, oz: g => g[0] > 0 && g[1] > 0,
+  btm: (g, r) => r.btl != null && g[0] + g[1] < r.btl, btb: (g, r) => r.btl != null && g[0] + g[1] > r.btl,
+  bf1: (g, r) => r.bfl != null && g[0] + r.bfl > g[1], bf2: (g, r) => r.bfl != null && g[1] - r.bfl > g[0]
 };
 
-/* человеческие названия — то, как API их отдаёт, никогда не показывается как есть */
-const LG = {
- 'WNBA':['WNBA','WNBA'],
- 'Ісландія':['Исландия','Icelandic Premier League'],
- 'Іспанія. Сегунда':['Испания, Сегунда','Spanish Segunda División'],
- 'Італія. Серія Б':['Италия, Серия B','Italian Serie B'],
- 'Австрія 2 ліга':['Австрия, 2. Лига','Austrian 2. Liga'],
- 'Азербайджан':['Азербайджан','Azerbaijan Premier League'],
- 'Англія. Ліга 1':['Англия, Лига 1','English League One'],
- 'Англія. Ліга 2':['Англия, Лига 2','English League Two'],
- "Англія. Прем'єр-ліга":['Англия, Премьер-лига','English Premier League'],
- 'Бразилія Серія B':['Бразилия, Серия B','Brazilian Série B'],
- 'Бразилія. Серія А':['Бразилия, Серия A','Brazilian Série A'],
- 'Данія 2 ліга':['Дания, 1-й дивизион','Danish 1st Division'],
- 'Нідерланди':['Нидерланды','Dutch Eredivisie'],
- 'Південна Корея К Ліга 2':['Южная Корея, К Лига 2','K League 2'],
- 'Румунія':['Румыния','Romanian Superliga'],
- 'Сербія':['Сербия','Serbian SuperLiga'],
- 'Туреччина':['Турция','Turkish Süper Lig'],
- 'Туреччина. TFF 1. Лiг':['Турция, TFF 1. Lig','Turkish First League'],
- 'Хорватія':['Хорватия','Croatian HNL'],
- 'Єгипет':['Египет','Egyptian Premier League'], 'Польща':['Польша','Polish Ekstraklasa'],
- 'Італія':['Италия, Серия A','Italian Serie A'], 'Китай':['Китай','Chinese Super League'],
- 'Іспанія':['Испания, Ла Лига','Spanish La Liga'], 'Німеччина':['Германия, Бундеслига','German Bundesliga'],
- 'Норвегія 1 дивізіон':['Норвегия, 1-й дивизион','Norwegian 1. divisjon'],
- 'Швейцарія. Суперліга':['Швейцария, Суперлига','Swiss Super League'],
- 'Швейцарія. Челлендж-ліга':['Швейцария, Челлендж-лига','Swiss Challenge League']
-};
+const RT = v => v == null ? '' : ' ' + Number(v).toFixed(1);
+const PL = v => v == null ? '' : ', ' + v + ' м.';
+const TEAM = (n, bet, cat, rt, pl) => { const L = LET(cat); return `<div class="tm"><span class="cat c${L}" title="${cat || ''}">${L}</span><span class="nm">${bet ? '<strong>' + esc(n) + '</strong>' : esc(n)}</span><span class="mt"><span>рейт</span> ${rt == null ? '—' : Number(rt).toFixed(1)}</span><span class="mt"><span>место</span> ${pl == null ? '—' : pl}</span></div>`; };
+const R1 = v => v == null ? '—' : Number(v).toFixed(1);
+const CAT = c => { const L = LET(c); return `<span class="cat c${L}" title="${c || ''}">${L}</span>`; };
+const MK = {p1:'П1', x:'Х', p2:'П2', f1:'Ф1(0)', f2:'Ф2(0)', tm:'ТМ2.5', tb:'ТБ2.5', oz:'ОЗ-Да'};
+const RULE = v => { if (!v) return ''; const m = String(v).match(/^(\w+)\s+([\d.]+)-([\d.]+)$/); return m ? `${MK[m[1]] || m[1]} ${m[2]}–${m[3]}` : v; };
+const COR = (n, roi) => n == null ? '—' : `${n} · ${roi > 0 ? '+' : ''}${Number(roi).toFixed(1)}%`;
+const LET = c => ({'гранд':'Г','середняк':'С','аутсайдер':'А'})[c] || '?';
+const f2 = v => v == null ? '' : Number(v).toFixed(2);
+const COLS = [
+  {k:'dn', l:'ДН', t:'txt', sel:['пн','вт','ср','чт','пт','сб','вс']},
+  {k:'ch', l:'Чемпионат', t:'txt'},
+  {k:'dt', l:'Дата', t:'txt', sort:'ts', get: r => String(r.dt).replace(/^(\d\d\.\d\d)\.\d\d/, '$1')},
+  {k:'sc', l:'Счёт', t:'txt', get: r => r.sc ? String(r.sc).replace(/\s*-\s*/, ':') + (r.h1 ? ' (' + String(r.h1).replace(/\s*-\s*/, ':') + ')' : '') : ''},
+  {k:'pair', l:'Пари', t:'team', get: r => r.h + ' ' + r.a},
+  {k:'kc', hide:['lr','sc'], l:'Кат', lh:'<small class="hl">Г·С·А</small>', t:'stk', stack:[r => CAT(r.ch_), r => CAT(r.ca)], get: r => LET(r.ch_) + ' ' + LET(r.ca)},
+  {k:'kr', hide:['lr','sc'], l:'Рейт', t:'stk', stack:[r => R1(r.rh), r => R1(r.ra)], get: r => R1(r.rh) + ' ' + R1(r.ra)},
+  {k:'kp', hide:['lr','sc'], l:'Место', t:'stk', stack:[r => r.ph == null ? '—' : r.ph, r => r.pa == null ? '—' : r.pa], get: r => r.ph + ' ' + r.pa},
+  {k:'p1', l:'П1', t:'num', f:f2, hit:'p1', sep:true},
+  {k:'x', l:'Х', t:'num', f:f2, hit:'x', hide:['bsk']},
+  {k:'p2', l:'П2', t:'num', f:f2, hit:'p2'},
+  {k:'f1', hide:['lr','sc'], l:'Ф1(0)', t:'num', f:f2, hit:'f1'},
+  {k:'f2', hide:['lr','sc'], l:'Ф2(0)', t:'num', f:f2, hit:'f2'},
+  {k:'tm', hide:['lr','sc'], l:'ТМ2.5', t:'num', f:f2, hit:'tm'},
+  {k:'tb', hide:['lr','sc'], l:'ТБ2.5', t:'num', f:f2, hit:'tb'},
+  {k:'oz', hide:['lr','sc'], l:'ОЗ-Да', t:'num', f:f2, hit:'oz'},
+  {k:'mg', hide:['lr','sc'], l:'Маржа', t:'num', f:f2},
+  {k:'btl', only:['bsk'], l:'Тотал', t:'num', sep:true, f: v => v == null ? '' : String(v)},
+  {k:'btm', only:['bsk'], l:'ТМ', t:'num', f:f2, hit:'btm'},
+  {k:'btb', only:['bsk'], l:'ТБ', t:'num', f:f2, hit:'btb'},
+  {k:'bfl', only:['bsk'], l:'Фора 1', t:'num', sep:true, f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
+  {k:'bf1', only:['bsk'], l:'Ф1', t:'num', f:f2, hit:'bf1'},
+  {k:'bf2', only:['bsk'], l:'Ф2', t:'num', f:f2, hit:'bf2'},
+  {k:'vo', hide:['lr','sc'], l:'ТВ', t:'txt', sep:true},
+  {k:'m1', hide:['lr','sc'], l:'Мод.П1', t:'num', f:f2, sep:true},
+  {k:'m2', hide:['lr','sc'], l:'Мод.П2', t:'num', f:f2},
+  {k:'a1', hide:['lr','sc'], l:'Ан.П1', t:'num', f:f2},
+  {k:'a2', hide:['lr','sc'], l:'Ан.П2', t:'num', f:f2},
+  {k:'q1', hide:['lr','sc'], l:'H2H П1', t:'num', f:f2},
+  {k:'q2', hide:['lr','sc'], l:'H2H П2', t:'num', f:f2},
+  {k:'bo', hide:['lr','sc','bsk'], l:'Ставка', t:'txt', sep:true, get: r => r.bo + ' ' + (({w:'✓',l:'✕',p:'↩'})[r.res] || '…')},
+  {k:'mk', l:'Ставка', t:'txt', only:['lr','sc'], sep:true, get: r => (MK[r.mk] || r.mk || '') + ' @' + (r.k == null ? '' : Number(r.k).toFixed(2)) + ' ' + (({w:'✓',l:'✕',p:'↩'})[r.res] || '…')},
+  {k:'rl', l:'Правило', t:'txt', only:['lr'], get: r => RULE(r.rl)},
+  {k:'cb', l:'Большой кор.', t:'txt', only:['sc'], get: r => COR(r.cbn, r.cbr)},
+  {k:'cn', l:'Узкий кор.', t:'txt', only:['sc'], get: r => COR(r.cnn, r.cnr)},
+  {k:'km', l:'К / М', t:'nf', nofilter:true},
+];
 
-const TEAMS = {
- 'Істанбулспор':['Истанбулспор','İstanbulspor'], 'Істра 1961':['Истра 1961','Istra 1961'],
- 'Академік':['Академик','Akademik'], 'Акранес':['Акранес','ÍA Akranes'],
- 'Аланьяспор':['Аланьяспор','Alanyaspor'], 'Ареццо':['Ареццо','Arezzo'],
- 'Атлетико Гоияниенсе':['Атлетико Гояниенсе','Atlético Goianiense'],
- 'Аустрія Зальцбург':['Аустрия Зальцбург','Austria Salzburg'],
- 'Барнет':['Барнет','Barnet'], 'Ботафого':['Ботафого','Botafogo'],
- 'Брейдаблік':['Брейдаблик','Breiðablik'], 'Вадуц':['Вадуц','Vaduz'],
- 'Вайле':['Вайле','Vejle'], 'Вальядолид':['Вальядолид','Valladolid'],
- 'Валюр':['Валюр','Valur'], 'Вашингтон':['Вашингтон','Washington Mystics'],
- 'Вестманнаэйяр':['Вестманнаэйяр','ÍBV Vestmannaeyjar'],
- 'Войтсберг':['Войтсберг','Voitsberg'], 'Відовре':['Видовре','Hvidovre'],
- 'Гориця':['Горица','Gorica'], 'Ерзурумспор':['Эрзурумспор','Erzurumspor'],
- 'Ерокспор':['Эрокспор','Esenler Erokspor'], "Есб'єрг":['Эсбьерг','Esbjerg'],
- 'Железнічар Панчево':['Железничар Панчево','Železničar Pančevo'],
- 'Зиря':['Зиря','Zira'], 'Зюдтіроль':['Зюдтироль','Südtirol'],
- 'Ивердон':['Ивердон','Yverdon'], 'Кайсері':['Кайсери','Kayserispor'],
- 'Кечьоренгюджю':['Кечьоренгюджю','Keçiörengücü'],
- 'Коннектикут':['Коннектикут','Connecticut Sun'],
- 'Кристал Пелас':['Кристал Пэлас','Crystal Palace'],
- 'Лейтон Ориент':['Лейтон Ориент','Leyton Orient'],
- 'Лозанна-Уші':['Лозанна-Уши','Stade Lausanne-Ouchy'],
- 'Лідс':['Лидс','Leeds United'], 'Маниса':['Маниса','Manisa FK'],
- 'Мардін 1969':['Мардин 1969','Mardin 1969'], 'Мачва':['Мачва','Mačva Šabac'],
- 'Мирассол':['Мирассол','Mirassol'], 'Младост':['Младост','Mladost'],
- 'Нортхемптон':['Нортгемптон','Northampton Town'],
- 'Орхус Фремад':['Орхус Фремад','Aarhus Fremad'],
- 'Пусан Ай':['Пусан','Busan IPark'], 'Ротерхем':['Ротерем','Rotherham United'],
- 'Самсунспор':['Самсунспор','Samsunspor'], 'Сан-Бернардо':['Сан-Бернардо','São Bernardo'],
- 'Сеул Е-Лэнд':['Сеул И-Лэнд','Seoul E-Land'], 'Сеута':['Сеута','Ceuta'],
- 'Сивасспор':['Сивасспор','Sivasspor'], 'Спарта Роттердам':['Спарта Роттердам','Sparta Rotterdam'],
- 'Стивенейдж':['Стивенидж','Stevenage'], 'Стокпорт Каунти':['Стокпорт Каунти','Stockport County'],
- 'Стьярнан':['Стьярнан','Stjarnan'], 'Тун':['Тун','Thun'],
- 'Туран':['Туран','Turan Tovuz'], 'Тэгу':['Тэгу','Daegu FC'],
- 'Університатя Крайова':['Университатя Крайова','Universitatea Craiova'],
- 'ФК Кимпхо':['Кимпхо','Gimpo FC'], 'ФКСБ':['ФКСБ','FCSB'],
- 'Фатіх Карагюмрюк':['Фатих Карагюмрюк','Fatih Karagümrük'],
- 'Флітвуд':['Флитвуд','Fleetwood Town'], 'Фредерісія':['Фредерисия','FC Fredericia'],
- 'Хабнарфьордур':['Хабнарфьордюр','FH Hafnarfjörður'],
- 'Херенвен':['Херенвен','Heerenveen'], 'Чорум ФК':['Чорум','Çorum FK'],
- 'Чукарички':['Чукарички','Čukarički'], 'Шеффилд Уэнсдей':['Шеффилд Уэнсдей','Sheffield Wednesday'],
- 'Golden State Valkyries':['Голден Стэйт Валькирис','Golden State Valkyries'],
- 'Portland Fire':['Портленд Файр','Portland Fire']
-};
-
-/* ДОБАВЛЕНО 23.10.26: названия рынков для «Правил лиг» и «Мягкого коридора» (поле r.k) */
-const MK = {
- p1:['П1 (победа хозяев)','Home win'], x:['Ничья','Draw'], p2:['П2 (победа гостей)','Away win'],
- f1:['Ф1(0) (хозяева, возврат при ничьей)','Home draw-no-bet'], f2:['Ф2(0) (гости, возврат при ничьей)','Away draw-no-bet'],
- tm:['Тотал меньше 2.5','Under 2.5 goals'], tb:['Тотал больше 2.5','Over 2.5 goals'], oz:['Обе забьют — да','Both teams to score']
-};
-const betLabel = r => (r.k && MK[r.k]) ? (lang === 'ru' ? MK[r.k][0] : MK[r.k][1]) : team(r.t);
-const rowProfit = r => r.p ? 0 : (r.w ? r.o - 1 : -1);
+let view = 'fall';
+try { const s = localStorage.getItem('tvb_view'); if (VIEWS.some(v => v[0] === s)) view = s; } catch(e){}
+const filters = {};
+let sortKey = 'ts', sortDir = -1;
+let PER = 25; let page = 0; let Q = '', DQ = 'all';
+try { const v = +localStorage.getItem('chk_per'); if ([25,50,100,0].includes(v) && localStorage.getItem('chk_per') !== null) PER = v; } catch(e){}
 
 const el = id => document.getElementById(id);
-const f2 = n => Number(n).toFixed(2);
-const dd = s => (s || '').split('-').reverse().join('.');
-const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const raw = (c, r) => c.get ? c.get(r) : r[c.k];
+const shown = (c, r) => { const v = raw(c, r); return c.f ? c.f(v) : (v == null ? '' : String(v)); };
 
-let lang = 'ru';
-try{
-  const saved = localStorage.getItem('fk_lang');
-  if (saved && T[saved]) lang = saved;
-  else {
-    const nav = (navigator.language||'ru').slice(0,2).toLowerCase();
-    if (T[nav]) lang = nav;
-  }
-}catch(e){}
-
-let sport = 'football';
-try{
-  const savedSport = localStorage.getItem('fk_sport');
-  if (savedSport && SPORTS.some(([k]) => k === savedSport)) sport = savedSport;
-}catch(e){}
-
-function tr(key, vars){
-  let s = T[lang][key] ?? T.ru[key] ?? '';
-  if (vars) for (const k in vars) s = s.split('{'+k+'}').join(vars[k]);
-  return s;
-}
-function pick(map, name){
-  const pair = map[name];
-  if (!pair) return name;
-  return lang === 'ru' ? pair[0] : pair[1];
-}
-const league = n => pick(LG, n);
-const team   = n => pick(TEAMS, n);
-function plural(n){
-  const p = T[lang].plural;
-  if (lang === 'ru'){
-    const n10 = n % 10, n100 = n % 100;
-    if (n10 === 1 && n100 !== 11) return p[0];
-    if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return p[1];
-    return p[2];
-  }
-  return n === 1 ? p[0] : p[1];
+const dig = v => v == null ? null : String(Math.floor(v)) + '.';
+const dig2 = v => v == null ? null : (Math.floor(v * 10 + 1e-9) / 10).toFixed(1);
+const K_KEYS = ['p1','x','p2'], M_KEYS = ['p1','x','p2','f1','f2','tm','tb','oz'];
+const corr = (r, d) => d.sp === r.sp && K_KEYS.every(k => r[k] == null || dig2(d[k]) === dig2(r[k]));
+const mm = (r, d) => d.sp === r.sp && d.ch === r.ch && M_KEYS.every(k => r[k] == null || dig(d[k]) === dig(r[k]));
+function applyKM(r, mode){
+  for (const k in filters) delete filters[k];
+  document.querySelectorAll('#tbl input, #tbl select').forEach(i => { i.value = ''; i.classList.remove('on'); });
+  const set = (k, v) => { filters[k] = v.toLowerCase(); document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = v; i.classList.add('on'); }); };
+  if (mode === 'k') K_KEYS.forEach(k => { if (r[k] != null) set(k, dig2(r[k])); });
+  else { M_KEYS.forEach(k => { if (r[k] != null) set(k, dig(r[k])); }); set('ch', '=' + r.ch); }
+  // К/М считают по всей базе — поэтому сбрасываем и поиск, и день (Все/Вчера/Сегодня/Завтра),
+  // иначе число на кнопке и число строк после нажатия расходятся
+  Q = ''; el('q').value = ''; DQ = 'all'; syncDQ();
+  view = r.sp === 'f' ? 'fall' : 'bsk'; buildTabs(); page = 0; render();
+  el('wrap').scrollTop = 0; el('wrap').scrollIntoView({block:'start'});
 }
 
-/* ---------- карточка сигнала (модалка по тапу, если нет ссылки на Telegram) ---------- */
-let CARDS = [];
-function registerCard(text){ CARDS.push(text); return CARDS.length - 1; }
-function mdToHtml(s){
-  if (!s) return '';
-  let t = esc(s);
-  t = t.replace(/\*(.+?)\*/g, '<b>$1</b>');
-  t = t.replace(/\n/g, '<br>');
-  return t;
+function dayDiff(dt){
+  const m = String(dt).match(/^(\d\d)\.(\d\d)\.(\d\d)/); if (!m) return 99;
+  const d = new Date(2000 + +m[3], +m[2] - 1, +m[1]), n = new Date(); n.setHours(0,0,0,0);
+  return Math.round((d - n) / 86400000);
 }
-function openCard(idx){
-  const text = CARDS[idx];
-  if (text == null) return;
-  el('modalBody').innerHTML = mdToHtml(text);
-  el('modalBackdrop').hidden = false;
-}
-function closeCard(){
-  el('modalBackdrop').hidden = true;
-}
-el('modalClose').addEventListener('click', closeCard);
-el('modalBackdrop').addEventListener('click', e => {
-  if (e.target === el('modalBackdrop')) closeCard();
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && !el('modalBackdrop').hidden) closeCard();
-});
-document.addEventListener('click', e => {
-  const linkRow = e.target.closest('[data-link]');
-  if (linkRow){ window.open(linkRow.dataset.link, '_blank', 'noopener'); return; }
-  const row = e.target.closest('[data-card]');
-  if (!row) return;
-  openCard(+row.dataset.card);
-});
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  const linkRow = e.target.closest('[data-link]');
-  if (linkRow){ window.open(linkRow.dataset.link, '_blank', 'noopener'); return; }
-  const row = e.target.closest('[data-card]');
-  if (row) openCard(+row.dataset.card);
-});
-
-/* ---------- рендер ---------- */
-function cardAttrs(r){
-  // Приоритет — прямая ссылка на сообщение в Telegram (r.link). Если
-  // её нет (старые записи без message_id/channel) — открываем модалку
-  // с текстом карточки (r.c), как раньше.
-  if (r.link){
-    return ' data-link="' + esc(r.link) + '" tabindex="0" role="link"';
-  }
-  if (r.c){
-    const idx = registerCard(r.c);
-    return ' data-card="' + idx + '" tabindex="0" role="button"';
-  }
-  return '';
+function syncDQ(){ el('dq').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.d === DQ)); }
+el('dq').addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (!b) return; DQ = b.dataset.d; syncDQ(); page = 0; render(); });
+let qT; el('q').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(() => { Q = el('q').value.trim().toLowerCase(); page = 0; render(); }, 150); });
+el('per').value = String(PER);
+el('per').addEventListener('change', () => { PER = +el('per').value; try { localStorage.setItem('chk_per', PER); } catch(e){} page = 0; render(); });
+function stickCols(){
+  const t = el('tbl'), vc = VC(), keys = ['dn', 'pair'];
+  t.querySelectorAll('.pin').forEach(c => { c.classList.remove('pin', 'sh'); c.style.left = ''; });
+  if (!t.tHead || !t.tHead.rows.length) return;
+  let left = 0;
+  keys.forEach((k, n) => {
+    const i = vc.findIndex(c => c.k === k); if (i < 0) return;
+    const hc = t.tHead.rows[0].cells[i]; if (!hc) return;
+    const w = hc.getBoundingClientRect().width;
+    for (const row of t.rows){ const c = row.cells[i]; if (!c || row.cells.length !== vc.length) continue; c.classList.add('pin'); c.style.left = left + 'px'; if (n === keys.length - 1) c.classList.add('sh'); }
+    left += w;
+  });
 }
 
-function rowHTML(r){
-  const profit = rowProfit(r);
-  const clickable = (r.link || r.c) ? ' clickable' : '';
-  const mark = r.p ? '<div class="mark" title="' + tr('push') + '">↩</div>'
-                   : '<div class="mark ' + (r.w?'w':'l') + '">' + (r.w?'✓':'✕') + '</div>';
-  return '<div class="res' + clickable + '"' + cardAttrs(r) + '>'
-    + mark
-    + '<div class="body"><div class="t">' + esc(team(r.h)) + ' — ' + esc(team(r.a)) + '</div>'
-    + '<div class="m">' + tr('bet') + ': ' + esc(betLabel(r)) + (r.s ? ' · ' + esc(r.s) : '') + '</div></div>'
-    + '<div class="r">' + f2(r.o) + '<b>' + (profit>0?'+':'') + profit.toFixed(2) + '</b></div>'
-    + '</div>';
-}
-function pendingHTML(p){
-  const clickable = (p.link || p.c) ? ' clickable' : '';
-  return '<div class="card live' + clickable + '"' + cardAttrs(p) + '>'
-    + '<div class="when">' + esc(p.d) + '</div>'
-    + '<div class="match">' + esc(team(p.h)) + ' — ' + esc(team(p.a)) + '</div>'
-    + '<div class="league">' + esc(league(p.l)) + '</div>'
-    + '<div class="pick"><span class="what">' + esc(betLabel(p)) + '</span>'
-    + '<span class="odd">' + f2(p.o) + '</span></div></div>';
-}
-function dayHead(rows){
-  const w = rows.filter(r=>r.w).length;
-  const p = rows.reduce((s,r)=> s + rowProfit(r), 0);
-  const pct = rows.length ? (w/rows.length*100).toFixed(1) : '0';
-  return '<span class="big">' + w + ' / ' + rows.length + '</span>'
-    + '<span class="sm">' + tr('dwon') + ' · ' + pct + '%</span>'
-    + '<span class="pl ' + (p>=0?'p':'n') + '">' + (p>0?'+':'') + p.toFixed(2) + '</span>';
+function syncM(){ el('tgm').textContent = SHOWM ? 'Скрыть модель · аналитику · H2H ▴' : 'Модель · Аналитика · H2H ▾'; el('tgm').setAttribute('aria-expanded', SHOWM); }
+el('tgm').onclick = () => { SHOWM = !SHOWM; try { localStorage.setItem('chk_showm', SHOWM ? '1' : '0'); } catch(e){} if (!SHOWM) MODK.forEach(k => delete filters[k]); syncM(); buildHead(); render(); };
+function match(c, r, q){
+  if (c.k === 'pair' && q[0] === '=' && q.includes('/')){ const p = q.slice(1).split('/'), t = [String(r.h).toLowerCase(), String(r.a).toLowerCase()]; return t.includes(p[0]) && t.includes(p[1]); }
+  if (c.k === 'sc') return q[0] === '(' ? shown(c, r).toLowerCase().includes(q) : shown(c, r).toLowerCase().startsWith(q);
+  if (c.stack && q[0] === '=' && q.includes('/')){ const p = q.slice(1).split('/'), t = String(raw(c, r)).toLowerCase().split(' '); return t[0] === p[0] && t[1] === p[1]; }
+  if (c.stack) return q[0] === '=' ? String(raw(c, r)).toLowerCase().split(' ').some(x => x === q.slice(1)) : String(raw(c, r)).toLowerCase().split(' ').some(x => x.startsWith(q));
+  if (q[0] === '=') return String(raw(c, r) || '').toLowerCase() === q.slice(1);
+  if (c.sel) return String(r[c.k] || '').toLowerCase() === q;
+  const s = shown(c, r).toLowerCase();
+  if ((c.k === 'bo' || c.k === 'mk') && (q === '+' || q === '-')){ return r.res === (q === '+' ? 'w' : 'l'); }
+  if (c.k === 'res'){ return ({'✓':'w','в':'w','+':'w','✕':'l','п':'l','-':'l','↩':'p','в':'w'})[q] ? r.res === ({'✓':'w','в':'w','+':'w','✕':'l','п':'l','-':'l','↩':'p'})[q] : s.includes(q); }
+  if (c.t === 'num') return s.startsWith(q) || (c.k === 'dt' && s.includes(q));
+  return s.includes(q);
 }
 
-let D = null;
-
-function currentData(){
-  // Новый формат отдаёт D.sports.{all|football|basketball}. Старый
-  // (до разделения банка) — только плоские поля на верхнем уровне,
-  // которые совпадают со срезом "all". Если D.sports нет — используем
-  // D целиком, чтобы страница не сломалась на старом public.json.
-  if (D && D.sports && D.sports[sport]) return D.sports[sport];
-  // ДОБАВЛЕНО 23.10.26: новый вид, которого ещё нет в public.json (бот не
-  // успел опубликовать), — пустой срез, а не данные «всех» ставок.
-  if (D && D.sports) return {bank:100, n:0, wins:0, curve:[100], last:[], prevrows:[], feed:[], pending:[]};
-  return D || {};
+let EMPTY = new Set();
+const STV = { kc: r => [LET(r.ch_), LET(r.ca)], kr: r => [R1(r.rh), R1(r.ra)], kp: r => [r.ph, r.pa] };
+function TAPV(c, r){
+  if (c.nofilter || c.stack || ['km','pair','sc','ch','cb','cn'].includes(c.k)) return null;
+  if (c.k === 'dn') return r.dn || null;
+  if (c.k === 'dt') return String(shown(c, r)).slice(0, 5) || null;
+  if (c.k === 'vo') return r.vo || null;
+  if (c.k === 'bo') return r.bo || null;
+  if (c.k === 'mk') return r.mk ? (MK[r.mk] || r.mk) + ' @' : null;
+  const v = shown(c, r); return v && v !== '…' ? v : null;
+}
+const KF = ['p1','x','p2','f1','f2','tm','tb','oz','mg','btl','btm','btb','bfl','bf1','bf2'];
+const OPT = ['f1','f2','tm','tb','oz','mg'];
+const MODK = ['m1','m2','a1','a2','q1','q2'];
+let SHOWM = false; try { SHOWM = localStorage.getItem('chk_showm') === '1'; } catch(e){}
+const VC = () => COLS.filter(c => !EMPTY.has(c.k) && (SHOWM || !MODK.includes(c.k)) && !(c.hide && c.hide.includes(view)) && !(c.only && !c.only.includes(view)));
+const FROW = () => '<tr class="f">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.nofilter ? '' : c.sel ? `<select id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}"><option value="">ALL</option>${c.sel.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}</select>` : `<input id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}" inputmode="${c.t === 'num' ? 'decimal' : 'text'}" autocomplete="off">`}</th>`).join('') + '</tr>';
+function buildHead(){
+  const th = el('tbl').tHead;
+  el('tbl').createTFoot().innerHTML = FROW().replace(/id="f_/g, 'id="g_');
+  th.innerHTML = '<tr class="h">' + VC().map(c => `<th data-k="${c.k}"${c.sep ? ' class="sep"' : ''}>${c.l}${c.lh || ''}</th>`).join('') + '</tr>'
+    + FROW();
+  th.querySelectorAll('tr.h th').forEach(h => h.addEventListener('click', () => {
+    const c = COLS.find(x => x.k === h.dataset.k), k = c.sort || c.k;
+    if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = c.t === 'num' ? -1 : 1; }
+    page = 0; render();
+  }));
+  el('tbl').querySelectorAll('thead input, thead select, tfoot input, tfoot select').forEach(i => i.addEventListener(i.tagName === 'SELECT' ? 'change' : 'input', () => {
+    const v = i.value.trim().toLowerCase().replace(',', '.');
+    if (v) filters[i.dataset.k] = v; else delete filters[i.dataset.k];
+    document.querySelectorAll(`#tbl [data-k="${i.dataset.k}"]:is(input,select)`).forEach(o => { if (o !== i) o.value = i.value; o.classList.toggle('on', !!v); });
+    page = 0; render();
+  }));
+  for (const c of COLS) if ((c.hide && c.hide.includes(view)) || (c.only && !c.only.includes(view))) delete filters[c.k];
+  for (const k in filters) document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = filters[k]; i.classList.add('on'); });
+  const hh = th.rows[0].offsetHeight; th.querySelectorAll('tr.f th').forEach(t => t.style.top = hh + 'px');
 }
 
-function drawSpark(){
-  const S = currentData();
-  const c = (S.curve && S.curve.length) ? S.curve : [100];
-  const W = 480, H = 68;
-  const lo = Math.min(...c, 100), hi = Math.max(...c, 100);
-  const x = i => c.length > 1 ? i / (c.length - 1) * W : 0;
-  const y = v => H - (v - lo) / (hi - lo || 1) * (H - 6) - 3;
-  const line = c.map((v,i) => (i?'L':'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
-  el('spark').innerHTML =
-    '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="68" preserveAspectRatio="none" role="img">'
-    + '<line x1="0" x2="' + W + '" y1="' + y(100).toFixed(1) + '" y2="' + y(100).toFixed(1)
-    + '" stroke="rgba(255,255,255,.22)" stroke-width="1" stroke-dasharray="4 5"/>'
-    + '<path d="' + line + '" fill="none" stroke="var(--amber)" stroke-width="2.5" '
-    + 'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
-}
-
-function statItem(label, valueHtml, sign){
-  const cls = sign === 'p' ? ' p' : (sign === 'n' ? ' n' : '');
-  return '<div class="item"><span class="lbl">' + label + '</span><span class="val' + cls + '">' + valueHtml + '</span></div>';
-}
-
-function renderStats(S){
-  const na = tr('na');
-  const units = tr('units');
-
-  const avgOdd = (S.avg_odd != null) ? f2(S.avg_odd) : na;
-  const avgOddWins = (S.avg_odd_wins != null) ? f2(S.avg_odd_wins) : na;
-
-  const dd_ = S.max_drawdown || 0;
-  const ddText = dd_ < 0 ? (dd_.toFixed(2) + ' ' + units) : ('0.00 ' + units);
-  const ddSign = dd_ < 0 ? 'n' : '';
-
-  const best = S.best_streak || 0;
-  const worst = S.worst_streak || 0;
-  const cur = S.current_streak || 0;
-
-  const bestText = best > 0 ? ('+' + best) : String(best);
-  const worstText = String(worst);
-  const curText = cur > 0 ? ('+' + cur) : String(cur);
-  const curSign = cur > 0 ? 'p' : (cur < 0 ? 'n' : '');
-
-  el('stats-title').textContent = tr('statsTitle');
-  el('stats-grid').innerHTML =
-    statItem(tr('avgOdd'), avgOdd) +
-    statItem(tr('avgOddWins'), avgOddWins) +
-    statItem(tr('maxDD'), ddText, ddSign) +
-    '<div class="stats-sep"></div>' +
-    statItem(tr('bestStreak'), bestText, best > 0 ? 'p' : '') +
-    statItem(tr('worstStreak'), worstText, worst < 0 ? 'n' : '') +
-    statItem(tr('curStreak'), curText, curSign);
+function buildTabs(){
+  el('tabs').innerHTML = VIEWS.map(([k, l, fn]) => `<button type="button" data-v="${k}" aria-pressed="${k === view}">${l} <span style="opacity:.6">${DATA.filter(fn).length}</span></button>`).join('');
+  el('tabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; view = b.dataset.v; try{ localStorage.setItem('tvb_view', view); }catch(err){} buildTabs(); page = 0; render(); };
+  if (el('tbl').tHead) buildHead();
 }
 
 function render(){
-  if (!D) return;
-  CARDS = [];
-  document.documentElement.lang = lang;
-
-  el('langs').innerHTML = LANGS.map(([c,label]) =>
-    '<button type="button" data-l="' + c + '" aria-pressed="' + (c===lang) + '">' + label + '</button>').join('');
-
-  el('sports').innerHTML = SPORTS.map(([s,key]) =>
-    '<button type="button" data-s="' + s + '" aria-pressed="' + (s===sport) + '">' + tr(key) + '</button>').join('');
-
-  el('brand').textContent   = tr('brand');
-  el('sub').textContent      = tr('sub');
-  el('tagline').textContent = tr('tag');
-  el('cap').textContent     = tr('bank');
-  el('baza-t').textContent  = tr('bazaT');
-  el('baza-s').textContent  = tr('bazaS');
-
-  const S = currentData();
-
-  el('bank').textContent    = f2(S.bank ?? 100);
-  el('from').textContent    = S.first ? tr('from', {d: dd(S.first)}) : '';
-
-  drawSpark();
-
-  const n = S.n || 0;
-  const wins = S.wins || 0;
-  const bank = S.bank ?? 100;
-  const roiPct = n ? ((bank - 100) / n * 100) : 0;
-  const profit = bank - 100;
-  const hitPct = n ? (wins / n * 100) : 0;
-
-  // ИЗМЕНЕНО 24.09 (по просьбе Игоря): раньше первой и самой крупной
-  // цифрой в hero была "Точность" — для ставок это вводит в заблуждение
-  // без среднего кэфа рядом. Теперь на первом месте ROI и прибыль,
-  // количество ставок — третьим, а точность ушла в маленькую строку
-  // под таблицей (hitrow), она всё ещё видна, но не главная.
-  el('hrow').innerHTML =
-    '<div><b>' + (roiPct >= 0 ? '+' : '') + roiPct.toFixed(1) + '%</b><span>' + tr('roi') + '</span></div>' +
-    '<div><b>' + (profit >= 0 ? '+' : '') + f2(profit) + '</b><span>' + tr('profit') + '</span></div>' +
-    '<div><b>' + n + '</b><span>' + tr('bets') + '</span></div>';
-  el('subrow').textContent = n ? tr('hitrow', {pct: hitPct.toFixed(0), wins: wins, n: n}) : '';
-
-  renderStats(S);
-
-  el('meta').innerHTML = (S.last_day ? tr('updtop', {d: dd(S.last_day)}) + '<br>' : '') + tr('src');
-
-  el('live-title').textContent = tr('live');
-  // ИЗМЕНЕНО 13.10: открытые ставки — свои у каждого вида (S.pending);
-  // старый public.json без них — общий список D.pending, как раньше.
-  const pend = Array.isArray(S.pending) ? S.pending : (D.pending || []);
-  if (pend.length){
-    el('live-sec').hidden = false;
-    el('live').innerHTML = pend.map(pendingHTML).join('');
-  } else {
-    el('live-sec').hidden = false;
-    el('live').innerHTML = '<div class="card">' + tr('nolive') + '</div>';
+  el('tgm').hidden = ['lr','sc'].includes(view);
+  const fn = VIEWS.find(v => v[0] === view)[2];
+  let rows = DATA.filter(fn);
+  for (const k in filters){ const c = COLS.find(x => x.k === k); rows = rows.filter(r => match(c, r, filters[k])); }
+  if (Q) rows = rows.filter(r => [r.h, r.a, r.ch, r.dt, r.sc, r.dn].join(' ').toLowerCase().includes(Q));
+  if (DQ !== 'all') rows = rows.filter(r => { const d = dayDiff(r.dt); return DQ === 't' ? d === 0 : DQ === 'm' ? d === 1 : DQ === 'y' ? d === -1 : (d <= 0 && d >= -6); });
+  { const acc = {cn:0, cp1:0, cx:0, cp2:0, ctm:0, ctb:0};
+    const mk = [['cp1','p1'],['cx','x'],['cp2','p2'],['ctm','tm'],['ctb','tb']];
+    for (const r of [...rows].sort((a, b) => a.ts - b.ts)){
+      r._c = {...acc};
+      const g = goals(r); if (!g) continue;
+      acc.cn++;
+      for (const [ck, m] of mk){ if (r[m] != null) acc[ck] += HIT[m](g) ? r[m] - 1 : -1; }
+    } }
+  rows.sort((a, b) => {
+    const A = a[sortKey], B = b[sortKey];
+    if (A == null && B == null) return 0; if (A == null) return 1; if (B == null) return -1;
+    return (A > B ? 1 : A < B ? -1 : 0) * sortDir;
+  });
+  el('tbl').tHead.querySelectorAll('tr.h th').forEach(h => {
+    const c = COLS.find(x => x.k === h.dataset.k);
+    if ((c.sort || c.k) === sortKey) h.setAttribute('aria-sort', sortDir > 0 ? 'ascending' : 'descending'); else h.removeAttribute('aria-sort');
+  });
+  // итог
+  const dec = rows.filter(r => r.pr != null);
+  const prof = dec.reduce((s, r) => s + r.pr, 0), wins = dec.filter(r => r.res === 'w').length;
+  const cl = rows.filter(r => r.clv != null), clvN = cl.length;
+  const clv = clvN ? cl.reduce((s, r) => s + r.clv, 0) / clvN : 0;
+  const odd = dec.length ? dec.reduce((s, r) => s + (r.k || 0), 0) / dec.length : 0;
+  const roi = dec.length ? prof / dec.length * 100 : 0, pend = rows.filter(r => !r.res).length;
+  const cls = v => v > 0 ? 'p' : (v < 0 ? 'n' : '');
+  el('sum').innerHTML =
+    `<button type="button" class="clear" id="clr">Сбросить фильтры</button>`;
+  el('clr').onclick = () => { for (const k in filters) delete filters[k]; Q = ''; el('q').value = ''; DQ = 'all'; syncDQ(); document.querySelectorAll('#tbl input, #tbl select').forEach(i => { i.value = ''; i.classList.remove('on'); }); page = 0; render(); };
+  // таблица
+  const PP = PER || Math.max(rows.length, 1);
+  const pages = Math.max(1, Math.ceil(rows.length / PP)); if (page >= pages) page = pages - 1;
+  const from = page * PP, all = rows.length;
+  const nums = []; for (let p = Math.max(0, page - 2); p <= Math.min(pages - 1, page + 2); p++) nums.push(p);
+  el('pager').innerHTML = all ? `<span class="rec">Записи с ${from + 1} до ${Math.min(from + PP, all)} из ${all} записей${(Object.keys(filters).length || Q || DQ !== 'all') ? ` (отфильтровано из ${DATA.filter(VIEWS.find(v => v[0] === view)[2]).length} записей)` : ''}</span><span class="pn"><button type="button" data-p="${page - 1}"${page ? '' : ' disabled'}>Предыдущая</button>${nums[0] > 0 ? '<button type="button" data-p="0">1</button>' + (nums[0] > 1 ? '<span>…</span>' : '') : ''}${nums.map(p => `<button type="button" data-p="${p}"${p === page ? ' aria-current="page"' : ''}>${p + 1}</button>`).join('')}${nums[nums.length - 1] < pages - 1 ? (nums[nums.length - 1] < pages - 2 ? '<span>…</span>' : '') + `<button type="button" data-p="${pages - 1}">${pages}</button>` : ''}<button type="button" data-p="${page + 1}"${page < pages - 1 ? '' : ' disabled'}>Следующая</button></span>` : '';
+  el('pager').onclick = e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; page = +b.dataset.p; render(); el('wrap').scrollTop = 0; el('wrap').scrollIntoView({block:'start'}); };
+  rows = rows.slice(from, from + PP);
+  const emp = new Set(OPT.filter(k => !filters[k] && rows.every(r => r[k] == null)));
+  if ([...emp].join() !== [...EMPTY].join()){
+    const ae = document.activeElement, id = ae && ae.id, pos = ae && ae.selectionStart;
+    EMPTY = emp; buildHead();
+    const n = id && document.getElementById(id); if (n){ n.focus(); try { n.setSelectionRange(pos, pos); } catch(e){} }
   }
-
-  const last = S.last || [], prevrows = S.prevrows || [];
-
-  if (S.last_day){
-    el('d1-sec').hidden = false;
-    el('d1-title').innerHTML = dd(S.last_day) + ' <span class="count">· '
-      + tr('dayb', {n: last.length, w: plural(last.length)}) + '</span>';
-    el('d1').innerHTML = last.map(rowHTML).join('');
-    el('d1sum').innerHTML = dayHead(last);
-  } else {
-    el('d1-sec').hidden = true;
-  }
-
-  if (S.prev_day){
-    el('d2-sec').hidden = false;
-    el('d2-title').innerHTML = dd(S.prev_day) + ' <span class="count">· '
-      + tr('dayb', {n: prevrows.length, w: plural(prevrows.length)}) + '</span>';
-    el('d2').innerHTML = prevrows.map(rowHTML).join('');
-    el('d2sum').innerHTML = dayHead(prevrows);
-  } else {
-    el('d2-sec').hidden = true;
-  }
-
-  el('honest').innerHTML = tr('honest', {n: n});
-  el('how-title').textContent = tr('how');
-  const howKeys = sport === 'readodds' ? ['h1','h2','h3ro','h4ro']
-                : sport === 'supersignal' ? ['h1','h2','h3','h4ss']
-                : sport === 'rules' ? ['h1','h2','h3ru','h4ru']
-                : sport === 'soft' ? ['h1','h2','h3sc','h4sc'] : ['h1','h2','h3','h4'];
-  el('how-body').innerHTML = howKeys.map(k => '<p>' + tr(k) + '</p>').join('')
-    + '<p style="color:var(--muted);font-size:13px">' + tr('tapHint') + '</p>';
-
-  const feed = S.feed || [];
-  el('feed-title').textContent = tr('feed');
-  el('feed').innerHTML = feed.map(rowHTML).join('');
-  el('stamp').textContent = S.last_day ? tr('upd', {d: dd(S.last_day)}) : '';
+  const tb = el('tbl').tBodies[0];
+  if (!rows.length){ tb.innerHTML = `<tr><td colspan="${VC().length}" class="empty">Под этот фильтр карточек нет. Сбросьте одно из полей.</td></tr>`; return; }
+  tb.innerHTML = rows.map(r => {
+    const g = goals(r);
+    return `<tr${SAVED.some(f => f.view === view && fMatch(f, r)) ? ' class="flg"' : ''}>` + VC().map(c => {
+      let cl = [c.t]; if (c.sep) cl.push('sep');
+      if (c.hit && g && HIT[c.hit](g, r) && raw(c, r) != null) cl.push('hit');
+      if ((c.k === 'bo' || c.k === 'mk') && r.res === 'w') cl.push('won');
+      if ((c.k === 'bo' || c.k === 'mk') && r.res === 'l') cl.push('lost');
+      let v;
+      if (c.k === 'km') v = `<button type="button" class="km" data-km="k" data-ts="${r.ts}" data-h="${esc(r.h)}">К${DATA.filter(d => corr(r, d)).length}</button><button type="button" class="km" data-km="m" data-ts="${r.ts}" data-h="${esc(r.h)}">М${DATA.filter(d => mm(r, d)).length}</button>`;
+      else if (c.k === 'pair'){ v = `<div class="ln">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
+      else if (c.k === 'kc'){ const L1 = LET(r.ch_), L2 = LET(r.ca); v = c.stack.map(f => `<div class="ln">${f(r)}</div>`).join(''); if (L1 !== '?' && L2 !== '?'){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="kc" data-fv="=${L1}/${L2}" title="Хозяева / гости">${v}</td>`; } }
+      else if (c.stack){ const sv = STV[c.k] ? STV[c.k](r) : []; v = c.stack.map((f, i) => sv[i] != null && sv[i] !== '—' && sv[i] !== '?' ? `<div class="ln"><span class="tg" data-fk="${c.k}" data-fv="=${esc(sv[i])}">${f(r)}</span></div>` : `<div class="ln">${f(r)}</div>`).join(''); }
+      else if (c.k === 'vo' && r.vo) v = `<span class="pill${r.vo.startsWith('3') ? ' tv3' : ''}">${esc(r.vo)}</span>`;
+      else v = esc(shown(c, r));
+      if (KF.includes(c.k) && raw(c, r) != null){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="${c.k}" data-fv="${shown(c, r)}">${v}</td>`; }
+      if (c.k === 'sc' && r.sc){ const sh = shown(c, r), mn = sh.split(' ')[0], ht = (sh.match(/\(.*\)/) || [''])[0];
+        return `<td class="${cl.join(' ')}"><span class="sct" data-fv="${mn}">${esc(mn)}</span>${ht ? ` <span class="sct ht" data-fv="${ht}" data-mn="${mn}">${esc(ht)}</span>` : ''}</td>`; }
+      if (c.k === 'ch'){ cl.push('tap'); return `<td class="${cl.join(' ')}" data-ch="${esc(r.ch)}" data-sp="${r.sp}" title="Только этот чемпионат">${v}</td>`; }
+      const tv = TAPV(c, r);
+      if (tv){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="${c.k}" data-fv="${esc(tv)}">${v}</td>`; }
+      return `<td class="${cl.join(' ')}">${v}</td>`;
+    }).join('') + '</tr>';
+  }).join('');
 }
 
-el('langs').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  lang = b.dataset.l;
-  try{ localStorage.setItem('fk_lang', lang); }catch(err){}
-  render();
-});
-
-el('sports').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  sport = b.dataset.s;
-  try{ localStorage.setItem('fk_sport', sport); }catch(err){}
-  render();
-});
-
-async function loadData(){
-  try{
-    const res = await fetch('public.json', {cache:'no-store'});
-    D = await res.json();
-  }catch(e){
-    const empty = {bank:100,n:0,wins:0,curve:[100],last_day:null,prev_day:null,last:[],prevrows:[],feed:[],first:null,
-                   avg_odd:null,avg_odd_wins:null,max_drawdown:0,best_streak:0,worst_streak:0,current_streak:0};
-    D = {bank:100, n:0, wins:0, curve:[100], last_day:null, prev_day:null, last:[], prevrows:[], pending:[], feed:[], first:null,
-         sports:{all: {...empty}, football: {...empty}, basketball: {...empty}, readodds: {...empty}, supersignal: {...empty}, rules: {...empty}, soft: {...empty}}};
+el('tbl').tBodies[0].addEventListener('click', e => {
+  const sp = e.target.closest('span.sct');
+  if (sp){
+    const cur = filters.sc || ''; let v = sp.dataset.fv;
+    if (sp.dataset.mn && cur === sp.dataset.mn) v = sp.dataset.mn + ' ' + v;
+    if (cur === v) v = '';
+    if (v) filters.sc = v; else delete filters.sc;
+    document.querySelectorAll('#tbl [data-k="sc"]:is(input,select)').forEach(i => { i.value = v; i.classList.toggle('on', !!v); });
+    page = 0; render(); return;
   }
-  render();
+  const kc = e.target.closest('.tg') || e.target.closest('td.tapk');
+  if (kc && !e.target.closest('button')){
+    const k = kc.dataset.fk, fv = kc.dataset.fv, v = filters[k] === fv.toLowerCase() ? '' : fv;
+    if (v) filters[k] = v.toLowerCase(); else delete filters[k];
+    document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = v; i.classList.toggle('on', !!v); });
+    page = 0; render(); return;
+  }
+  const t = e.target.closest('td.tap');
+  if (t){
+    const v = '=' + t.dataset.ch; filters.ch = v.toLowerCase();
+    document.querySelectorAll('#tbl [data-k="ch"]:is(input,select)').forEach(i => { i.value = v; i.classList.add('on'); });
+    if (!DATA.some(d => d.ch === t.dataset.ch && VIEWS.find(x => x[0] === view)[2](d))){ view = t.dataset.sp === 'f' ? 'fall' : 'bsk'; buildTabs(); }
+    page = 0; render(); el('wrap').scrollTop = 0; return;
+  } const b = e.target.closest('button.km'); if (!b) return; const r = DATA.find(d => String(d.ts) === b.dataset.ts && d.h === b.dataset.h); if (r) applyKM(r, b.dataset.km); });
+el('clrk').onclick = () => { KF.forEach(k => { delete filters[k]; document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = ''; i.classList.remove('on'); }); }); page = 0; render(); };
+
+/* ===== Сохранённые фильтры и комбо фильтр ===== */
+const SF_KEY = 'chk_filters_v1';
+let SAVED = [];
+try { SAVED = JSON.parse(localStorage.getItem(SF_KEY) || '[]') || []; } catch(e){ SAVED = []; }
+const saveSF = () => { try { localStorage.setItem(SF_KEY, JSON.stringify(SAVED)); } catch(e){} };
+const colOf = k => COLS.find(c => c.k === k);
+const vname = v => { const x = VIEWS.find(y => y[0] === v); return x ? x[1] : v; };
+function fMatch(f, r){
+  const vv = VIEWS.find(x => x[0] === f.view); if (!vv || !vv[2](r)) return false;
+  for (const k in f.filters){ const c = colOf(k); if (!c || !match(c, r, f.filters[k])) return false; }
+  return true;
 }
-loadData();
+function chipsOf(fl){
+  return Object.keys(fl).map(k => { const c = colOf(k); let v = fl[k]; if (v[0] === '=') v = v.slice(1); if (k === 'dn') v = v.toUpperCase(); return `<span class="chip">${esc(c ? c.l : k)}: ${esc(v)}</span>`; }).join('');
+}
+function betOut(bet, r){
+  const g = goals(r), o = r[bet]; if (!g) return null;
+  if ((bet === 'f1' || bet === 'f2') && g[0] === g[1]) return 'p';
+  return HIT[bet](g) ? 'w' : 'l';
+}
+function betStat(f){
+  let cnt = 0, n = 0, prof = 0, w = 0;
+  for (const r of DATA){ if (!fMatch(f, r)) continue; cnt++; const o = r[f.bet], res = betOut(f.bet, r); if (o == null || !res) continue; n++; if (res === 'w'){ w++; prof += o - 1; } else if (res === 'l') prof -= 1; }
+  return {cnt, n, w, roi: n ? prof / n * 100 : null};
+}
+const EYE = '<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+const BIN = '<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>';
+function applySF(f){
+  for (const k in filters) delete filters[k];
+  Object.assign(filters, f.filters);
+  view = f.view; page = 0; buildTabs();
+  if (location.hash !== '#baza') location.hash = 'baza'; else render();
+}
+function renderFilters(){
+  const tb = el('ftb');
+  if (!SAVED.length){ tb.innerHTML = '<tr><td colspan="6" class="emptyx">Фильтров пока нет. Настройте фильтры в таблице «Базы» и нажмите «Создать фильтр».</td></tr>'; return; }
+  tb.innerHTML = SAVED.map(f => { const st = betStat(f);
+    const roi = st.roi == null ? '—' : `<b class="${st.roi >= 0 ? 'p' : 'n'}">${st.roi > 0 ? '+' : ''}${st.roi.toFixed(1)}%</b> на ${st.n}`;
+    return `<tr><td><button type="button" class="fname" data-a="go" data-id="${f.id}">${esc(f.name)}</button></td>
+      <td class="c"><button type="button" class="ico" data-a="go" data-id="${f.id}" aria-label="Открыть в базе">${EYE}</button><button type="button" class="ico" data-a="del" data-id="${f.id}" aria-label="Удалить">${BIN}</button></td>
+      <td><div class="chips">${chipsOf(f.filters)}</div></td><td class="c">${esc(vname(f.view))}</td><td class="c">${st.cnt}</td>
+      <td class="c">${esc(MK[f.bet] || f.bet)}</td></tr>`; }).join('');
+}
+el('ftb').addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b) return; const f = SAVED.find(x => String(x.id) === b.dataset.id); if (!f) return;
+  if (b.dataset.a === 'go') applySF(f);
+  if (b.dataset.a === 'del'){ b.dataset.a = 'del2'; b.className = 'ico warn'; b.textContent = 'Удалить?'; return; }
+  if (b.dataset.a === 'del2'){ SAVED = SAVED.filter(x => x !== f); saveSF(); renderFilters(); }
+});
+function renderCombo(){
+  const all = el('cplayed').checked, tb = el('ctb'), out = [];
+  for (const f of SAVED) for (const r of DATA){ if (!all && (r.sc || r.res)) continue; if (fMatch(f, r)) out.push([f, r]); }
+  out.sort((a, b) => all ? b[1].ts - a[1].ts : a[1].ts - b[1].ts);
+  el('cnote').textContent = SAVED.length ? `Фильтров: ${SAVED.length} · совпадений: ${out.length}` : '';
+  if (!SAVED.length){ tb.innerHTML = '<tr><td colspan="7" class="emptyx">Сначала сохраните хотя бы один фильтр в «Базе».</td></tr>'; return; }
+  if (!out.length){ tb.innerHTML = `<tr><td colspan="7" class="emptyx">${all ? 'Совпадений нет.' : 'Сейчас нет несыгранных матчей под ваши фильтры. Включите «Показывать и сыгранные», чтобы увидеть историю.'}</td></tr>`; return; }
+  tb.innerHTML = out.slice(0, 300).map(([f, r]) => { const res = betOut(f.bet, r), o = r[f.bet];
+    const cls = res === 'w' ? 'won' : res === 'l' ? 'lost' : '';
+    return `<tr><td><button type="button" class="fname" data-id="${f.id}">${esc(f.name)}</button></td><td class="c">${esc(r.dn)}</td><td>${esc(r.ch)}</td><td class="c">${esc(String(r.dt).replace(/^(\d\d\.\d\d)\.\d\d/, '$1'))}</td>
+      <td class="c">${esc(r.sc ? String(r.sc).replace(/\s*-\s*/, ':') : '')}</td><td>${esc(r.h)} — ${esc(r.a)}</td>
+      <td class="c ${cls}">${esc(MK[f.bet] || f.bet)}${o != null ? ' @' + Number(o).toFixed(2) : ''}${res ? ' ' + ({w:'✓', l:'✕', p:'↩'})[res] : ''}</td></tr>`; }).join('');
+}
+el('cplayed').addEventListener('change', renderCombo);
+el('ctb').addEventListener('click', e => { const b = e.target.closest('.fname'); if (!b) return; const f = SAVED.find(x => String(x.id) === b.dataset.id); if (f) applySF(f); });
+const toast = t => { const n = el('toast'); n.textContent = t; n.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => n.hidden = true, 3500); };
+el('mkf').onclick = () => {
+  const p = el('mkp');
+  if (!Object.keys(filters).length){ toast('Сначала задайте фильтр в таблице: кэф, день или чемпионат.'); return; }
+  el('mkchips').innerHTML = `<span class="chip">Вкладка: ${esc(vname(view))}</span>` + chipsOf(filters);
+  if (!el('mkname').value) el('mkname').value = Object.keys(filters).map(k => { let v = filters[k]; if (v[0] === '=') v = v.slice(1); return (colOf(k) ? colOf(k).l : k) + ' ' + v; }).join(', ').slice(0, 40);
+  el('mkerr').hidden = true; p.hidden = false; el('mkname').focus();
+};
+el('mkcancel').onclick = () => { el('mkp').hidden = true; };
+el('mkname').addEventListener('input', () => { el('mkerr').hidden = true; });
+el('mkp').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = el('mkname').value.trim();
+  if (!name){ el('mkerr').textContent = 'Введите название фильтра.'; el('mkerr').hidden = false; return; }
+  SAVED.push({id: Date.now(), name, view, filters: {...filters}, bet: el('mkbet').value}); saveSF();
+  el('mkp').hidden = true; el('mkname').value = ''; render(); toast(`Фильтр «${name}» сохранён. Его матчи подсвечены жёлтым, все фильтры — в разделе «Фильтры».`);
+});
+
+el('mbtn').onclick = () => { const h = document.querySelector('header.site'); const o = h.classList.toggle('open'); el('mbtn').setAttribute('aria-expanded', o); };
+document.querySelectorAll('nav.menu a').forEach(a => a.addEventListener('click', () => { document.querySelector('header.site').classList.remove('open'); el('mbtn').setAttribute('aria-expanded', 'false'); }));
+function route(){
+  const h = location.hash.slice(1), sec = ['about','filters','combo'].includes(h) ? h : 'baza';
+  for (const x of ['baza','about','filters','combo']) el('v-' + x).hidden = sec !== x;
+  if (DATA.length){ if (sec === 'filters') renderFilters(); if (sec === 'combo') renderCombo(); if (sec === 'baza') render(); }
+  document.querySelectorAll('nav.menu a[data-sec]').forEach(a => { if (a.dataset.sec === sec) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+}
+window.addEventListener('hashchange', () => { route(); window.scrollTo(0, 0); });
+route();
+function boot(d){
+  DATA = d;
+  const last = DATA.reduce((m, r) => Math.max(m, r.ts || 0), 0);
+  const ds = last ? new Date(last * 1000).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'2-digit'}) : '';
+  const up = UPD && !isNaN(UPD) ? ' · обновлено ' + UPD.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}).replace(',', '') : '';
+  el('stamp').textContent = `${DATA.length} карточек агента${up}`;
+  el('fstamp').textContent = `Данные: ${DATA.length} карточек`;
+  syncM(); buildTabs(); buildHead(); render(); route();
+}
+let UPD = null;
+fetch('data/base.json', {cache:'no-store'}).then(r => { if (!r.ok) throw new Error(r.status); const lm = r.headers.get('last-modified'); if (lm) UPD = new Date(lm); return r.json(); }).then(boot)
+  .catch(() => { el('stamp').textContent = 'Не удалось загрузить базу. Обновите страницу.'; });
 </script>
 
-</body>
-</html>
+</body></html>
