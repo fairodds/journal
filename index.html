@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fair Odds — открытый журнал ставок</title>
-<meta name="description" content="Открытый журнал ставок бота «Честный коэффициент». Каждая ставка опубликована до начала матча.">
+<title>Fair Odds — открытый журнал прогнозов</title>
+<meta name="description" content="Открытый журнал прогнозов агента «Честный коэффициент». Каждый прогноз опубликован до начала матча.">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Fair Odds">
 <meta property="og:url" content="https://fairodds.github.io/journal/">
-<meta property="og:title" content="Fair Odds — открытый журнал ставок">
-<meta property="og:description" content="Открытый журнал ставок. Всё опубликовано до начала матча.">
+<meta property="og:title" content="Fair Odds — открытый журнал прогнозов">
+<meta property="og:description" content="Открытый журнал прогнозов. Всё опубликовано до начала матча.">
 <meta name="twitter:card" content="summary_large_image">
 
 <style>
@@ -237,6 +237,7 @@
   }
   .honest b{color:var(--ink)}
   footer{color:var(--muted);font-size:12.5px;text-align:center;font-family:"DM Mono",ui-monospace,monospace}
+  .disc{color:var(--muted);font-size:10.5px;line-height:1.45;text-align:center;margin:-12px 0 0;opacity:.85}
 
   /* ДОБАВЛЕНО 27.10.26: кнопка на сайт «База карточек» (папка base/) */
   .baza{
@@ -339,6 +340,7 @@
   </section>
 
   <footer id="stamp"></footer>
+  <p class="disc" id="disc"></p>
 </div>
 
 <div class="modal-backdrop" id="modalBackdrop" hidden>
@@ -358,65 +360,67 @@ const LANGS = [ ['ru','RU'], ['en','EN'] ];
 const SPORTS = [ ['football','sportFootball'], ['basketball','sportBasketball'], ['readodds','sportReadOdds'], ['supersignal','sportSuper'], ['rules','sportRules'], ['soft','sportSoft'] ];
 
 const T = {
-ru:{brand:'Честный коэффициент', sub:'Открытый журнал ставок',
- tag:'Каждая ставка опубликована до начала матча. Ничего не дописано после.',
- bank:'Банк', from:'со 100 единиц, с {d}',
- bets:'Ставки', profit:'Прибыль', roi:'ROI',
+ru:{brand:'Честный коэффициент', sub:'Открытый журнал прогнозов',
+ tag:'Каждый прогноз опубликован до начала матча. Ничего не дописано после.',
+ bank:'Условный счёт', from:'со 100 условных единиц, с {d}',
+ bets:'Прогнозы', profit:'Итог', roi:'ROI',
  hitrow:'{pct}% точность ({wins} из {n})',
- live:'Сейчас в игре', nolive:'Открытых ставок нет',
- bet:'Ставка', dayb:'{n} {w}', dwon:'выиграно',
- feed:'Последние ставки', upd:'Обновлено {d}', updtop:'Данные на {d}',
+ live:'Сейчас в игре', nolive:'Открытых прогнозов нет',
+ bet:'Прогноз', dayb:'{n} {w}', dwon:'выиграно',
+ feed:'Последние прогнозы', upd:'Обновлено {d}', updtop:'Данные на {d}',
  src:'Источник: автоматический журнал бота · обновление каждую ночь в 03:10',
- honest:'<b>Честно о цифре сверху.</b> {n} ставок — это ещё мало. Такой плюс пока может быть и от метода, и от везения: отличить одно от другого можно примерно с 300–500 ставок. Поэтому здесь показано всё подряд, вместе с плохими днями, и эта строка отсюда не исчезнет, пока выборка не вырастет.',
+ honest:'<b>Честно о цифре сверху.</b> {n} прогнозов — это ещё мало. Такой плюс пока может быть и от метода, и от везения: отличить одно от другого можно примерно с 300–500 прогнозов. Поэтому здесь показано всё подряд, вместе с плохими днями, и эта строка отсюда не исчезнет, пока выборка не вырастет.',
  how:'Метод', tapHint:'Нажмите на матч, чтобы открыть сообщение в Telegram',
- h1:'<b>Банк</b> — условный счёт, который начался со 100. На каждую ставку идёт ровно одна единица, всегда одинаково — это называется флет. Зашла ставка на 2.30 — банк вырос на 1.30, не зашла — упал на 1.',
- h2:'<b>Коэффициент</b> рядом со ставкой — тот, что стоял у букмекера в момент публикации, а не тот, что был потом.',
- h3:'<b>Почему заходит примерно половина.</b> Это нормально и даже хорошо, потому что ставки берутся по высокой цене. Сорок процентов попаданий при коэффициенте 2.8 дают плюс, а пятьдесят при 1.9 — минус. Смотреть надо на банк, а не на процент.',
- h4:'<b>Откуда берутся ставки.</b> Бот считает собственную справедливую цену матча по рейтингу команд, форме и личным встречам. Когда она сильно расходится с ценой букмекера — появляется сигнал.',
- plural:['ставка','ставки','ставок'],
+ h1:'<b>Условный счёт</b> начался со 100. Каждый прогноз считается как одна условная единица, всегда одинаково. Зашёл прогноз с кэфом 2.30 — счёт вырос на 1.30, не зашёл — уменьшился на 1. Это способ измерить точность модели, а не деньги.',
+ h2:'<b>Коэффициент</b> рядом с прогнозом — тот, что стоял у букмекера в момент публикации, а не тот, что был потом.',
+ h3:'<b>Почему заходит примерно половина.</b> Это нормально и даже хорошо, потому что прогнозы даются по высокой цене. Сорок процентов попаданий при коэффициенте 2.8 дают плюс, а пятьдесят при 1.9 — минус. Смотреть надо на счёт, а не на процент.',
+ h4:'<b>Откуда берутся прогнозы.</b> Бот считает собственную справедливую цену матча по рейтингу команд, форме и личным встречам. Когда она сильно расходится с ценой букмекера — появляется сигнал.',
+ plural:['прогноз','прогноза','прогнозов'],
  sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол', sportReadOdds:'📐 Читаем кф', sportSuper:'🎯 Суперсигнал',
  sportRules:'📚 Правила лиг', sportSoft:'🔎 Мягкий коридор',
- h3ru:'<b>Почему процент попаданий разный.</b> Правила играют на разные рынки: ничьи с кэфом 3–4 заходят примерно в трети случаев, победы фаворита с кэфом 1.4–1.6 — в трёх из четырёх. Плюс даёт сочетание цены и частоты, поэтому смотреть надо на банк, а не на процент. Фора 0 при ничьей — возврат ставки.',
- h4ru:'<b>Откуда берутся ставки.</b> По истории 2018–2026 найдены лиги, где один рынок в узком диапазоне кэфа стабильно давал плюс — например, ничья в Египте при кэфе 2.80–3.30. Правила искали на старых годах и проверяли на свежих. Сейчас их 13, таблица заморожена: бот ставит, когда кэф матча попадает в диапазон правила.',
- h3sc:'<b>Почему процент попаданий разный.</b> Ставка идёт на тот рынок, который в похожих матчах прошлого был в плюсе по цене этого матча, — это может быть и ничья, и тотал, и фора. Смотреть надо на банк, а не на процент. Фора 0 при ничьей — возврат ставки.',
- h4sc:'<b>Откуда берутся ставки.</b> Для каждого матча бот находит в базе 2018–2026 (около 124 тысяч игр) матчи с похожими кэфами — «коридор» — и смотрит, какой рынок в них заходил чаще, чем закладывает цена букмекера. Ставка — только если коридор подтверждается и в широком, и в узком варианте.',
+ h3ru:'<b>Почему процент попаданий разный.</b> Правила играют на разные рынки: ничьи с кэфом 3–4 заходят примерно в трети случаев, победы фаворита с кэфом 1.4–1.6 — в трёх из четырёх. Плюс даёт сочетание цены и частоты, поэтому смотреть надо на счёт, а не на процент. Фора 0 при ничьей — возврат.',
+ h4ru:'<b>Откуда берутся прогнозы.</b> По истории 2018–2026 найдены лиги, где один рынок в узком диапазоне кэфа стабильно давал плюс — например, ничья в Египте при кэфе 2.80–3.30. Правила искали на старых годах и проверяли на свежих. Сейчас их 13, таблица заморожена: бот даёт прогноз, когда кэф матча попадает в диапазон правила.',
+ h3sc:'<b>Почему процент попаданий разный.</b> Прогноз даётся на тот рынок, который в похожих матчах прошлого был в плюсе по цене этого матча, — это может быть и ничья, и тотал, и фора. Смотреть надо на счёт, а не на процент. Фора 0 при ничьей — возврат.',
+ h4sc:'<b>Откуда берутся прогнозы.</b> Для каждого матча бот находит в базе 2018–2026 (около 124 тысяч игр) матчи с похожими кэфами — «коридор» — и смотрит, какой рынок в них заходил чаще, чем закладывает цена букмекера. Прогноз — только если коридор подтверждается и в широком, и в узком варианте.',
  push:'возврат',
- h4ss:'<b>Откуда берутся ставки.</b> Суперсигнал появляется, когда две независимые стратегии бота — «Стратегия ТВ» и «Читаем коэффициенты» — называют одну и ту же команду.',
- h3ro:'<b>Почему заходит больше половины.</b> Здесь ставка всегда на фаворита букмекера со средним кэфом около 1.9, поэтому для плюса попадать нужно чаще, чем в половине случаев. Смотреть надо на банк, а не на процент.',
- h4ro:'<b>Откуда берутся ставки.</b> Бот считает собственную цену матча по месту команд в таблице и форме последних матчей. Ставка идёт на фаворита букмекера с кэфом от 1.49 до 2.30 — когда самое сильное расхождение между ценой бота и букмекера приходится именно на этого фаворита.',
+ h4ss:'<b>Откуда берутся прогнозы.</b> Суперсигнал появляется, когда две независимые стратегии бота — «Стратегия ТВ» и «Читаем коэффициенты» — называют одну и ту же команду.',
+ h3ro:'<b>Почему заходит больше половины.</b> Здесь прогноз всегда на фаворита букмекера со средним кэфом около 1.9, поэтому для плюса попадать нужно чаще, чем в половине случаев. Смотреть надо на счёт, а не на процент.',
+ h4ro:'<b>Откуда берутся прогнозы.</b> Бот считает собственную цену матча по месту команд в таблице и форме последних матчей. Прогноз даётся на фаворита букмекера с кэфом от 1.49 до 2.30 — когда самое сильное расхождение между ценой бота и букмекера приходится именно на этого фаворита.',
  bazaT:'База карточек', bazaS:'Все карточки агента с кэфами и результатами, с фильтрами',
+ disc:'Сайт носит исключительно информационный и аналитический характер: здесь публикуется статистика спортивных событий и результаты математической модели. Материалы не являются предложением, рекламой или призывом участвовать в азартных играх или делать ставки, и не являются финансовой рекомендацией. Сайт не принимает ставки, не сотрудничает с букмекерами и не получает от них вознаграждения. Коэффициенты приведены как рыночные данные для анализа. Участие в азартных играх может быть запрещено законодательством вашей страны — соблюдайте местные законы. 18+',
  statsTitle:'Статистика системы',
  avgOdd:'Средний кэф', avgOddWins:'Средний кэф побед', maxDD:'Макс. просадка',
  bestStreak:'Лучшая серия побед', worstStreak:'Худшая серия', curStreak:'Текущая серия',
  na:'—', units:'ед.'},
 
-en:{brand:'Fair Odds', sub:'Open betting record',
- tag:'Every pick is published before the match starts. Nothing is added after.',
- bank:'Bankroll', from:'from 100 units, since {d}',
- bets:'Bets', profit:'Profit', roi:'ROI',
+en:{brand:'Fair Odds', sub:'Open prediction record',
+ tag:'Every prediction is published before the match starts. Nothing is added after.',
+ bank:'Notional balance', from:'from 100 notional units, since {d}',
+ bets:'Predictions', profit:'Result', roi:'ROI',
  hitrow:'{pct}% win rate ({wins} of {n})',
- live:'Live Bets', nolive:'No open bets',
+ live:'Open predictions', nolive:'No open predictions',
  bet:'Pick', dayb:'{n} {w}', dwon:'won',
- feed:'Recent Bets', upd:'Last updated {d}', updtop:'Data as of {d}',
+ feed:'Recent predictions', upd:'Last updated {d}', updtop:'Data as of {d}',
  src:'Source: the bot’s automatic record · updated nightly at 03:10',
- honest:'<b>Honestly about the number above.</b> {n} bets is still a small sample. This profit could come from the method or from luck — telling them apart takes roughly 300–500 bets. That is why everything is shown here, losing days included, and this line stays until the sample grows.',
+ honest:'<b>Honestly about the number above.</b> {n} predictions is still a small sample. This profit could come from the method or from luck — telling them apart takes roughly 300–500 predictions. That is why everything is shown here, losing days included, and this line stays until the sample grows.',
  how:'Method', tapHint:'Tap a match to open the original Telegram message',
- h1:'<b>Bankroll</b> is a notional account that started at 100. Every bet stakes exactly one unit, always the same — a flat stake. A winning bet at 2.30 adds 1.30; a losing one subtracts 1.',
- h2:'<b>The odds</b> next to a bet are the ones the bookmaker showed at the moment of publication, not later.',
- h3:'<b>Why only about half win.</b> That is normal and even good, because the bets are taken at high prices. Forty percent at odds of 2.8 is a profit; fifty percent at 1.9 is a loss. Watch the bankroll, not the percentage.',
- h4:'<b>Where the bets come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker’s, a signal appears.',
- plural:['bet','bets','bets'],
+ h1:'<b>The notional balance</b> started at 100. Every prediction counts as one notional unit, always the same. A correct prediction at odds 2.30 adds 1.30; a wrong one subtracts 1. It measures the model, not money.',
+ h2:'<b>The odds</b> next to a prediction are the ones the bookmaker showed at the moment of publication, not later.',
+ h3:'<b>Why only about half win.</b> That is normal and even good, because predictions are made at high prices. Forty percent at odds of 2.8 is a profit; fifty percent at 1.9 is a loss. Watch the balance, not the percentage.',
+ h4:'<b>Where the predictions come from.</b> The bot works out its own fair price for a match from team ratings, recent form and head-to-head records. When that price differs sharply from the bookmaker’s, a signal appears.',
+ plural:['prediction','predictions','predictions'],
  sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball', sportReadOdds:'📐 Odds reading', sportSuper:'🎯 Supersignal',
  sportRules:'📚 League rules', sportSoft:'🔎 Soft corridor',
- h3ru:'<b>Why the win rate varies.</b> The rules play different markets: draws at odds 3–4 land about a third of the time, a favourite at 1.4–1.6 three times out of four. Profit comes from price and frequency together, so watch the bankroll, not the percentage. Draw-no-bet is refunded on a draw.',
- h4ru:'<b>Where the bets come from.</b> In 2018–2026 data we found leagues where one market in a narrow odds band was steadily profitable — for example, the draw in Egypt at odds 2.80–3.30. The rules were found on older seasons and checked on recent ones. There are 13 of them and the table is frozen: the bot bets when a match falls into a rule’s odds band.',
- h3sc:'<b>Why the win rate varies.</b> The pick is whichever market was profitable at this match’s price in similar past matches — a draw, a total or a draw-no-bet. Watch the bankroll, not the percentage. Draw-no-bet is refunded on a draw.',
- h4sc:'<b>Where the bets come from.</b> For each match the bot finds games with similar odds in a 2018–2026 database of about 124,000 matches — a “corridor” — and checks which market landed more often than the bookmaker’s price implies. A bet is made only when both the wide and the narrow corridor agree.',
+ h3ru:'<b>Why the win rate varies.</b> The rules play different markets: draws at odds 3–4 land about a third of the time, a favourite at 1.4–1.6 three times out of four. Profit comes from price and frequency together, so watch the balance, not the percentage. Draw-no-bet is refunded on a draw.',
+ h4ru:'<b>Where the predictions come from.</b> In 2018–2026 data we found leagues where one market in a narrow odds band was steadily profitable — for example, the draw in Egypt at odds 2.80–3.30. The rules were found on older seasons and checked on recent ones. There are 13 of them and the table is frozen: the bot makes a prediction when a match falls into a rule’s odds band.',
+ h3sc:'<b>Why the win rate varies.</b> The pick is whichever market was profitable at this match’s price in similar past matches — a draw, a total or a draw-no-bet. Watch the balance, not the percentage. Draw-no-bet is refunded on a draw.',
+ h4sc:'<b>Where the predictions come from.</b> For each match the bot finds games with similar odds in a 2018–2026 database of about 124,000 matches — a “corridor” — and checks which market landed more often than the bookmaker’s price implies. A prediction is made only when both the wide and the narrow corridor agree.',
  push:'refund',
- h4ss:'<b>Where the bets come from.</b> A supersignal appears when two independent strategies of the bot — the TV strategy and Odds reading — pick the same team.',
- h3ro:'<b>Why more than half win.</b> Here the pick is always the bookmaker’s favourite at average odds of about 1.9, so a profit needs a win rate above one half. Watch the bankroll, not the percentage.',
- h4ro:'<b>Where the bets come from.</b> The bot works out its own price for a match from the teams’ league positions and recent form. The pick is the bookmaker’s favourite at odds from 1.49 to 2.30 — when the biggest gap between the bot’s price and the bookmaker’s falls on that favourite.',
+ h4ss:'<b>Where the predictions come from.</b> A supersignal appears when two independent strategies of the bot — the TV strategy and Odds reading — pick the same team.',
+ h3ro:'<b>Why more than half win.</b> Here the pick is always the bookmaker’s favourite at average odds of about 1.9, so a profit needs a win rate above one half. Watch the balance, not the percentage.',
+ h4ro:'<b>Where the predictions come from.</b> The bot works out its own price for a match from the teams’ league positions and recent form. The pick is the bookmaker’s favourite at odds from 1.49 to 2.30 — when the biggest gap between the bot’s price and the bookmaker’s falls on that favourite.',
  bazaT:'Card database', bazaS:'Every card the agent published, with odds and results — filterable',
+ disc:'This site is for information and analysis only: it publishes sports statistics and the output of a mathematical model. Nothing here is an offer, advertisement or invitation to gamble or place bets, nor financial advice. The site does not accept bets, does not work with bookmakers and receives no payment from them. Odds are shown as market data for analysis. Gambling may be illegal where you live — follow your local laws. 18+',
  statsTitle:'System Stats',
  avgOdd:'Average odds', avgOddWins:'Average odds (wins)', maxDD:'Max drawdown',
  bestStreak:'Best win streak', worstStreak:'Worst streak', curStreak:'Current streak',
@@ -796,6 +800,7 @@ function render(){
   el('feed-title').textContent = tr('feed');
   el('feed').innerHTML = feed.map(rowHTML).join('');
   el('stamp').textContent = S.last_day ? tr('upd', {d: dd(S.last_day)}) : '';
+  el('disc').textContent = tr('disc');
 }
 
 el('langs').addEventListener('click', e => {
