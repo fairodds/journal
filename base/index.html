@@ -231,7 +231,7 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
   <div class="mkchips" id="mkchips"></div>
   <div class="mkrow">
     <label>Название<input id="mkname" maxlength="40" autocomplete="off" placeholder="Например: Х 3.4 Хорватия"></label>
-    <label>Прогноз<select id="mkbet"><option value="p1">П1</option><option value="x">Х</option><option value="p2">П2</option><option value="f1">Ф1(0)</option><option value="f2">Ф2(0)</option><option value="tm">ТМ2.5</option><option value="tb">ТБ2.5</option><option value="oz">ОЗ-да</option></select></label>
+    <label>Прогноз<select id="mkbet"><option value="p1">П1</option><option value="x">Х</option><option value="p2">П2</option><option value="f1">Ф1(0)</option><option value="f2">Ф2(0)</option><option value="tm">ТМ2.5</option><option value="tb">ТБ2.5</option><option value="oz">ОЗ-да</option><option value="bf1">Баскет: фора хозяев</option><option value="bf2">Баскет: фора гостей</option><option value="btb">Баскет: ТБ</option><option value="btm">Баскет: ТМ</option></select></label>
   </div>
   <p class="mkerr" id="mkerr" hidden></p>
   <div class="mkrow"><button type="submit" class="clear primary">Сохранить</button><button type="button" class="clear" id="mkcancel">Отмена</button></div>
@@ -355,7 +355,7 @@ const PL = v => v == null ? '' : ', ' + v + ' м.';
 const TEAM = (n, bet, cat, rt, pl) => { const L = LET(cat); return `<div class="tm"><span class="cat c${L}" title="${cat || ''}">${L}</span><span class="nm">${bet ? '<strong>' + esc(n) + '</strong>' : esc(n)}</span><span class="mt"><span>рейт</span> ${rt == null ? '—' : Number(rt).toFixed(1)}</span><span class="mt"><span>место</span> ${pl == null ? '—' : pl}</span></div>`; };
 const R1 = v => v == null ? '—' : Number(v).toFixed(1);
 const CAT = c => { const L = LET(c); return `<span class="cat c${L}" title="${c || ''}">${L}</span>`; };
-const MK = {p1:'П1', x:'Х', p2:'П2', f1:'Ф1(0)', f2:'Ф2(0)', tm:'ТМ2.5', tb:'ТБ2.5', oz:'ОЗ-Да'};
+const MK = {p1:'П1', x:'Х', p2:'П2', f1:'Ф1(0)', f2:'Ф2(0)', tm:'ТМ2.5', tb:'ТБ2.5', oz:'ОЗ-Да', bf1:'Ф1 баскет', bf2:'Ф2 баскет', btb:'ТБ баскет', btm:'ТМ баскет'};
 const RULE = v => { if (!v) return ''; const m = String(v).match(/^(\w+)\s+([\d.]+)-([\d.]+)$/); return m ? `${MK[m[1]] || m[1]} ${m[2]}–${m[3]}` : v; };
 const COR = (n, roi) => n == null ? '—' : `${n} · ${roi > 0 ? '+' : ''}${Number(roi).toFixed(1)}%`;
 const LET = c => ({'гранд':'Г','середняк':'С','аутсайдер':'А'})[c] || '?';
@@ -369,6 +369,8 @@ const COLS = [
   {k:'kc', hide:['lr','sc'], l:'Кат', lh:'<small class="hl">Г·С·А</small>', t:'stk', stack:[r => CAT(r.ch_), r => CAT(r.ca)], get: r => LET(r.ch_) + ' ' + LET(r.ca)},
   {k:'kr', hide:['lr','sc'], l:'Рейт', t:'stk', stack:[r => R1(r.rh), r => R1(r.ra)], get: r => R1(r.rh) + ' ' + R1(r.ra)},
   {k:'kp', hide:['lr','sc'], l:'Место', t:'stk', stack:[r => r.ph == null ? '—' : r.ph, r => r.pa == null ? '—' : r.pa], get: r => r.ph + ' ' + r.pa},
+  {k:'p1o', only:['bsk'], l:'П1 откр', t:'num', f:f2, hit:'p1', sep:true},
+  {k:'p2o', only:['bsk'], l:'П2 откр', t:'num', f:f2, hit:'p2'},
   {k:'p1', l:'П1', t:'num', f:f2, hit:'p1', sep:true},
   {k:'x', l:'Х', t:'num', f:f2, hit:'x', hide:['bsk']},
   {k:'p2', l:'П2', t:'num', f:f2, hit:'p2'},
@@ -377,14 +379,15 @@ const COLS = [
   {k:'tm', hide:['lr','sc'], l:'ТМ2.5', t:'num', f:f2, hit:'tm'},
   {k:'tb', hide:['lr','sc'], l:'ТБ2.5', t:'num', f:f2, hit:'tb'},
   {k:'oz', hide:['lr','sc'], l:'ОЗ-Да', t:'num', f:f2, hit:'oz'},
-  {k:'mg', hide:['lr','sc'], l:'Маржа', t:'num', f:f2},
+  {k:'mg', hide:['lr','sc','bsk'], l:'Маржа', t:'num', f:f2},
   {k:'btl', only:['bsk'], l:'Тотал', t:'num', sep:true, f: v => v == null ? '' : String(v)},
   {k:'btm', only:['bsk'], l:'ТМ', t:'num', f:f2, hit:'btm'},
   {k:'btb', only:['bsk'], l:'ТБ', t:'num', f:f2, hit:'btb'},
   {k:'bfl', only:['bsk'], l:'Фора 1', t:'num', sep:true, f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
   {k:'bf1', only:['bsk'], l:'Ф1', t:'num', f:f2, hit:'bf1'},
   {k:'bf2', only:['bsk'], l:'Ф2', t:'num', f:f2, hit:'bf2'},
-  {k:'vo', hide:['lr','sc'], l:'ТВ', t:'txt', sep:true},
+  {k:'mgb', only:['bsk'], l:'Маржа', t:'num', sep:true, sort:'mg', get: r => r.mg, f:f2},
+  {k:'vo', hide:['lr','sc','bsk'], l:'ТВ', t:'txt', sep:true},
   {k:'m1', hide:['lr','sc'], l:'Мод.П1', t:'num', f:f2, sep:true},
   {k:'m2', hide:['lr','sc'], l:'Мод.П2', t:'num', f:f2},
   {k:'a1', hide:['lr','sc'], l:'Ан.П1', t:'num', f:f2},
@@ -485,7 +488,7 @@ function TAPV(c, r){
   if (c.k === 'mk') return r.mk ? (MK[r.mk] || r.mk) + ' @' : null;
   const v = shown(c, r); return v && v !== '…' ? v : null;
 }
-const KF = ['p1','x','p2','f1','f2','tm','tb','oz','mg','btl','btm','btb','bfl','bf1','bf2'];
+const KF = ['p1o','p2o','p1','x','p2','f1','f2','tm','tb','oz','mg','mgb','btl','btm','btb','bfl','bf1','bf2'];
 const OPT = ['f1','f2','tm','tb','oz','mg'];
 const MODK = ['m1','m2','a1','a2','q1','q2'];
 let SHOWM = false; try { SHOWM = localStorage.getItem('chk_showm') === '1'; } catch(e){}
@@ -638,7 +641,10 @@ function chipsOf(fl){
 function betOut(bet, r){
   const g = goals(r), o = r[bet]; if (!g) return null;
   if ((bet === 'f1' || bet === 'f2') && g[0] === g[1]) return 'p';
-  return HIT[bet](g) ? 'w' : 'l';
+  // баскетбол: возврат, если фора или тотал легли ровно в линию
+  if ((bet === 'bf1' || bet === 'bf2') && (r.bfl == null || g[0] + r.bfl === g[1])) return r.bfl == null ? null : 'p';
+  if ((bet === 'btm' || bet === 'btb') && (r.btl == null || g[0] + g[1] === r.btl)) return r.btl == null ? null : 'p';
+  return HIT[bet](g, r) ? 'w' : 'l';
 }
 function betStat(f){
   let cnt = 0, n = 0, prof = 0, w = 0;
