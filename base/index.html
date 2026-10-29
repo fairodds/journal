@@ -117,8 +117,8 @@ thead tr.f th{max-width:0}
 thead tr.f input{width:calc(100% - 2px);min-width:40px}
 th,td{padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:center}
 thead th{position:sticky;background:var(--head);color:var(--head-ink);font-weight:600;font-size:12px;z-index:2}
-thead tr.g th{top:0;height:20px;padding:3px 6px 0;font-size:11px;font-weight:600;color:var(--gold);text-align:center;white-space:nowrap}thead tr.g th.grp{border-bottom:1px solid rgba(255,255,255,.18)}thead tr.h th{top:23px;cursor:pointer;user-select:none}
-thead tr.f th{top:50px;padding:3px 3px;background:var(--head)}
+table.hasg thead tr.h th{top:23px}table.hasg thead tr.f th{top:50px}thead tr.g th{top:0;height:20px;padding:3px 6px 0;font-size:11px;font-weight:600;color:var(--gold);text-align:center;white-space:nowrap}thead tr.g th.grp{border-bottom:1px solid rgba(255,255,255,.18)}thead tr.h th{top:0;cursor:pointer;user-select:none}
+thead tr.f th{top:27px;padding:3px 3px;background:var(--head)}
 thead tr.h th[aria-sort="ascending"]::after{content:" ▲";font-size:9px}
 thead tr.h th[aria-sort="descending"]::after{content:" ▼";font-size:9px}
 thead input{width:100%;min-width:34px;max-width:100%;font:500 12px var(--f-num);padding:3px 4px;border-radius:4px;border:1px solid transparent;background:var(--panel);color:var(--ink)}
@@ -386,6 +386,8 @@ const COLS = [
   {k:'btb', only:['bsk'], l:'ТБ', t:'num', f:f2, hit:'btb'},
   {k:'bfl', only:['bsk'], l:'Фора 1', t:'num', sep:true, f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
   {k:'bf1', only:['bsk'], l:'Ф1', t:'num', f:f2, hit:'bf1'},
+  // ДОБАВЛЕНО 29.10.26: линия форы гостей (= Фора 1 с обратным знаком)
+  {k:'bfl2', only:['bsk'], l:'Фора 2', t:'num', f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
   {k:'bf2', only:['bsk'], l:'Ф2', t:'num', f:f2, hit:'bf2'},
   {k:'mgb', only:['bsk'], l:'Маржа', t:'num', sep:true, sort:'mg', get: r => r.mg, f:f2},
   // ДОБАВЛЕНО 29.10.26: прогнозы ТВ и «Читаем кф» во вкладке «Баскетбол»
@@ -494,9 +496,9 @@ function TAPV(c, r){
   if (c.k === 'mk') return r.mk ? (MK[r.mk] || r.mk) + ' @' : null;
   const v = shown(c, r); return v && v !== '…' ? v : null;
 }
-const KF = ['p1o','p2o','p1','x','p2','f1','f2','tm','tb','oz','mg','mgb','btl','btm','btb','bfl','bf1','bf2'];
+const KF = ['p1o','p2o','p1','x','p2','f1','f2','tm','tb','oz','mg','mgb','btl','btm','btb','bfl','bf1','bfl2','bf2'];
 const OPT = ['f1','f2','tm','tb','oz','mg'];
-const MODK = ['m1','m2','a1','a2','q1','q2','r1','r2'];
+const MODK = ['tvb','ro','m1','m2','a1','a2','q1','q2','r1','r2'];
 let SHOWM = false; try { SHOWM = localStorage.getItem('chk_showm') === '1'; } catch(e){}
 const VC = () => COLS.filter(c => !EMPTY.has(c.k) && (SHOWM || !MODK.includes(c.k)) && !(c.hide && c.hide.includes(view)) && !(c.only && !c.only.includes(view)));
 const FROW = () => '<tr class="f">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.nofilter ? '' : c.sel ? `<select id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}"><option value="">ALL</option>${c.sel.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}</select>` : `<input id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}" inputmode="${c.t === 'num' ? 'decimal' : 'text'}" autocomplete="off">`}</th>`).join('') + '</tr>';
@@ -504,8 +506,9 @@ function buildHead(){
   const th = el('tbl').tHead;
   el('tbl').createTFoot().innerHTML = FROW().replace(/id="f_/g, 'id="g_');
   // ДОБАВЛЕНО 29.10.26: строка-группа над парами «Наш кф: …»
-  const GR = () => { const v = VC(); let out = '', i = 0; while (i < v.length){ const g = v[i].g; let j = i; while (j + 1 < v.length && v[j + 1].g && v[j + 1].g === g) j++; out += `<th class="${g ? 'grp' : ''}${v[i].sep ? ' sep' : ''}" colspan="${j - i + 1}">${g || ''}</th>`; i = j + 1; } return '<tr class="g">' + out + '</tr>'; };
-  th.innerHTML = GR() + '<tr class="h">' + VC().map(c => `<th data-k="${c.k}"${c.sep ? ' class="sep"' : ''}>${c.l}${c.lh || ''}</th>`).join('') + '</tr>'
+  const GR = () => { const v = VC(); let out = '', i = 0; while (i < v.length){ const g = v[i].g; let j = i; while (j + 1 < v.length && v[j + 1].g && v[j + 1].g === g) j++; out += `<th class="${g ? 'grp' : ''}${v[i].sep ? ' sep' : ''}" colspan="${j - i + 1}">${g || ''}</th>`; i = j + 1; } return v.some(c => c.g) ? '<tr class="g">' + out + '</tr>' : ''; };
+  const gr = GR(); el('tbl').classList.toggle('hasg', !!gr);
+  th.innerHTML = gr + '<tr class="h">' + VC().map(c => `<th data-k="${c.k}"${c.sep ? ' class="sep"' : ''}>${c.l}${c.lh || ''}</th>`).join('') + '</tr>'
     + FROW();
   th.querySelectorAll('tr.h th').forEach(h => h.addEventListener('click', () => {
     const c = COLS.find(x => x.k === h.dataset.k), k = c.sort || c.k;
@@ -530,7 +533,7 @@ function buildTabs(){
 }
 
 function render(){
-  el('tgm').hidden = ['lr','sc'].includes(view);
+  el('tgm').hidden = ['lr','sc'].includes(view); syncM();
   const fn = VIEWS.find(v => v[0] === view)[2];
   let rows = DATA.filter(fn);
   for (const k in filters){ const c = COLS.find(x => x.k === k); rows = rows.filter(r => match(c, r, filters[k])); }
@@ -731,7 +734,7 @@ route();
 function boot(d){
   DATA = d;
   // у одного матча бывает несколько карточек (ТВ + Правило + Мягкий) с тем же временем и хозяевами — К/М ищут строку по номеру
-  DATA.forEach((r, i) => { r._i = i; });
+  DATA.forEach((r, i) => { r._i = i; r.bfl2 = r.bfl == null ? null : -r.bfl; });
   const last = DATA.reduce((m, r) => Math.max(m, r.ts || 0), 0);
   const ds = last ? new Date(last * 1000).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'2-digit'}) : '';
   const up = UPD && !isNaN(UPD) ? ' · обновлено ' + UPD.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}).replace(',', '') : '';
