@@ -381,14 +381,14 @@ const COLS = [
   {k:'tb', hide:['lr','sc'], l:'ТБ2.5', t:'num', f:f2, hit:'tb'},
   {k:'oz', hide:['lr','sc'], l:'ОЗ-Да', t:'num', f:f2, hit:'oz'},
   {k:'mg', hide:['lr','sc','bsk'], l:'Маржа', t:'num', f:f2},
-  {k:'btl', only:['bsk'], l:'Тотал', t:'num', sep:true, f: v => v == null ? '' : String(v)},
-  {k:'btm', only:['bsk'], l:'ТМ', t:'num', f:f2, hit:'btm'},
-  {k:'btb', only:['bsk'], l:'ТБ', t:'num', f:f2, hit:'btb'},
   {k:'bfl', only:['bsk'], l:'Фора 1', t:'num', sep:true, f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
   {k:'bf1', only:['bsk'], l:'Ф1', t:'num', f:f2, hit:'bf1'},
   // ДОБАВЛЕНО 29.10.26: линия форы гостей (= Фора 1 с обратным знаком)
   {k:'bfl2', only:['bsk'], l:'Фора 2', t:'num', f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
   {k:'bf2', only:['bsk'], l:'Ф2', t:'num', f:f2, hit:'bf2'},
+  {k:'btl', only:['bsk'], l:'Тотал', t:'num', sep:true, f: v => v == null ? '' : String(v)},
+  {k:'btb', only:['bsk'], l:'ТБ', t:'num', f:f2, hit:'btb'},
+  {k:'btm', only:['bsk'], l:'ТМ', t:'num', f:f2, hit:'btm'},
   {k:'mgb', only:['bsk'], l:'Маржа', t:'num', sep:true, sort:'mg', get: r => r.mg, f:f2},
   // ДОБАВЛЕНО 29.10.26: прогнозы ТВ и «Читаем кф» во вкладке «Баскетбол»
   {k:'tvb', only:['bsk'], l:'ТВ', lh:'<small class="hl">голоса · ставка</small>', t:'txt', sep:true, get: r => r.bo && r.ty ? (String(r.ty).startsWith('Расх') ? 'Расх' : 'ТВ' + (r.vo ? ' ' + r.vo : '')) + ' · ' + r.bo + ' ' + (({w:'✓',l:'✕',p:'↩'})[r.res] || '…') : '—'},
