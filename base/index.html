@@ -117,8 +117,8 @@ thead tr.f th{max-width:0}
 thead tr.f input{width:calc(100% - 2px);min-width:40px}
 th,td{padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:center}
 thead th{position:sticky;background:var(--head);color:var(--head-ink);font-weight:600;font-size:12px;z-index:2}
-thead tr.h th{top:0;cursor:pointer;user-select:none}
-thead tr.f th{top:27px;padding:3px 3px;background:var(--head)}
+thead tr.g th{top:0;height:20px;padding:3px 6px 0;font-size:11px;font-weight:600;color:var(--gold);text-align:center;white-space:nowrap}thead tr.g th.grp{border-bottom:1px solid rgba(255,255,255,.18)}thead tr.h th{top:23px;cursor:pointer;user-select:none}
+thead tr.f th{top:50px;padding:3px 3px;background:var(--head)}
 thead tr.h th[aria-sort="ascending"]::after{content:" ▲";font-size:9px}
 thead tr.h th[aria-sort="descending"]::after{content:" ▼";font-size:9px}
 thead input{width:100%;min-width:34px;max-width:100%;font:500 12px var(--f-num);padding:3px 4px;border-radius:4px;border:1px solid transparent;background:var(--panel);color:var(--ink)}
@@ -222,7 +222,7 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
   <label class="srch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" type="search" placeholder="Поиск: команда, чемпионат, дата" autocomplete="off" aria-label="Поиск"></label>
   <div class="seg" id="dq" role="group" aria-label="Даты"><button type="button" data-d="all" aria-pressed="true">Все</button><button type="button" data-d="y">Вчера</button><button type="button" data-d="t">Сегодня</button><button type="button" data-d="m">Завтра</button></div>
   <label class="per">Показать <select id="per"><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="0">Все</option></select> записей</label>
-  <button type="button" class="clear" id="tgm" aria-expanded="false">Модель · Аналитика · H2H ▾</button>
+  <button type="button" class="clear" id="tgm" aria-expanded="false">Наш кф ▾</button>
   <div class="sum" id="sum"></div>
 </div>
 <div class="wrap" id="wrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
@@ -388,13 +388,18 @@ const COLS = [
   {k:'bf1', only:['bsk'], l:'Ф1', t:'num', f:f2, hit:'bf1'},
   {k:'bf2', only:['bsk'], l:'Ф2', t:'num', f:f2, hit:'bf2'},
   {k:'mgb', only:['bsk'], l:'Маржа', t:'num', sep:true, sort:'mg', get: r => r.mg, f:f2},
+  // ДОБАВЛЕНО 29.10.26: прогнозы ТВ и «Читаем кф» во вкладке «Баскетбол»
+  {k:'tvb', only:['bsk'], l:'ТВ', lh:'<small class="hl">голоса · ставка</small>', t:'txt', sep:true, get: r => r.bo && r.ty ? (String(r.ty).startsWith('Расх') ? 'Расх' : 'ТВ' + (r.vo ? ' ' + r.vo : '')) + ' · ' + r.bo + ' ' + (({w:'✓',l:'✕',p:'↩'})[r.res] || '…') : '—'},
+  {k:'ro', only:['bsk'], l:'Читаем кф', lh:'<small class="hl">прогноз @ кф</small>', t:'txt', get: r => r.ros ? r.ros + ' @' + f2(r.rok) + ' ' + (({w:'✓',l:'✕',p:'↩'})[r.ror] || '…') : '—'},
   {k:'vo', hide:['lr','sc','bsk'], l:'ТВ', t:'txt', sep:true},
-  {k:'m1', hide:['lr','sc'], l:'Мод.П1', t:'num', f:f2, sep:true},
-  {k:'m2', hide:['lr','sc'], l:'Мод.П2', t:'num', f:f2},
-  {k:'a1', hide:['lr','sc'], l:'Ан.П1', t:'num', f:f2},
-  {k:'a2', hide:['lr','sc'], l:'Ан.П2', t:'num', f:f2},
-  {k:'q1', hide:['lr','sc'], l:'H2H П1', t:'num', f:f2},
-  {k:'q2', hide:['lr','sc'], l:'H2H П2', t:'num', f:f2},
+  {k:'m1', hide:['lr','sc'], g:'Наш кф: история', l:'П1', t:'num', f:f2, sep:true},
+  {k:'m2', hide:['lr','sc'], g:'Наш кф: история', l:'П2', t:'num', f:f2},
+  {k:'a1', hide:['lr','sc'], g:'Наш кф: сезон', sep:true, l:'П1', t:'num', f:f2},
+  {k:'a2', hide:['lr','sc'], g:'Наш кф: сезон', l:'П2', t:'num', f:f2},
+  {k:'q1', hide:['lr','sc'], g:'Наш кф: +очные', sep:true, l:'П1', t:'num', f:f2},
+  {k:'q2', hide:['lr','sc'], g:'Наш кф: +очные', l:'П2', t:'num', f:f2},
+  {k:'r1', only:['bsk'], g:'Наш кф: Читаем кф', sep:true, l:'П1', t:'num', f:f2},
+  {k:'r2', only:['bsk'], g:'Наш кф: Читаем кф', l:'П2', t:'num', f:f2},
   {k:'bo', hide:['lr','sc','bsk'], l:'Прогноз', t:'txt', sep:true, get: r => r.bo + ' ' + (({w:'✓',l:'✕',p:'↩'})[r.res] || '…')},
   {k:'mk', l:'Прогноз', t:'txt', only:['lr','sc'], sep:true, get: r => (MK[r.mk] || r.mk || '') + ' @' + (r.k == null ? '' : Number(r.k).toFixed(2)) + ' ' + (({w:'✓',l:'✕',p:'↩'})[r.res] || '…')},
   {k:'rl', l:'Правило', t:'txt', only:['lr'], get: r => RULE(r.rl)},
@@ -462,7 +467,7 @@ function stickCols(){
   });
 }
 
-function syncM(){ el('tgm').textContent = SHOWM ? 'Скрыть модель · аналитику · H2H ▴' : 'Модель · Аналитика · H2H ▾'; el('tgm').setAttribute('aria-expanded', SHOWM); }
+function syncM(){ el('tgm').textContent = SHOWM ? 'Скрыть наш кф ▴' : 'Наш кф ▾'; el('tgm').setAttribute('aria-expanded', SHOWM); }
 el('tgm').onclick = () => { SHOWM = !SHOWM; try { localStorage.setItem('chk_showm', SHOWM ? '1' : '0'); } catch(e){} if (!SHOWM) MODK.forEach(k => delete filters[k]); syncM(); buildHead(); render(); };
 function match(c, r, q){
   if (c.k === 'pair' && q[0] === '=' && q.includes('/')){ const p = q.slice(1).split('/'), t = [String(r.h).toLowerCase(), String(r.a).toLowerCase()]; return t.includes(p[0]) && t.includes(p[1]); }
@@ -491,14 +496,16 @@ function TAPV(c, r){
 }
 const KF = ['p1o','p2o','p1','x','p2','f1','f2','tm','tb','oz','mg','mgb','btl','btm','btb','bfl','bf1','bf2'];
 const OPT = ['f1','f2','tm','tb','oz','mg'];
-const MODK = ['m1','m2','a1','a2','q1','q2'];
+const MODK = ['m1','m2','a1','a2','q1','q2','r1','r2'];
 let SHOWM = false; try { SHOWM = localStorage.getItem('chk_showm') === '1'; } catch(e){}
 const VC = () => COLS.filter(c => !EMPTY.has(c.k) && (SHOWM || !MODK.includes(c.k)) && !(c.hide && c.hide.includes(view)) && !(c.only && !c.only.includes(view)));
 const FROW = () => '<tr class="f">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.nofilter ? '' : c.sel ? `<select id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}"><option value="">ALL</option>${c.sel.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}</select>` : `<input id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}" inputmode="${c.t === 'num' ? 'decimal' : 'text'}" autocomplete="off">`}</th>`).join('') + '</tr>';
 function buildHead(){
   const th = el('tbl').tHead;
   el('tbl').createTFoot().innerHTML = FROW().replace(/id="f_/g, 'id="g_');
-  th.innerHTML = '<tr class="h">' + VC().map(c => `<th data-k="${c.k}"${c.sep ? ' class="sep"' : ''}>${c.l}${c.lh || ''}</th>`).join('') + '</tr>'
+  // ДОБАВЛЕНО 29.10.26: строка-группа над парами «Наш кф: …»
+  const GR = () => { const v = VC(); let out = '', i = 0; while (i < v.length){ const g = v[i].g; let j = i; while (j + 1 < v.length && v[j + 1].g && v[j + 1].g === g) j++; out += `<th class="${g ? 'grp' : ''}${v[i].sep ? ' sep' : ''}" colspan="${j - i + 1}">${g || ''}</th>`; i = j + 1; } return '<tr class="g">' + out + '</tr>'; };
+  th.innerHTML = GR() + '<tr class="h">' + VC().map(c => `<th data-k="${c.k}"${c.sep ? ' class="sep"' : ''}>${c.l}${c.lh || ''}</th>`).join('') + '</tr>'
     + FROW();
   th.querySelectorAll('tr.h th').forEach(h => h.addEventListener('click', () => {
     const c = COLS.find(x => x.k === h.dataset.k), k = c.sort || c.k;
@@ -580,6 +587,8 @@ function render(){
       if (c.hit && g && HIT[c.hit](g, r) && raw(c, r) != null) cl.push('hit');
       if ((c.k === 'bo' || c.k === 'mk') && r.res === 'w') cl.push('won');
       if ((c.k === 'bo' || c.k === 'mk') && r.res === 'l') cl.push('lost');
+      if (c.k === 'tvb' && r.bo && (r.res === 'w' || r.res === 'l')) cl.push(r.res === 'w' ? 'won' : 'lost');
+      if (c.k === 'ro' && r.ros && r.ror) cl.push(r.ror === 'w' ? 'won' : 'lost');
       let v;
       if (c.k === 'km') v = `<button type="button" class="km" data-km="k" data-i="${r._i}">К${DATA.filter(d => corr(r, d)).length}</button><button type="button" class="km" data-km="m" data-i="${r._i}">М${DATA.filter(d => mm(r, d)).length}</button>`;
       else if (c.k === 'pair'){ v = `<div class="ln">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
