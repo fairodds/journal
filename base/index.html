@@ -70,6 +70,7 @@ nav.menu a.tgbtn:hover{background:#8fd357}
 .tgbar a{color:var(--brand);font-weight:600;text-decoration:none;border-bottom:1px solid var(--line)}
 .tgbar a:hover{border-color:var(--brand)}
 footer a,.about a{color:var(--brand)}
+footer .vis{white-space:nowrap}footer .vis b{color:var(--gold)}
 footer .disc{flex-basis:100%;margin:6px 0 0;font-size:10.5px;line-height:1.45;opacity:.85}
 .about{max-width:68ch;font-size:15.5px;line-height:1.6}
 .about h2{font-size:24px;margin:8px 0 4px;text-wrap:balance}
@@ -323,7 +324,7 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
 <p>Агент записывает кэфы в момент выпуска карточки, после матча дописывает счёт, а каждую ночь выкладывает обновлённую базу на сайт.</p>
 </article></div></section>
 </main>
-<footer><div class="in"><span>Честный коэффициент · открытая база карточек агента</span><span class="fl">Telegram: <a href="https://t.me/chesnyi_koef_channel" target="_blank" rel="noopener">@chesnyi_koef_channel</a> · <a href="https://t.me/chesnyi_koef_basketball" target="_blank" rel="noopener">@chesnyi_koef_basketball</a></span><span id="fstamp"></span><p class="disc">Сайт носит исключительно информационный и аналитический характер: здесь публикуется статистика спортивных событий и результаты математической модели. Материалы не являются предложением, рекламой или призывом участвовать в азартных играх или делать ставки, и не являются финансовой рекомендацией. Сайт не принимает ставки, не сотрудничает с букмекерами и не получает от них вознаграждения. Коэффициенты приведены как рыночные данные для анализа. Участие в азартных играх может быть запрещено законодательством вашей страны — соблюдайте местные законы. 18+</p></div></footer>
+<footer><div class="in"><span>Честный коэффициент · открытая база карточек агента</span><span class="fl">Telegram: <a href="https://t.me/chesnyi_koef_channel" target="_blank" rel="noopener">@chesnyi_koef_channel</a> · <a href="https://t.me/chesnyi_koef_basketball" target="_blank" rel="noopener">@chesnyi_koef_basketball</a></span><span id="fstamp"></span><span class="vis" id="visits" hidden>👁 Просмотров сайта: <b id="visits-n"></b></span><p class="disc">Сайт носит исключительно информационный и аналитический характер: здесь публикуется статистика спортивных событий и результаты математической модели. Материалы не являются предложением, рекламой или призывом участвовать в азартных играх или делать ставки, и не являются финансовой рекомендацией. Сайт не принимает ставки, не сотрудничает с букмекерами и не получает от них вознаграждения. Коэффициенты приведены как рыночные данные для анализа. Участие в азартных играх может быть запрещено законодательством вашей страны — соблюдайте местные законы. 18+</p></div></footer>
 
 <script>
 let DATA = [];
@@ -734,4 +735,12 @@ fetch('data/base.json', {cache:'no-store'}).then(r => { if (!r.ok) throw new Err
   .catch(() => { el('stamp').textContent = 'Не удалось загрузить базу. Обновите страницу.'; });
 </script>
 
+<!-- счётчик посещений GoatCounter -->
+<script data-goatcounter="https://fairodds.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script>
+fetch('https://fairodds.goatcounter.com/counter/TOTAL.json')
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { if (d && d.count) { document.getElementById('visits-n').textContent = d.count; document.getElementById('visits').hidden = false; } })
+  .catch(() => {});
+</script>
 </body></html>
