@@ -146,6 +146,12 @@ td.stk{font:500 12.5px var(--f-num);text-align:center}
 .cГ{background:var(--hit);color:#fff}.cС{background:var(--accent);color:#1d1600}.cА{background:#d63c2f;color:#fff}.c\?{background:transparent;color:var(--muted)}
 th .hl{display:block;font-weight:400;font-size:10px;opacity:.8}
 td.hit{background:var(--hit)!important;color:var(--hit-ink)}
+/* ДОБАВЛЕНО 31.10.26: подсветка изменения кф в баскетболе (текущий против открытия) */
+#tbl tbody td.kdn1{background:#fff6dc}#tbl tbody td.kdn2{background:#ffe08a}#tbl tbody td.kdn3{background:#f5b638}
+#tbl tbody td.kup1{background:#eef3fb}#tbl tbody td.kup2{background:#c9d8f2}#tbl tbody td.kup3{background:#8fb0e6}
+td .kmv{font-size:10px;margin-left:3px;font-weight:700}
+td.kdn1 .kmv,td.kdn2 .kmv,td.kdn3 .kmv{color:#8a3b00}td.kup1 .kmv,td.kup2 .kmv,td.kup3 .kmv{color:#1d3f85}
+td.hit .kmv{color:var(--hit-ink)}
 td.won{background:var(--hit-soft)!important;color:var(--hit);font-weight:600}
 td.lost{background:var(--miss-soft)!important;color:var(--miss);font-weight:600}
 td.sep{border-left:2px solid var(--line)}
@@ -289,6 +295,7 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
   <dt>Рейт</dt><dd>Рейтинг за 10 сезонов. Чем меньше число, тем сильнее команда.</dd>
   <dt>Место</dt><dd>Место в турнирной таблице на момент карточки.</dd>
   <dt>П1 Х П2</dt><dd>Кэфы на исход. Зелёная клетка значит, что этот исход зашёл.</dd>
+  <dt>▼ ▲</dt><dd>Только в баскетболе: кэф П1 или П2 изменился с открытия. Жёлтая клетка и ▼ — кэф упал, букмекер дожимает эту команду. Синяя клетка и ▲ — кэф вырос. Три оттенка по сдвигу от открытия: бледный — до 3%, средний — 3–7%, яркий — от 7%. Нажмите и подержите стрелку, чтобы увидеть открытие.</dd>
   <dt>Ф1(0) Ф2(0)</dt><dd>Фора 0 на хозяев и на гостей.</dd>
   <dt>ТМ ТБ 2.5</dt><dd>Тотал меньше и больше 2.5 гола.</dd>
   <dt>ОЗ-Да</dt><dd>Обе забьют.</dd>
@@ -599,6 +606,14 @@ function render(){
       else if (c.stack){ const sv = STV[c.k] ? STV[c.k](r) : []; v = c.stack.map((f, i) => sv[i] != null && sv[i] !== '—' && sv[i] !== '?' ? `<div class="ln"><span class="tg" data-fk="${c.k}" data-fv="=${esc(sv[i])}">${f(r)}</span></div>` : `<div class="ln">${f(r)}</div>`).join(''); }
       else if (c.k === 'vo' && r.vo) v = `<span class="pill${r.vo.startsWith('3') ? ' tv3' : ''}">${esc(r.vo)}</span>`;
       else v = esc(shown(c, r));
+      // ДОБАВЛЕНО 31.10.26: в баскетболе П1/П2 подсвечиваются, если кф ушёл от открытия
+      // ▼ кф упал (бук дожимает), ▲ кф вырос (бук отступает)
+      // ИЗМЕНЕНО 31.10.26: три уровня по сдвигу в % от открытия: до 3% слабо, 3–7% средне, от 7% сильно
+      if (view === 'bsk' && (c.k === 'p1' || c.k === 'p2') && r[c.k] != null && r[c.k + 'o'] != null){
+        const d = Math.round((r[c.k] - r[c.k + 'o']) * 100) / 100;
+        if (d){ const pc = Math.abs(d) / r[c.k + 'o'] * 100, lv = pc >= 7 ? 3 : pc >= 3 ? 2 : 1; cl.push((d < 0 ? 'kdn' : 'kup') + lv);
+          v += `<span class="kmv" title="Открытие ${f2(r[c.k + 'o'])} → сейчас ${f2(r[c.k])} (${d < 0 ? '−' : '+'}${pc.toFixed(1)}%)">${d < 0 ? '▼' : '▲'}</span>`; }
+      }
       if (KF.includes(c.k) && raw(c, r) != null){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="${c.k}" data-fv="${shown(c, r)}">${v}</td>`; }
       if (c.k === 'sc' && r.sc){ const sh = shown(c, r), mn = sh.split(' ')[0], ht = (sh.match(/\(.*\)/) || [''])[0];
         return `<td class="${cl.join(' ')}"><span class="sct" data-fv="${mn}">${esc(mn)}</span>${ht ? ` <span class="sct ht" data-fv="${ht}" data-mn="${mn}">${esc(ht)}</span>` : ''}</td>`; }
