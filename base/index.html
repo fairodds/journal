@@ -147,10 +147,10 @@ td.stk{font:500 12.5px var(--f-num);text-align:center}
 th .hl{display:block;font-weight:400;font-size:10px;opacity:.8}
 td.hit{background:var(--hit)!important;color:var(--hit-ink)}
 /* ДОБАВЛЕНО 31.10.26: подсветка изменения кф в баскетболе (текущий против открытия) */
-#tbl tbody td.kdn1{background:#fff6dc}#tbl tbody td.kdn2{background:#ffe08a}#tbl tbody td.kdn3{background:#f5b638}
-#tbl tbody td.kup1{background:#eef3fb}#tbl tbody td.kup2{background:#c9d8f2}#tbl tbody td.kup3{background:#8fb0e6}
+#tbl tbody td.kdn1{background:#d6def7;color:#13265e}#tbl tbody td.kdn2{background:#8fa3e8;color:#0c1a47}#tbl tbody td.kdn3{background:#2f3fbf;color:#fff;font-weight:700}
+#tbl tbody td.kup1{background:#ececec;color:#333}#tbl tbody td.kup2{background:#c4c4c4;color:#222}#tbl tbody td.kup3{background:#7a7a7a;color:#fff;font-weight:700}
 td .kmv{font-size:10px;margin-left:3px;font-weight:700}
-td.kdn1 .kmv,td.kdn2 .kmv,td.kdn3 .kmv{color:#8a3b00}td.kup1 .kmv,td.kup2 .kmv,td.kup3 .kmv{color:#1d3f85}
+td.kdn1 .kmv,td.kdn2 .kmv{color:#13265e}td.kup1 .kmv,td.kup2 .kmv{color:#333}td.kdn3 .kmv,td.kup3 .kmv{color:#fff}
 td.hit .kmv{color:var(--hit-ink)}
 td.won{background:var(--hit-soft)!important;color:var(--hit);font-weight:600}
 td.lost{background:var(--miss-soft)!important;color:var(--miss);font-weight:600}
@@ -295,7 +295,7 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
   <dt>Рейт</dt><dd>Рейтинг за 10 сезонов. Чем меньше число, тем сильнее команда.</dd>
   <dt>Место</dt><dd>Место в турнирной таблице на момент карточки.</dd>
   <dt>П1 Х П2</dt><dd>Кэфы на исход. Зелёная клетка значит, что этот исход зашёл.</dd>
-  <dt>▼ ▲</dt><dd>Только в баскетболе: кэф П1 или П2 изменился с открытия. Жёлтая клетка и ▼ — кэф упал, букмекер дожимает эту команду. Синяя клетка и ▲ — кэф вырос. Три оттенка по сдвигу от открытия: бледный — до 3%, средний — 3–7%, яркий — от 7%. Нажмите и подержите стрелку, чтобы увидеть открытие.</dd>
+  <dt>▼ ▲</dt><dd>Только в баскетболе: кэф П1 или П2 изменился с открытия. Синяя клетка и ▼ — кэф упал, букмекер дожимает эту команду. Серая клетка и ▲ — кэф вырос. Три оттенка по сдвигу от открытия: бледный — до 3%, средний — 3–7%, яркий — от 7%. Нажмите и подержите стрелку, чтобы увидеть открытие.</dd>
   <dt>Ф1(0) Ф2(0)</dt><dd>Фора 0 на хозяев и на гостей.</dd>
   <dt>ТМ ТБ 2.5</dt><dd>Тотал меньше и больше 2.5 гола.</dd>
   <dt>ОЗ-Да</dt><dd>Обе забьют.</dd>
