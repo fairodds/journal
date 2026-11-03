@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- НОВАЯ ВЕРСИЯ 03.11.26 — вкладка Бук что-то знает -->
+<!-- ВЕРСИЯ 2 от 03.11.26 — Бук что-то знает: ставка с форой -->
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -380,7 +380,8 @@ ru:{brand:'Честный коэффициент', sub:'Открытый жур�
  plural:['прогноз','прогноза','прогнозов'],
  sportAll:'Все', sportFootball:'⚽ Футбол', sportBasketball:'🏀 Баскетбол', sportReadOdds:'📐 Читаем кф', sportSuper:'🎯 Суперсигнал',
  sportRules:'📚 Правила лиг', sportSoft:'🔎 Мягкий коридор', sportIllogical:'🤔 Бук что-то знает',
- h3il:'<b>Какой здесь кэф.</b> Прогноз всегда на фаворита букмекера, ограничения по кэфу нет. Чем ниже кэф, тем чаще прогноз должен заходить, чтобы дать плюс. Смотреть надо на счёт, а не на процент.',
+ h3il:'<b>Какая здесь ставка.</b> Прогноз на фаворита букмекера с форой, у которой кэф ближе всего к 2.00. Целая фора, совпавшая со счётом, — возврат. Смотреть надо на счёт, а не на процент.',
+ h5il:'<b>С чего начат счёт.</b> С 03.11.26 счёт начат заново, со 100. В него не входят прежние 24 закрытых прогноза на победу фаворита: итог по ним был −3.19. Они остаются в логе бота.',
  h4il:'<b>Откуда берутся прогнозы.</b> Только баскетбол. Рейтинг за 10 сезонов показывает примерную силу команд, таблица и форма показывают текущий сезон. Если линия букмекера с этим не сходится, возможно, он знает больше, например о травмах или составах. Прогноз идёт за букмекером, а не против него.',
  h5bb:'<b>Какие прогнозы считаются.</b> С 03.11.26 здесь считаются только прогнозы с кэфом от 1.70, и старые тоже. Прогнозы ниже 1.70 убраны из счёта задним числом, но остаются в базе карточек.',
  h3ru:'<b>Почему процент попаданий разный.</b> Правила играют на разные рынки: ничьи с кэфом 3–4 заходят примерно в трети случаев, победы фаворита с кэфом 1.4–1.6 — в трёх из четырёх. Плюс даёт сочетание цены и частоты, поэтому смотреть надо на счёт, а не на процент. Фора 0 при ничьей — возврат.',
@@ -416,7 +417,8 @@ en:{brand:'Fair Odds', sub:'Open prediction record',
  plural:['prediction','predictions','predictions'],
  sportAll:'All', sportFootball:'⚽ Football', sportBasketball:'🏀 Basketball', sportReadOdds:'📐 Odds reading', sportSuper:'🎯 Supersignal',
  sportRules:'📚 League rules', sportSoft:'🔎 Soft corridor', sportIllogical:'🤔 Bookie knows',
- h3il:'<b>What odds to expect.</b> The pick is always the bookmaker’s favourite, with no limit on the odds. The lower the odds, the more often a pick must win to make a profit. Watch the balance, not the percentage.',
+ h3il:'<b>What the pick is.</b> The bookmaker’s favourite on the handicap whose odds are closest to 2.00. A whole-number handicap that matches the score is refunded. Watch the balance, not the percentage.',
+ h5il:'<b>Where the balance starts.</b> It restarted from 100 on 03.11.26. It excludes the earlier 24 closed predictions on the favourite to win, which finished at −3.19. They remain in the bot’s log.',
  h4il:'<b>Where the predictions come from.</b> Basketball only. Ten-season ratings show roughly how strong the teams are; the table and form show the current season. When the bookmaker’s line disagrees with them, the bookmaker may know more, such as injuries or line-ups. The pick follows the bookmaker rather than opposing it.',
  h5bb:'<b>Which predictions count.</b> Since 03.11.26 only predictions at odds of 1.70 or higher count here, including older ones. Predictions below 1.70 were removed from the balance retroactively but remain in the card database.',
  h3ru:'<b>Why the win rate varies.</b> The rules play different markets: draws at odds 3–4 land about a third of the time, a favourite at 1.4–1.6 three times out of four. Profit comes from price and frequency together, so watch the balance, not the percentage. Draw-no-bet is refunded on a draw.',
@@ -801,7 +803,7 @@ function render(){
                 : sport === 'supersignal' ? ['h1','h2','h3','h4ss']
                 : sport === 'rules' ? ['h1','h2','h3ru','h4ru']
                 : sport === 'soft' ? ['h1','h2','h3sc','h4sc']
-                : sport === 'illogical' ? ['h1','h2','h3il','h4il']
+                : sport === 'illogical' ? ['h1','h2','h3il','h4il','h5il']
                 : sport === 'basketball' ? ['h1','h2','h3','h4','h5bb'] : ['h1','h2','h3','h4'];
   el('how-body').innerHTML = howKeys.map(k => '<p>' + tr(k) + '</p>').join('')
     + '<p style="color:var(--muted);font-size:13px">' + tr('tapHint') + '</p>';
