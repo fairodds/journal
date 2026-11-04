@@ -320,7 +320,7 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
 <h3>Коридор и мат-модель</h3>
 <dl>
   <dt>К</dt><dd>Коридор. Карточки, где П1, Х и П2 совпадают с этим матчем до второй цифры, во всех чемпионатах.</dd>
-  <dt>М</dt><dd>Мат-модель. Карточки из того же чемпионата, где все рынки совпадают по первой цифре.</dd>
+  <dt>М</dt><dd>Мат-модель. Карточки из того же чемпионата, где рынки совпадают по первой цифре. В баскетболе сравниваются П1 и П2 на открытии и сейчас, обе форы и кф на них.</dd>
 </dl>
 <p>Число на кнопке показывает, сколько таких карточек в базе. Пока база молодая, коридоры маленькие. Они растут вместе с ней.</p>
 
@@ -432,19 +432,27 @@ const shown = (c, r) => { const v = raw(c, r); return c.f ? c.f(v) : (v == null 
 const dig = v => v == null ? null : String(Math.floor(v)) + '.';
 const dig2 = v => v == null ? null : (Math.floor(v * 10 + 1e-9) / 10).toFixed(1);
 const K_KEYS = ['p1','x','p2'], M_KEYS = ['p1','x','p2','f1','f2','tm','tb','oz'];
+// В баскетболе М сравнивает открытие, П1/П2 и обе форы с кф на них; тотал и маржа не участвуют
+const M_KEYS_B = ['p1o','p2o','p1','p2','bfl','bf1','bfl2','bf2'];
+// Линия форы: знак + целая часть (+5.5 → «+5.», −5.5 → «-5.», +5 → «+5.»)
+const digL = v => v == null ? null : (v > 0 ? '+' : v < 0 ? '-' : '') + Math.trunc(Math.abs(v)) + '.';
+const isLine = k => k === 'bfl' || k === 'bfl2';
+const mKey = (r, k) => { const c = COLS.find(x => x.k === k); return c ? raw(c, r) : r[k]; };
+const digK = (k, v) => isLine(k) ? digL(v) : dig(v);
+const mKeysOf = sp => sp === 'b' ? M_KEYS_B : M_KEYS;
 // К/М сравнивают только те рынки, колонки которых видны во вкладке этого вида карточек:
 // фильтр по скрытой колонке таблица не применяет, и число на кнопке разошлось бы со строками
 const VIEW_OF = {f:'fall', b:'bsk', r:'lr', s:'sc'};
 const colIn = (k, v) => { const c = COLS.find(x => x.k === k); return !!c && !(c.hide && c.hide.includes(v)) && !(c.only && !c.only.includes(v)); };
 const kmKeys = (keys, sp) => keys.filter(k => colIn(k, VIEW_OF[sp] || 'fall'));
 const corr = (r, d) => d.sp === r.sp && kmKeys(K_KEYS, r.sp).every(k => r[k] == null || dig2(d[k]) === dig2(r[k]));
-const mm = (r, d) => d.sp === r.sp && d.ch === r.ch && kmKeys(M_KEYS, r.sp).every(k => r[k] == null || dig(d[k]) === dig(r[k]));
+const mm = (r, d) => d.sp === r.sp && d.ch === r.ch && kmKeys(mKeysOf(r.sp), r.sp).every(k => { const v = mKey(r, k); return v == null || digK(k, mKey(d, k)) === digK(k, v); });
 function applyKM(r, mode){
   for (const k in filters) delete filters[k];
   document.querySelectorAll('#tbl input, #tbl select').forEach(i => { i.value = ''; i.classList.remove('on'); });
   const set = (k, v) => { filters[k] = v.toLowerCase(); document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = v; i.classList.add('on'); }); };
   if (mode === 'k') kmKeys(K_KEYS, r.sp).forEach(k => { if (r[k] != null) set(k, dig2(r[k])); });
-  else { kmKeys(M_KEYS, r.sp).forEach(k => { if (r[k] != null) set(k, dig(r[k])); }); set('ch', '=' + r.ch); }
+  else { kmKeys(mKeysOf(r.sp), r.sp).forEach(k => { const v = mKey(r, k); if (v != null) set(k, digK(k, v)); }); set('ch', '=' + r.ch); }
   // К/М считают по всей базе — поэтому сбрасываем и поиск, и день (Все/Вчера/Сегодня/Завтра),
   // иначе число на кнопке и число строк после нажатия расходятся
   Q = ''; el('q').value = ''; DQ = 'all'; syncDQ();
@@ -488,6 +496,7 @@ function match(c, r, q){
   const s = shown(c, r).toLowerCase();
   if ((c.k === 'bo' || c.k === 'mk') && (q === '+' || q === '-')){ return r.res === (q === '+' ? 'w' : 'l'); }
   if (c.k === 'res'){ return ({'✓':'w','в':'w','+':'w','✕':'l','п':'l','-':'l','↩':'p','в':'w'})[q] ? r.res === ({'✓':'w','в':'w','+':'w','✕':'l','п':'l','-':'l','↩':'p'})[q] : s.includes(q); }
+  if (isLine(c.k) && q.endsWith('.')) return digL(raw(c, r)) === q;
   if (c.t === 'num') return s.startsWith(q) || (c.k === 'dt' && s.includes(q));
   return s.includes(q);
 }
