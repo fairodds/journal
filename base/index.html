@@ -164,6 +164,8 @@ td.sep{border-left:2px solid var(--line)}
 .pager .rec{width:100%;text-align:center}
 .pager .pn{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px}
 .pager button[aria-current]{background:var(--head);color:var(--head-ink);border-color:var(--head)}
+/* ДОБАВЛЕНО 05.11.26: матч с карточкой в баскетбольном канале (поле cc) */
+td.chcard{background:#ffe680!important;box-shadow:inset 3px 0 0 #e0a800}
 .km{font:600 12px var(--f-num);padding:5px 8px;margin:0 2px;border-radius:4px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
 .km:active{background:var(--hit-soft)}
 .acts{display:flex;justify-content:center;margin-top:12px}
@@ -316,6 +318,9 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
 
 <h3>Как сохранить фильтр</h3>
 <p>Задайте фильтры в таблице: кэфы, день, чемпионат. Нажмите «Создать фильтр» под таблицей, дайте название и выберите прогноз. Матчи, которые подходят под сохранённые фильтры, подсвечиваются жёлтым в колонке ДН.</p>
+
+<h3>Жёлтые матчи в баскетболе</h3>
+<p>Жёлтым в колонке «Пари» выделены матчи, по которым карточка вышла в баскетбольный канал.</p>
 
 <h3>Коридор и мат-модель</h3>
 <dl>
@@ -610,7 +615,7 @@ function render(){
       if (c.k === 'ro' && r.ros && r.ror) cl.push(r.ror === 'w' ? 'won' : 'lost');
       let v;
       if (c.k === 'km') v = `<button type="button" class="km" data-km="k" data-i="${r._i}">К${DATA.filter(d => corr(r, d)).length}</button><button type="button" class="km" data-km="m" data-i="${r._i}">М${DATA.filter(d => mm(r, d)).length}</button>`;
-      else if (c.k === 'pair'){ v = `<div class="ln">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
+      else if (c.k === 'pair'){ if (r.cc) cl.push('chcard'); v = `<div class="ln">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
       else if (c.k === 'kc'){ const L1 = LET(r.ch_), L2 = LET(r.ca); v = c.stack.map(f => `<div class="ln">${f(r)}</div>`).join(''); if (L1 !== '?' && L2 !== '?'){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="kc" data-fv="=${L1}/${L2}" title="Хозяева / гости">${v}</td>`; } }
       else if (c.stack){ const sv = STV[c.k] ? STV[c.k](r) : []; v = c.stack.map((f, i) => sv[i] != null && sv[i] !== '—' && sv[i] !== '?' ? `<div class="ln"><span class="tg" data-fk="${c.k}" data-fv="=${esc(sv[i])}">${f(r)}</span></div>` : `<div class="ln">${f(r)}</div>`).join(''); }
       else if (c.k === 'vo' && r.vo) v = `<span class="pill${r.vo.startsWith('3') ? ' tv3' : ''}">${esc(r.vo)}</span>`;
