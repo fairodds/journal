@@ -123,6 +123,7 @@ thead tr.h th[aria-sort="ascending"]::after{content:" ▲";font-size:9px}
 thead tr.h th[aria-sort="descending"]::after{content:" ▼";font-size:9px}
 thead input{width:100%;min-width:34px;max-width:100%;font:500 12px var(--f-num);padding:3px 4px;border-radius:4px;border:1px solid transparent;background:var(--panel);color:var(--ink)}
 tfoot th{position:sticky;bottom:0;background:var(--head);padding:3px 3px;z-index:2;max-width:0}
+tfoot tr.h th{max-width:none;padding:4px 6px;color:var(--head-ink);font-weight:600;font-size:12px}
 tfoot input{width:calc(100% - 2px);min-width:40px;font:500 12px var(--f-num);padding:3px 4px;border-radius:4px;border:1px solid transparent;background:var(--panel);color:var(--ink)}
 tfoot input.on,tfoot select.on{background:var(--hit-soft);border-color:var(--hit)}
 tfoot select,thead select{width:100%;min-width:52px;font:500 12px var(--f-ui);padding:3px 2px;border-radius:4px;border:1px solid transparent;background:var(--panel);color:var(--ink)}
@@ -525,7 +526,7 @@ const VC = () => COLS.filter(c => !EMPTY.has(c.k) && (SHOWM || !MODK.includes(c.
 const FROW = () => '<tr class="f">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.nofilter ? '' : c.sel ? `<select id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}"><option value="">ALL</option>${c.sel.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}</select>` : `<input id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}" inputmode="${c.t === 'num' ? 'decimal' : 'text'}" autocomplete="off">`}</th>`).join('') + '</tr>';
 function buildHead(){
   const th = el('tbl').tHead;
-  el('tbl').createTFoot().innerHTML = FROW().replace(/id="f_/g, 'id="g_');
+  el('tbl').createTFoot().innerHTML = '<tr class="h">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.l}${c.lh || ''}</th>`).join('') + '</tr>' + FROW().replace(/id="f_/g, 'id="g_');
   // ДОБАВЛЕНО 29.10.26: строка-группа над парами «Наш кф: …»
   const GR = () => { const v = VC(); let out = '', i = 0; while (i < v.length){ const g = v[i].g; let j = i; while (j + 1 < v.length && v[j + 1].g && v[j + 1].g === g) j++; out += `<th class="${g ? 'grp' : ''}${v[i].sep ? ' sep' : ''}" colspan="${j - i + 1}">${g || ''}</th>`; i = j + 1; } return v.some(c => c.g) ? '<tr class="g">' + out + '</tr>' : ''; };
   const gr = GR(); el('tbl').classList.toggle('hasg', !!gr);
@@ -545,6 +546,7 @@ function buildHead(){
   for (const c of COLS) if ((c.hide && c.hide.includes(view)) || (c.only && !c.only.includes(view))) delete filters[c.k];
   for (const k in filters) document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = filters[k]; i.classList.add('on'); });
   const hh = th.rows[0].offsetHeight; th.querySelectorAll('tr.f th').forEach(t => t.style.top = hh + 'px');
+  const tf = el('tbl').tFoot, fh = tf.rows[1].offsetHeight; tf.querySelectorAll('tr.h th').forEach(t => t.style.bottom = fh + 'px');
 }
 
 function buildTabs(){
