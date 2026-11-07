@@ -196,6 +196,7 @@ table.lt2 td.c{text-align:center;white-space:nowrap}
 .ico.warn{background:var(--miss-soft);color:var(--miss);width:auto;padding:0 8px;font:600 12px var(--f-ui)}
 .fname{font-weight:700;color:var(--brand);cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;background:none;border:0;padding:0;font:inherit}
 .chk{display:inline-flex;gap:6px;align-items:center;margin:0 0 10px;font-size:13.5px}
+.spsw{margin:0 0 10px}
 tr.flg td:first-child{background:#ffe680!important;box-shadow:inset 3px 0 0 #d4a900}
 .lt2 b.p{color:var(--hit)} .lt2 b.n{color:var(--miss)}
 .emptyx{padding:22px;text-align:center;color:var(--muted)}
@@ -250,10 +251,12 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
 </div></section>
 <section id="v-filters" hidden><div class="in">
   <div class="top"><h1>Мои фильтры</h1><span class="sub">Сохраняются в этом браузере. Настройте фильтр в «Базе» и нажмите «Создать фильтр».</span></div>
+  <div class="seg spsw" role="group" aria-label="Вид спорта"><button type="button" data-s="f" aria-pressed="true">Футбол</button><button type="button" data-s="b" aria-pressed="false">Баскетбол</button></div>
   <div class="wrap fw"><table class="lt2"><thead><tr><th>Название</th><th>Действие</th><th>Значения</th><th>Вкладка</th><th>Матчей</th><th>Прогноз</th></tr></thead><tbody id="ftb"></tbody></table></div>
 </div></section>
 <section id="v-combo" hidden><div class="in">
   <div class="top"><h1>Комбо фильтр</h1><span class="sub">Матчи, которые подходят под ваши сохранённые фильтры.</span></div>
+  <div class="seg spsw" role="group" aria-label="Вид спорта"><button type="button" data-s="f" aria-pressed="true">Футбол</button><button type="button" data-s="b" aria-pressed="false">Баскетбол</button></div>
   <label class="chk"><input type="checkbox" id="cplayed"> Показывать и сыгранные</label>
   <div class="wrap fw"><table class="lt2"><thead><tr><th>Фильтр</th><th>ДН</th><th>Чемпионат</th><th>Дата</th><th>Счёт</th><th>Пари</th><th>Прогноз</th></tr></thead><tbody id="ctb"></tbody></table></div>
   <p class="sub" id="cnote"></p>
@@ -673,6 +676,19 @@ let SAVED = [];
 try { SAVED = JSON.parse(localStorage.getItem(SF_KEY) || '[]') || []; } catch(e){ SAVED = []; }
 const saveSF = () => { try { localStorage.setItem(SF_KEY, JSON.stringify(SAVED)); } catch(e){} };
 const colOf = k => COLS.find(c => c.k === k);
+// фильтры и комбо делятся на футбол и баскетбол (по вкладке, на которой фильтр создан)
+const spOf = v => v === 'bsk' ? 'b' : 'f';
+let SPF = 'f';
+try { SPF = localStorage.getItem('chk_fsp') === 'b' ? 'b' : 'f'; } catch(e){}
+const mySF = () => SAVED.filter(f => spOf(f.view) === SPF);
+const spName = () => SPF === 'b' ? 'баскетбола' : 'футбола';
+function syncSP(){ document.querySelectorAll('.spsw button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === SPF)); }
+document.querySelectorAll('.spsw').forEach(g => g.addEventListener('click', e => {
+  const b = e.target.closest('button[data-s]'); if (!b) return;
+  SPF = b.dataset.s; try { localStorage.setItem('chk_fsp', SPF); } catch(e){}
+  syncSP(); if (!el('v-filters').hidden) renderFilters(); if (!el('v-combo').hidden) renderCombo();
+}));
+syncSP();
 const vname = v => { const x = VIEWS.find(y => y[0] === v); return x ? x[1] : v; };
 function fMatch(f, r){
   const vv = VIEWS.find(x => x[0] === f.view); if (!vv || !vv[2](r)) return false;
@@ -704,9 +720,9 @@ function applySF(f){
   if (location.hash !== '#baza') location.hash = 'baza'; else render();
 }
 function renderFilters(){
-  const tb = el('ftb');
-  if (!SAVED.length){ tb.innerHTML = '<tr><td colspan="6" class="emptyx">Фильтров пока нет. Настройте фильтры в таблице «Базы» и нажмите «Создать фильтр».</td></tr>'; return; }
-  tb.innerHTML = SAVED.map(f => { const st = betStat(f);
+  const tb = el('ftb'), L = mySF();
+  if (!L.length){ tb.innerHTML = `<tr><td colspan="6" class="emptyx">Фильтров для ${spName()} пока нет. Настройте фильтры в таблице «Базы» на вкладке ${SPF === 'b' ? '«Баскетбол»' : 'футбола'} и нажмите «Создать фильтр».</td></tr>`; return; }
+  tb.innerHTML = L.map(f => { const st = betStat(f);
     const roi = st.roi == null ? '—' : `<b class="${st.roi >= 0 ? 'p' : 'n'}">${st.roi > 0 ? '+' : ''}${st.roi.toFixed(1)}%</b> на ${st.n}`;
     return `<tr><td><button type="button" class="fname" data-a="go" data-id="${f.id}">${esc(f.name)}</button></td>
       <td class="c"><button type="button" class="ico" data-a="go" data-id="${f.id}" aria-label="Открыть в базе">${EYE}</button><button type="button" class="ico" data-a="del" data-id="${f.id}" aria-label="Удалить">${BIN}</button></td>
@@ -720,11 +736,11 @@ el('ftb').addEventListener('click', e => {
   if (b.dataset.a === 'del2'){ SAVED = SAVED.filter(x => x !== f); saveSF(); renderFilters(); }
 });
 function renderCombo(){
-  const all = el('cplayed').checked, tb = el('ctb'), out = [];
-  for (const f of SAVED) for (const r of DATA){ if (!all && (r.sc || r.res)) continue; if (fMatch(f, r)) out.push([f, r]); }
+  const all = el('cplayed').checked, tb = el('ctb'), out = [], L = mySF();
+  for (const f of L) for (const r of DATA){ if (!all && (r.sc || r.res)) continue; if (fMatch(f, r)) out.push([f, r]); }
   out.sort((a, b) => all ? b[1].ts - a[1].ts : a[1].ts - b[1].ts);
-  el('cnote').textContent = SAVED.length ? `Фильтров: ${SAVED.length} · совпадений: ${out.length}` : '';
-  if (!SAVED.length){ tb.innerHTML = '<tr><td colspan="7" class="emptyx">Сначала сохраните хотя бы один фильтр в «Базе».</td></tr>'; return; }
+  el('cnote').textContent = L.length ? `Фильтров ${spName()}: ${L.length} · совпадений: ${out.length}` : '';
+  if (!L.length){ tb.innerHTML = `<tr><td colspan="7" class="emptyx">Фильтров для ${spName()} пока нет. Сначала сохраните хотя бы один фильтр в «Базе».</td></tr>`; return; }
   if (!out.length){ tb.innerHTML = `<tr><td colspan="7" class="emptyx">${all ? 'Совпадений нет.' : 'Сейчас нет несыгранных матчей под ваши фильтры. Включите «Показывать и сыгранные», чтобы увидеть историю.'}</td></tr>`; return; }
   tb.innerHTML = out.slice(0, 300).map(([f, r]) => { const res = betOut(f.bet, r), o = r[f.bet];
     const cls = res === 'w' ? 'won' : res === 'l' ? 'lost' : '';
@@ -740,6 +756,10 @@ el('mkf').onclick = () => {
   if (!Object.keys(filters).length){ toast('Сначала задайте фильтр в таблице: кэф, день или чемпионат.'); return; }
   el('mkchips').innerHTML = `<span class="chip">Вкладка: ${esc(vname(view))}</span>` + chipsOf(filters);
   if (!el('mkname').value) el('mkname').value = Object.keys(filters).map(k => { let v = filters[k]; if (v[0] === '=') v = v.slice(1); return (colOf(k) ? colOf(k).l : k) + ' ' + v; }).join(', ').slice(0, 40);
+  // прогнозы только своего вида спорта
+  const bsk = spOf(view) === 'b', sel = el('mkbet');
+  [...sel.options].forEach(o => { o.hidden = o.disabled = bsk !== o.value.startsWith('b'); });
+  if (sel.selectedOptions[0] && sel.selectedOptions[0].disabled) sel.value = bsk ? 'bf1' : 'p1';
   el('mkerr').hidden = true; p.hidden = false; el('mkname').focus();
 };
 el('mkcancel').onclick = () => { el('mkp').hidden = true; };
@@ -749,6 +769,7 @@ el('mkp').addEventListener('submit', e => {
   const name = el('mkname').value.trim();
   if (!name){ el('mkerr').textContent = 'Введите название фильтра.'; el('mkerr').hidden = false; return; }
   SAVED.push({id: Date.now(), name, view, filters: {...filters}, bet: el('mkbet').value}); saveSF();
+  SPF = spOf(view); try { localStorage.setItem('chk_fsp', SPF); } catch(e){} syncSP();
   el('mkp').hidden = true; el('mkname').value = ''; render(); toast(`Фильтр «${name}» сохранён. Его матчи подсвечены жёлтым, все фильтры — в разделе «Фильтры».`);
 });
 
