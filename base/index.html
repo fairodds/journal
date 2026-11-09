@@ -115,6 +115,8 @@ td.pin.sh{box-shadow:4px 0 6px -4px rgba(0,0,0,.25)}
 table{border-collapse:separate;border-spacing:0;width:max-content}
 thead tr.f th{max-width:0}
 thead tr.f input{width:calc(100% - 2px);min-width:40px}
+tr.tapd td{box-shadow:inset 0 2px 0 var(--hit),inset 0 -2px 0 var(--hit)}
+select.kcs{display:block;width:calc(100% - 2px);min-width:40px;padding:0;font-size:11px}select.kcs+select.kcs{margin-top:2px}
 th,td{padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:center}
 thead th{position:sticky;background:var(--head);color:var(--head-ink);font-weight:600;font-size:12px;z-index:2}
 table.hasg thead tr.h th{top:23px}table.hasg thead tr.f th{top:50px}thead tr.g th{top:0;height:20px;padding:3px 6px 0;font-size:11px;font-weight:600;color:var(--gold);text-align:center;white-space:nowrap}thead tr.g th.grp{border-bottom:1px solid rgba(255,255,255,.18)}thead tr.h th{top:0;cursor:pointer;user-select:none}
@@ -230,7 +232,7 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
 <div class="tabs" id="tabs" role="group" aria-label="Набор карточек"></div>
 <div class="tools">
   <label class="srch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" type="search" placeholder="Поиск: команда, чемпионат, дата" autocomplete="off" aria-label="Поиск"></label>
-  <div class="seg" id="dq" role="group" aria-label="Даты"><button type="button" data-d="all" aria-pressed="true">Все</button><button type="button" data-d="y">Вчера</button><button type="button" data-d="t">Сегодня</button><button type="button" data-d="m">Завтра</button></div>
+  <div class="seg" id="dq" role="group" aria-label="Даты"><button type="button" data-d="now" hidden>С сегодня</button><button type="button" data-d="all" aria-pressed="true">Все</button><button type="button" data-d="y">Вчера</button><button type="button" data-d="t">Сегодня</button><button type="button" data-d="m">Завтра</button></div>
   <label class="per">Показать <select id="per"><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="0">Все</option></select> записей</label>
   <button type="button" class="clear" id="tgm" aria-expanded="false">Наш кф ▾</button>
   <div class="sum" id="sum"></div>
@@ -383,7 +385,7 @@ const COLS = [
   {k:'dt', l:'Дата', t:'txt', sort:'ts', get: r => String(r.dt).replace(/^(\d\d\.\d\d)\.\d\d/, '$1')},
   {k:'sc', l:'Счёт', t:'txt', get: r => r.sc ? String(r.sc).replace(/\s*-\s*/, ':') + (r.h1 ? ' (' + String(r.h1).replace(/\s*-\s*/, ':') + ')' : '') : ''},
   {k:'pair', l:'Пари', t:'team', get: r => r.h + ' ' + r.a},
-  {k:'kc', hide:['lr','sc'], l:'Кат', lh:'<small class="hl">Г·С·А</small>', t:'stk', stack:[r => CAT(r.ch_), r => CAT(r.ca)], get: r => LET(r.ch_) + ' ' + LET(r.ca)},
+  {k:'kc', dual:true, hide:['lr','sc'], l:'Кат', lh:'<small class="hl">Г·С·А</small>', t:'stk', stack:[r => CAT(r.ch_), r => CAT(r.ca)], get: r => LET(r.ch_) + ' ' + LET(r.ca)},
   {k:'kr', hide:['lr','sc'], l:'Рейт', t:'stk', stack:[r => R1(r.rh), r => R1(r.ra)], get: r => R1(r.rh) + ' ' + R1(r.ra)},
   {k:'kp', hide:['lr','sc'], l:'Место', t:'stk', stack:[r => r.ph == null ? '—' : r.ph, r => r.pa == null ? '—' : r.pa], get: r => r.ph + ' ' + r.pa},
   {k:'p1o', only:['bsk'], l:'П1 откр', t:'num', f:f2, hit:'p1', sep:true},
@@ -474,7 +476,9 @@ function dayDiff(dt){
   const d = new Date(2000 + +m[3], +m[2] - 1, +m[1]), n = new Date(); n.setHours(0,0,0,0);
   return Math.round((d - n) / 86400000);
 }
-function syncDQ(){ el('dq').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.d === DQ)); }
+// ДОБАВЛЕНО 09.11.26: «Баскетбол» открывается с сегодняшних матчей и вниз, завтра — кнопками «Завтра» и «Все»
+const defDQ = () => view === 'bsk' ? 'now' : 'all';
+function syncDQ(){ el('dq').querySelectorAll('button').forEach(b => { b.setAttribute('aria-pressed', b.dataset.d === DQ); if (b.dataset.d === 'now') b.hidden = view !== 'bsk'; }); }
 el('dq').addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (!b) return; DQ = b.dataset.d; syncDQ(); page = 0; render(); });
 let qT; el('q').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(() => { Q = el('q').value.trim().toLowerCase(); page = 0; render(); }, 150); });
 el('per').value = String(PER);
@@ -498,6 +502,8 @@ el('tgm').onclick = () => { SHOWM = !SHOWM; try { localStorage.setItem('chk_show
 function match(c, r, q){
   if (c.k === 'pair' && q[0] === '=' && q.includes('/')){ const p = q.slice(1).split('/'), t = [String(r.h).toLowerCase(), String(r.a).toLowerCase()]; return t.includes(p[0]) && t.includes(p[1]); }
   if (c.k === 'sc') return q[0] === '(' ? shown(c, r).toLowerCase().includes(q) : shown(c, r).toLowerCase().startsWith(q);
+  // ДОБАВЛЕНО 09.11.26: категория отдельно для хозяев и для гостей: «~а/» — хозяева А, «~/с» — гости С, «~а/с» — оба
+  if (c.k === 'kc' && q[0] === '~'){ const [h, a] = q.slice(1).split('/'), t = String(raw(c, r)).toLowerCase().split(' '); return (!h || t[0] === h) && (!a || t[1] === a); }
   if (c.stack && q[0] === '=' && q.includes('/')){ const p = q.slice(1).split('/'), t = String(raw(c, r)).toLowerCase().split(' '); return t[0] === p[0] && t[1] === p[1]; }
   if (c.stack) return q[0] === '=' ? String(raw(c, r)).toLowerCase().split(' ').some(x => x === q.slice(1)) : String(raw(c, r)).toLowerCase().split(' ').some(x => x.startsWith(q));
   if (q[0] === '=') return String(raw(c, r) || '').toLowerCase() === q.slice(1);
@@ -526,7 +532,12 @@ const OPT = ['f1','f2','tm','tb','oz','mg'];
 const MODK = ['tvb','ro','m1','m2','a1','a2','q1','q2','r1','r2'];
 let SHOWM = false; try { SHOWM = localStorage.getItem('chk_showm') === '1'; } catch(e){}
 const VC = () => COLS.filter(c => !EMPTY.has(c.k) && (SHOWM || !MODK.includes(c.k)) && !(c.hide && c.hide.includes(view)) && !(c.only && !c.only.includes(view)));
-const FROW = () => '<tr class="f">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.nofilter ? '' : c.sel ? `<select id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}"><option value="">ALL</option>${c.sel.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}</select>` : `<input id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}" inputmode="${c.t === 'num' ? 'decimal' : 'text'}" autocomplete="off">`}</th>`).join('') + '</tr>';
+const KCS = (p, l) => `<select class="kcs" data-kc="${p}" aria-label="Категория: ${l}"><option value="">${l}</option><option value="г">Г</option><option value="с">С</option><option value="а">А</option></select>`;
+function kcSync(){
+  const q = filters.kc || '', m = q.match(/^[~=]([гса?]*)\/([гса?]*)$/), v = m ? {h:m[1], a:m[2]} : {h:'', a:''};
+  document.querySelectorAll('#tbl select[data-kc]').forEach(s => { s.value = v[s.dataset.kc] || ''; s.classList.toggle('on', !!s.value); });
+}
+const FROW = () => '<tr class="f">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.dual ? KCS('h', 'Хоз') + KCS('a', 'Гост') : c.nofilter ? '' : c.sel ? `<select id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}"><option value="">ALL</option>${c.sel.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}</select>` : `<input id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}" inputmode="${c.t === 'num' ? 'decimal' : 'text'}" autocomplete="off">`}</th>`).join('') + '</tr>';
 function buildHead(){
   const th = el('tbl').tHead;
   el('tbl').createTFoot().innerHTML = '<tr class="h">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.l}${c.lh || ''}</th>`).join('') + '</tr>' + FROW().replace(/id="f_/g, 'id="g_');
@@ -540,7 +551,12 @@ function buildHead(){
     if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = c.t === 'num' ? -1 : 1; }
     page = 0; render();
   }));
-  el('tbl').querySelectorAll('thead input, thead select, tfoot input, tfoot select').forEach(i => i.addEventListener(i.tagName === 'SELECT' ? 'change' : 'input', () => {
+  el('tbl').querySelectorAll('select[data-kc]').forEach(i => i.addEventListener('change', () => {
+    const box = i.closest('th'), g = p => box.querySelector(`[data-kc="${p}"]`).value, h = g('h'), a = g('a');
+    if (h || a) filters.kc = `~${h}/${a}`; else delete filters.kc;
+    kcSync(); page = 0; render();
+  }));
+  el('tbl').querySelectorAll('thead input, thead select:not([data-kc]), tfoot input, tfoot select:not([data-kc])').forEach(i => i.addEventListener(i.tagName === 'SELECT' ? 'change' : 'input', () => {
     const v = i.value.trim().toLowerCase().replace(',', '.');
     if (v) filters[i.dataset.k] = v; else delete filters[i.dataset.k];
     document.querySelectorAll(`#tbl [data-k="${i.dataset.k}"]:is(input,select)`).forEach(o => { if (o !== i) o.value = i.value; o.classList.toggle('on', !!v); });
@@ -548,23 +564,25 @@ function buildHead(){
   }));
   for (const c of COLS) if ((c.hide && c.hide.includes(view)) || (c.only && !c.only.includes(view))) delete filters[c.k];
   for (const k in filters) document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = filters[k]; i.classList.add('on'); });
+  kcSync();
   const hh = th.rows[0].offsetHeight; th.querySelectorAll('tr.f th').forEach(t => t.style.top = hh + 'px');
   const tf = el('tbl').tFoot, fh = tf.rows[1].offsetHeight; tf.querySelectorAll('tr.h th').forEach(t => t.style.bottom = fh + 'px');
 }
 
 function buildTabs(){
   el('tabs').innerHTML = VIEWS.map(([k, l, fn]) => `<button type="button" data-v="${k}" aria-pressed="${k === view}">${l} <span style="opacity:.6">${DATA.filter(fn).length}</span></button>`).join('');
-  el('tabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; view = b.dataset.v; try{ localStorage.setItem('tvb_view', view); }catch(err){} buildTabs(); page = 0; render(); };
+  el('tabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; PIN = null; view = b.dataset.v; DQ = defDQ(); syncDQ(); try{ localStorage.setItem('tvb_view', view); }catch(err){} buildTabs(); page = 0; render(); };
   if (el('tbl').tHead) buildHead();
 }
 
 function render(){
+  kcSync();
   el('tgm').hidden = ['lr','sc'].includes(view); syncM();
   const fn = VIEWS.find(v => v[0] === view)[2];
   let rows = DATA.filter(fn);
   for (const k in filters){ const c = COLS.find(x => x.k === k); rows = rows.filter(r => match(c, r, filters[k])); }
   if (Q) rows = rows.filter(r => [r.h, r.a, r.ch, r.dt, r.sc, r.dn].join(' ').toLowerCase().includes(Q));
-  if (DQ !== 'all') rows = rows.filter(r => { const d = dayDiff(r.dt); return DQ === 't' ? d === 0 : DQ === 'm' ? d === 1 : DQ === 'y' ? d === -1 : (d <= 0 && d >= -6); });
+  if (DQ !== 'all') rows = rows.filter(r => { const d = dayDiff(r.dt); return DQ === 'now' ? d <= 0 : DQ === 't' ? d === 0 : DQ === 'm' ? d === 1 : DQ === 'y' ? d === -1 : (d <= 0 && d >= -6); });
   { const acc = {cn:0, cp1:0, cx:0, cp2:0, ctm:0, ctb:0};
     const mk = [['cp1','p1'],['cx','x'],['cp2','p2'],['ctm','tm'],['ctb','tb']];
     for (const r of [...rows].sort((a, b) => a.ts - b.ts)){
@@ -592,8 +610,10 @@ function render(){
   const cls = v => v > 0 ? 'p' : (v < 0 ? 'n' : '');
   el('sum').innerHTML =
     `<button type="button" class="clear" id="clr">Сбросить фильтры</button>`;
-  el('clr').onclick = () => { for (const k in filters) delete filters[k]; Q = ''; el('q').value = ''; DQ = 'all'; syncDQ(); document.querySelectorAll('#tbl input, #tbl select').forEach(i => { i.value = ''; i.classList.remove('on'); }); page = 0; render(); };
+  el('clr').onclick = () => { PIN = null; for (const k in filters) delete filters[k]; Q = ''; el('q').value = ''; DQ = defDQ(); syncDQ(); document.querySelectorAll('#tbl input, #tbl select').forEach(i => { i.value = ''; i.classList.remove('on'); }); page = 0; render(); };
   // таблица
+  // ДОБАВЛЕНО 09.11.26: выбранный матч в «Баскетболе» идёт первой строкой
+  if (PIN && view === 'bsk'){ const i = rows.indexOf(PIN); if (i > 0) rows.unshift(rows.splice(i, 1)[0]); }
   const PP = PER || Math.max(rows.length, 1);
   const pages = Math.max(1, Math.ceil(rows.length / PP)); if (page >= pages) page = pages - 1;
   const from = page * PP, all = rows.length;
@@ -611,7 +631,7 @@ function render(){
   if (!rows.length){ tb.innerHTML = `<tr><td colspan="${VC().length}" class="empty">Под этот фильтр карточек нет. Сбросьте одно из полей.</td></tr>`; return; }
   tb.innerHTML = rows.map(r => {
     const g = goals(r);
-    return `<tr${SAVED.some(f => f.view === view && fMatch(f, r)) ? ' class="flg"' : ''}>` + VC().map(c => {
+    return `<tr data-pin="${DATA.indexOf(r)}"${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd'].filter(Boolean).length ? ` class="${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd'].filter(Boolean).join(' ')}"` : ''}>` + VC().map(c => {
       let cl = [c.t]; if (c.sep) cl.push('sep');
       if (c.hit && g && HIT[c.hit](g, r) && raw(c, r) != null) cl.push('hit');
       if ((c.k === 'bo' || c.k === 'mk') && r.res === 'w') cl.push('won');
@@ -621,7 +641,7 @@ function render(){
       let v;
       if (c.k === 'km') v = `<button type="button" class="km" data-km="k" data-i="${r._i}">К${DATA.filter(d => corr(r, d)).length}</button><button type="button" class="km" data-km="m" data-i="${r._i}">М${DATA.filter(d => mm(r, d)).length}</button>`;
       else if (c.k === 'pair'){ if (r.cc) cl.push('chcard'); v = `<div class="ln">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
-      else if (c.k === 'kc'){ const L1 = LET(r.ch_), L2 = LET(r.ca); v = c.stack.map(f => `<div class="ln">${f(r)}</div>`).join(''); if (L1 !== '?' && L2 !== '?'){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="kc" data-fv="=${L1}/${L2}" title="Хозяева / гости">${v}</td>`; } }
+      else if (c.k === 'kc'){ const L1 = LET(r.ch_), L2 = LET(r.ca); v = c.stack.map((f, i) => { const L = i ? L2 : L1; return L === '?' ? `<div class="ln">${f(r)}</div>` : `<div class="ln tg" data-fk="kc" data-fv="${i ? '~/' + L : '~' + L + '/'}" title="${i ? 'Только гости' : 'Только хозяева'}: ${L}">${f(r)}</div>`; }).join(''); }
       else if (c.stack){ const sv = STV[c.k] ? STV[c.k](r) : []; v = c.stack.map((f, i) => sv[i] != null && sv[i] !== '—' && sv[i] !== '?' ? `<div class="ln"><span class="tg" data-fk="${c.k}" data-fv="=${esc(sv[i])}">${f(r)}</span></div>` : `<div class="ln">${f(r)}</div>`).join(''); }
       else if (c.k === 'vo' && r.vo) v = `<span class="pill${r.vo.startsWith('3') ? ' tv3' : ''}">${esc(r.vo)}</span>`;
       else v = esc(shown(c, r));
@@ -644,6 +664,11 @@ function render(){
   }).join('');
 }
 
+let PIN = null, PINT = false;
+el('tbl').tBodies[0].addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-pin]'); PINT = false;
+  if (view === 'bsk' && tr && !e.target.closest('a')){ PIN = DATA[+tr.dataset.pin]; page = 0; PINT = true; }
+}, true);
 el('tbl').tBodies[0].addEventListener('click', e => {
   const sp = e.target.closest('span.sct');
   if (sp){
@@ -668,6 +693,7 @@ el('tbl').tBodies[0].addEventListener('click', e => {
     if (!DATA.some(d => d.ch === t.dataset.ch && VIEWS.find(x => x[0] === view)[2](d))){ view = t.dataset.sp === 'f' ? 'fall' : 'bsk'; buildTabs(); }
     page = 0; render(); el('wrap').scrollTop = 0; return;
   } const b = e.target.closest('button.km'); if (!b) return; const r = DATA[+b.dataset.i]; if (r) applyKM(r, b.dataset.km); });
+el('tbl').tBodies[0].addEventListener('click', () => { if (!PINT) return; PINT = false; render(); el('wrap').scrollTop = 0; });
 el('clrk').onclick = () => { KF.forEach(k => { delete filters[k]; document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = ''; i.classList.remove('on'); }); }); page = 0; render(); };
 
 /* ===== Сохранённые фильтры и комбо фильтр ===== */
@@ -696,7 +722,7 @@ function fMatch(f, r){
   return true;
 }
 function chipsOf(fl){
-  return Object.keys(fl).map(k => { const c = colOf(k); let v = fl[k]; if (v[0] === '=') v = v.slice(1); if (k === 'dn') v = v.toUpperCase(); return `<span class="chip">${esc(c ? c.l : k)}: ${esc(v)}</span>`; }).join('');
+  return Object.keys(fl).map(k => { const c = colOf(k); let v = fl[k]; if (k === 'kc' && v[0] === '~'){ const [h, a] = v.slice(1).split('/'); v = [h && 'хоз ' + h.toUpperCase(), a && 'гост ' + a.toUpperCase()].filter(Boolean).join(', '); } if (v[0] === '=') v = v.slice(1); if (k === 'dn') v = v.toUpperCase(); return `<span class="chip">${esc(c ? c.l : k)}: ${esc(v)}</span>`; }).join('');
 }
 function betOut(bet, r){
   const g = goals(r), o = r[bet]; if (!g) return null;
@@ -716,7 +742,7 @@ const BIN = '<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-1
 function applySF(f){
   for (const k in filters) delete filters[k];
   Object.assign(filters, f.filters);
-  view = f.view; page = 0; buildTabs();
+  view = f.view; page = 0; DQ = 'all'; syncDQ(); buildTabs();
   if (location.hash !== '#baza') location.hash = 'baza'; else render();
 }
 function renderFilters(){
@@ -792,7 +818,7 @@ function boot(d){
   const up = UPD && !isNaN(UPD) ? ' · обновлено ' + UPD.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}).replace(',', '') : '';
   el('stamp').textContent = `${DATA.length} карточек агента${up}`;
   el('fstamp').textContent = `Данные: ${DATA.length} карточек`;
-  syncM(); buildTabs(); buildHead(); render(); route();
+  DQ = defDQ(); syncDQ(); syncM(); buildTabs(); buildHead(); render(); route();
 }
 let UPD = null;
 fetch('data/base.json', {cache:'no-store'}).then(r => { if (!r.ok) throw new Error(r.status); const lm = r.headers.get('last-modified'); if (lm) UPD = new Date(lm); return r.json(); }).then(boot)
