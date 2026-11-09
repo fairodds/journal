@@ -231,7 +231,7 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
 <div class="tabs" id="tabs" role="group" aria-label="Набор карточек"></div>
 <div class="tools">
   <label class="srch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" type="search" placeholder="Поиск: команда, чемпионат, дата" autocomplete="off" aria-label="Поиск"></label>
-  <div class="seg" id="dq" role="group" aria-label="Даты"><button type="button" data-d="now" hidden>С сегодня</button><button type="button" data-d="all" aria-pressed="true">Все</button><button type="button" data-d="y">Вчера</button><button type="button" data-d="t">Сегодня</button><button type="button" data-d="m">Завтра</button></div>
+  <div class="seg" id="dq" role="group" aria-label="Даты"><button type="button" data-d="all" aria-pressed="true">Все</button><button type="button" data-d="y">Вчера</button><button type="button" data-d="t">Сегодня</button><button type="button" data-d="m">Завтра</button></div>
   <label class="per">Показать <select id="per"><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="0">Все</option></select> записей</label>
   <button type="button" class="clear" id="tgm" aria-expanded="false">Наш кф ▾</button>
   <div class="sum" id="sum"></div>
@@ -475,9 +475,13 @@ function dayDiff(dt){
   const d = new Date(2000 + +m[3], +m[2] - 1, +m[1]), n = new Date(); n.setHours(0,0,0,0);
   return Math.round((d - n) / 86400000);
 }
-// ДОБАВЛЕНО 09.11.26: «Баскетбол» открывается с сегодняшних матчей и вниз, завтра — кнопками «Завтра» и «Все»
-const defDQ = () => view === 'bsk' ? 'now' : 'all';
-function syncDQ(){ el('dq').querySelectorAll('button').forEach(b => { b.setAttribute('aria-pressed', b.dataset.d === DQ); if (b.dataset.d === 'now') b.hidden = view !== 'bsk'; }); }
+// ДОБАВЛЕНО 09.11.26: «Баскетбол» открывается с сегодняшних матчей и вниз, завтра — кнопками «Завтра» и «Все»; «Сегодня» здесь значит сегодня и вниз
+const defDQ = () => view === 'bsk' ? 't' : 'all';
+function syncDQ(){
+  const q = el('dq'), t = q.querySelector('[data-d="t"]');
+  if (view === 'bsk') q.prepend(t); else q.insertBefore(t, q.querySelector('[data-d="m"]'));
+  q.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.d === DQ));
+}
 el('dq').addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (!b) return; DQ = b.dataset.d; syncDQ(); page = 0; render(); });
 let qT; el('q').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(() => { Q = el('q').value.trim().toLowerCase(); page = 0; render(); }, 150); });
 el('per').value = String(PER);
@@ -567,7 +571,7 @@ function render(){
   let rows = DATA.filter(fn);
   for (const k in filters){ const c = COLS.find(x => x.k === k); rows = rows.filter(r => match(c, r, filters[k])); }
   if (Q) rows = rows.filter(r => [r.h, r.a, r.ch, r.dt, r.sc, r.dn].join(' ').toLowerCase().includes(Q));
-  if (DQ !== 'all') rows = rows.filter(r => { const d = dayDiff(r.dt); return DQ === 'now' ? d <= 0 : DQ === 't' ? d === 0 : DQ === 'm' ? d === 1 : DQ === 'y' ? d === -1 : (d <= 0 && d >= -6); });
+  if (DQ !== 'all') rows = rows.filter(r => { const d = dayDiff(r.dt); return DQ === 't' ? (view === 'bsk' ? d <= 0 : d === 0) : DQ === 'm' ? d === 1 : DQ === 'y' ? d === -1 : (d <= 0 && d >= -6); });
   { const acc = {cn:0, cp1:0, cx:0, cp2:0, ctm:0, ctb:0};
     const mk = [['cp1','p1'],['cx','x'],['cp2','p2'],['ctm','tm'],['ctb','tb']];
     for (const r of [...rows].sort((a, b) => a.ts - b.ts)){
