@@ -116,7 +116,6 @@ table{border-collapse:separate;border-spacing:0;width:max-content}
 thead tr.f th{max-width:0}
 thead tr.f input{width:calc(100% - 2px);min-width:40px}
 tr.tapd td{box-shadow:inset 0 2px 0 var(--hit),inset 0 -2px 0 var(--hit)}
-select.kcs{display:block;width:calc(100% - 2px);min-width:40px;padding:0;font-size:11px}select.kcs+select.kcs{margin-top:2px}
 th,td{padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:center}
 thead th{position:sticky;background:var(--head);color:var(--head-ink);font-weight:600;font-size:12px;z-index:2}
 table.hasg thead tr.h th{top:23px}table.hasg thead tr.f th{top:50px}thead tr.g th{top:0;height:20px;padding:3px 6px 0;font-size:11px;font-weight:600;color:var(--gold);text-align:center;white-space:nowrap}thead tr.g th.grp{border-bottom:1px solid rgba(255,255,255,.18)}thead tr.h th{top:0;cursor:pointer;user-select:none}
@@ -385,7 +384,7 @@ const COLS = [
   {k:'dt', l:'Дата', t:'txt', sort:'ts', get: r => String(r.dt).replace(/^(\d\d\.\d\d)\.\d\d/, '$1')},
   {k:'sc', l:'Счёт', t:'txt', get: r => r.sc ? String(r.sc).replace(/\s*-\s*/, ':') + (r.h1 ? ' (' + String(r.h1).replace(/\s*-\s*/, ':') + ')' : '') : ''},
   {k:'pair', l:'Пари', t:'team', get: r => r.h + ' ' + r.a},
-  {k:'kc', dual:true, hide:['lr','sc'], l:'Кат', lh:'<small class="hl">Г·С·А</small>', t:'stk', stack:[r => CAT(r.ch_), r => CAT(r.ca)], get: r => LET(r.ch_) + ' ' + LET(r.ca)},
+  {k:'kc', hide:['lr','sc'], l:'Кат', lh:'<small class="hl">Г·С·А</small>', t:'stk', stack:[r => CAT(r.ch_), r => CAT(r.ca)], get: r => LET(r.ch_) + ' ' + LET(r.ca)},
   {k:'kr', hide:['lr','sc'], l:'Рейт', t:'stk', stack:[r => R1(r.rh), r => R1(r.ra)], get: r => R1(r.rh) + ' ' + R1(r.ra)},
   {k:'kp', hide:['lr','sc'], l:'Место', t:'stk', stack:[r => r.ph == null ? '—' : r.ph, r => r.pa == null ? '—' : r.pa], get: r => r.ph + ' ' + r.pa},
   {k:'p1o', only:['bsk'], l:'П1 откр', t:'num', f:f2, hit:'p1', sep:true},
@@ -502,8 +501,6 @@ el('tgm').onclick = () => { SHOWM = !SHOWM; try { localStorage.setItem('chk_show
 function match(c, r, q){
   if (c.k === 'pair' && q[0] === '=' && q.includes('/')){ const p = q.slice(1).split('/'), t = [String(r.h).toLowerCase(), String(r.a).toLowerCase()]; return t.includes(p[0]) && t.includes(p[1]); }
   if (c.k === 'sc') return q[0] === '(' ? shown(c, r).toLowerCase().includes(q) : shown(c, r).toLowerCase().startsWith(q);
-  // ДОБАВЛЕНО 09.11.26: категория отдельно для хозяев и для гостей: «~а/» — хозяева А, «~/с» — гости С, «~а/с» — оба
-  if (c.k === 'kc' && q[0] === '~'){ const [h, a] = q.slice(1).split('/'), t = String(raw(c, r)).toLowerCase().split(' '); return (!h || t[0] === h) && (!a || t[1] === a); }
   if (c.stack && q[0] === '=' && q.includes('/')){ const p = q.slice(1).split('/'), t = String(raw(c, r)).toLowerCase().split(' '); return t[0] === p[0] && t[1] === p[1]; }
   if (c.stack) return q[0] === '=' ? String(raw(c, r)).toLowerCase().split(' ').some(x => x === q.slice(1)) : String(raw(c, r)).toLowerCase().split(' ').some(x => x.startsWith(q));
   if (q[0] === '=') return String(raw(c, r) || '').toLowerCase() === q.slice(1);
@@ -532,12 +529,7 @@ const OPT = ['f1','f2','tm','tb','oz','mg'];
 const MODK = ['tvb','ro','m1','m2','a1','a2','q1','q2','r1','r2'];
 let SHOWM = false; try { SHOWM = localStorage.getItem('chk_showm') === '1'; } catch(e){}
 const VC = () => COLS.filter(c => !EMPTY.has(c.k) && (SHOWM || !MODK.includes(c.k)) && !(c.hide && c.hide.includes(view)) && !(c.only && !c.only.includes(view)));
-const KCS = (p, l) => `<select class="kcs" data-kc="${p}" aria-label="Категория: ${l}"><option value="">${l}</option><option value="г">Г</option><option value="с">С</option><option value="а">А</option></select>`;
-function kcSync(){
-  const q = filters.kc || '', m = q.match(/^[~=]([гса?]*)\/([гса?]*)$/), v = m ? {h:m[1], a:m[2]} : {h:'', a:''};
-  document.querySelectorAll('#tbl select[data-kc]').forEach(s => { s.value = v[s.dataset.kc] || ''; s.classList.toggle('on', !!s.value); });
-}
-const FROW = () => '<tr class="f">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.dual ? KCS('h', 'Хоз') + KCS('a', 'Гост') : c.nofilter ? '' : c.sel ? `<select id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}"><option value="">ALL</option>${c.sel.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}</select>` : `<input id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}" inputmode="${c.t === 'num' ? 'decimal' : 'text'}" autocomplete="off">`}</th>`).join('') + '</tr>';
+const FROW = () => '<tr class="f">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.nofilter ? '' : c.sel ? `<select id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}"><option value="">ALL</option>${c.sel.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}</select>` : `<input id="f_${c.k}" data-k="${c.k}" aria-label="Фильтр ${c.l}" inputmode="${c.t === 'num' ? 'decimal' : 'text'}" autocomplete="off">`}</th>`).join('') + '</tr>';
 function buildHead(){
   const th = el('tbl').tHead;
   el('tbl').createTFoot().innerHTML = '<tr class="h">' + VC().map(c => `<th${c.sep ? ' class="sep"' : ''}>${c.l}${c.lh || ''}</th>`).join('') + '</tr>' + FROW().replace(/id="f_/g, 'id="g_');
@@ -551,12 +543,7 @@ function buildHead(){
     if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = c.t === 'num' ? -1 : 1; }
     page = 0; render();
   }));
-  el('tbl').querySelectorAll('select[data-kc]').forEach(i => i.addEventListener('change', () => {
-    const box = i.closest('th'), g = p => box.querySelector(`[data-kc="${p}"]`).value, h = g('h'), a = g('a');
-    if (h || a) filters.kc = `~${h}/${a}`; else delete filters.kc;
-    kcSync(); page = 0; render();
-  }));
-  el('tbl').querySelectorAll('thead input, thead select:not([data-kc]), tfoot input, tfoot select:not([data-kc])').forEach(i => i.addEventListener(i.tagName === 'SELECT' ? 'change' : 'input', () => {
+  el('tbl').querySelectorAll('thead input, thead select, tfoot input, tfoot select').forEach(i => i.addEventListener(i.tagName === 'SELECT' ? 'change' : 'input', () => {
     const v = i.value.trim().toLowerCase().replace(',', '.');
     if (v) filters[i.dataset.k] = v; else delete filters[i.dataset.k];
     document.querySelectorAll(`#tbl [data-k="${i.dataset.k}"]:is(input,select)`).forEach(o => { if (o !== i) o.value = i.value; o.classList.toggle('on', !!v); });
@@ -564,7 +551,6 @@ function buildHead(){
   }));
   for (const c of COLS) if ((c.hide && c.hide.includes(view)) || (c.only && !c.only.includes(view))) delete filters[c.k];
   for (const k in filters) document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = filters[k]; i.classList.add('on'); });
-  kcSync();
   const hh = th.rows[0].offsetHeight; th.querySelectorAll('tr.f th').forEach(t => t.style.top = hh + 'px');
   const tf = el('tbl').tFoot, fh = tf.rows[1].offsetHeight; tf.querySelectorAll('tr.h th').forEach(t => t.style.bottom = fh + 'px');
 }
@@ -576,7 +562,6 @@ function buildTabs(){
 }
 
 function render(){
-  kcSync();
   el('tgm').hidden = ['lr','sc'].includes(view); syncM();
   const fn = VIEWS.find(v => v[0] === view)[2];
   let rows = DATA.filter(fn);
@@ -641,7 +626,7 @@ function render(){
       let v;
       if (c.k === 'km') v = `<button type="button" class="km" data-km="k" data-i="${r._i}">К${DATA.filter(d => corr(r, d)).length}</button><button type="button" class="km" data-km="m" data-i="${r._i}">М${DATA.filter(d => mm(r, d)).length}</button>`;
       else if (c.k === 'pair'){ if (r.cc) cl.push('chcard'); v = `<div class="ln">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
-      else if (c.k === 'kc'){ const L1 = LET(r.ch_), L2 = LET(r.ca); v = c.stack.map((f, i) => { const L = i ? L2 : L1; return L === '?' ? `<div class="ln">${f(r)}</div>` : `<div class="ln tg" data-fk="kc" data-fv="${i ? '~/' + L : '~' + L + '/'}" title="${i ? 'Только гости' : 'Только хозяева'}: ${L}">${f(r)}</div>`; }).join(''); }
+      else if (c.k === 'kc'){ const L1 = LET(r.ch_), L2 = LET(r.ca); v = c.stack.map(f => `<div class="ln">${f(r)}</div>`).join(''); if (L1 !== '?' && L2 !== '?'){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="kc" data-fv="=${L1}/${L2}" title="Хозяева / гости">${v}</td>`; } }
       else if (c.stack){ const sv = STV[c.k] ? STV[c.k](r) : []; v = c.stack.map((f, i) => sv[i] != null && sv[i] !== '—' && sv[i] !== '?' ? `<div class="ln"><span class="tg" data-fk="${c.k}" data-fv="=${esc(sv[i])}">${f(r)}</span></div>` : `<div class="ln">${f(r)}</div>`).join(''); }
       else if (c.k === 'vo' && r.vo) v = `<span class="pill${r.vo.startsWith('3') ? ' tv3' : ''}">${esc(r.vo)}</span>`;
       else v = esc(shown(c, r));
@@ -722,7 +707,7 @@ function fMatch(f, r){
   return true;
 }
 function chipsOf(fl){
-  return Object.keys(fl).map(k => { const c = colOf(k); let v = fl[k]; if (k === 'kc' && v[0] === '~'){ const [h, a] = v.slice(1).split('/'); v = [h && 'хоз ' + h.toUpperCase(), a && 'гост ' + a.toUpperCase()].filter(Boolean).join(', '); } if (v[0] === '=') v = v.slice(1); if (k === 'dn') v = v.toUpperCase(); return `<span class="chip">${esc(c ? c.l : k)}: ${esc(v)}</span>`; }).join('');
+  return Object.keys(fl).map(k => { const c = colOf(k); let v = fl[k]; if (v[0] === '=') v = v.slice(1); if (k === 'dn') v = v.toUpperCase(); return `<span class="chip">${esc(c ? c.l : k)}: ${esc(v)}</span>`; }).join('');
 }
 function betOut(bet, r){
   const g = goals(r), o = r[bet]; if (!g) return null;
