@@ -379,6 +379,8 @@ const RULE = v => { if (!v) return ''; const m = String(v).match(/^(\w+)\s+([\d.
 const COR = (n, roi) => n == null ? '—' : `${n} · ${roi > 0 ? '+' : ''}${Number(roi).toFixed(1)}%`;
 const LET = c => ({'гранд':'Г','середняк':'С','аутсайдер':'А'})[c] || '?';
 const f2 = v => v == null ? '' : Number(v).toFixed(2);
+// ДОБАВЛЕНО 09.11.26: основная фора показывается и в футбольных вкладках
+const FH = ['bsk','fall','tvf','rxf'];
 const COLS = [
   {k:'dn', l:'ДН', t:'txt', sel:['пн','вт','ср','чт','пт','сб','вс']},
   {k:'ch', l:'Чемпионат', t:'txt'},
@@ -399,11 +401,11 @@ const COLS = [
   {k:'tb', hide:['lr','sc'], l:'ТБ2.5', t:'num', f:f2, hit:'tb'},
   {k:'oz', hide:['lr','sc'], l:'ОЗ-Да', t:'num', f:f2, hit:'oz'},
   {k:'mg', hide:['lr','sc','bsk'], l:'Маржа', t:'num', f:f2},
-  {k:'bfl', only:['bsk'], l:'Фора 1', t:'num', sep:true, f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
-  {k:'bf1', only:['bsk'], l:'Ф1', t:'num', f:f2, hit:'bf1'},
+  {k:'bfl', only:FH, l:'Фора 1', t:'num', sep:true, f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
+  {k:'bf1', only:FH, l:'Ф1', t:'num', f:f2, hit:'bf1'},
   // ДОБАВЛЕНО 29.10.26: линия форы гостей (= Фора 1 с обратным знаком)
-  {k:'bfl2', only:['bsk'], l:'Фора 2', t:'num', f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
-  {k:'bf2', only:['bsk'], l:'Ф2', t:'num', f:f2, hit:'bf2'},
+  {k:'bfl2', only:FH, l:'Фора 2', t:'num', f: v => v == null ? '' : (v > 0 ? '+' : '') + v},
+  {k:'bf2', only:FH, l:'Ф2', t:'num', f:f2, hit:'bf2'},
   {k:'btl', only:['bsk'], l:'Тотал', t:'num', sep:true, f: v => v == null ? '' : String(v)},
   {k:'btb', only:['bsk'], l:'ТБ', t:'num', f:f2, hit:'btb'},
   {k:'btm', only:['bsk'], l:'ТМ', t:'num', f:f2, hit:'btm'},
@@ -611,7 +613,7 @@ function render(){
   el('pager').innerHTML = all ? `<span class="rec">Записи с ${from + 1} до ${Math.min(from + PP, all)} из ${all} записей${(Object.keys(filters).length || Q || DQ !== 'all') ? ` (отфильтровано из ${DATA.filter(VIEWS.find(v => v[0] === view)[2]).length} записей)` : ''}</span><span class="pn"><button type="button" data-p="${page - 1}"${page ? '' : ' disabled'}>Предыдущая</button>${nums[0] > 0 ? '<button type="button" data-p="0">1</button>' + (nums[0] > 1 ? '<span>…</span>' : '') : ''}${nums.map(p => `<button type="button" data-p="${p}"${p === page ? ' aria-current="page"' : ''}>${p + 1}</button>`).join('')}${nums[nums.length - 1] < pages - 1 ? (nums[nums.length - 1] < pages - 2 ? '<span>…</span>' : '') + `<button type="button" data-p="${pages - 1}">${pages}</button>` : ''}<button type="button" data-p="${page + 1}"${page < pages - 1 ? '' : ' disabled'}>Следующая</button></span>` : '';
   el('pager').onclick = e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; page = +b.dataset.p; render(); el('wrap').scrollTop = 0; el('wrap').scrollIntoView({block:'start'}); };
   rows = rows.slice(from, from + PP);
-  const emp = new Set(OPT.filter(k => !filters[k] && rows.every(r => r[k] == null)));
+  const emp = new Set((view === 'bsk' ? OPT : [...OPT, 'bfl', 'bf1', 'bfl2', 'bf2']).filter(k => !filters[k] && rows.every(r => { const c = COLS.find(x => x.k === k); return raw(c, r) == null; })));
   if ([...emp].join() !== [...EMPTY].join()){
     const ae = document.activeElement, id = ae && ae.id, pos = ae && ae.selectionStart;
     EMPTY = emp; buildHead();
