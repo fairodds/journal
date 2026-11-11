@@ -463,7 +463,7 @@ const mm = (r, d) => d.sp === r.sp && d.ch === r.ch && kmKeys(mKeysOf(r.sp), r.s
 function applyKM(r, mode){
   for (const k in filters) delete filters[k];
   document.querySelectorAll('#tbl input, #tbl select').forEach(i => { i.value = ''; i.classList.remove('on'); });
-  const set = (k, v) => { filters[k] = v.toLowerCase(); document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = v; i.classList.add('on'); }); };
+  const set = (k, v) => { filters[k] = v.toLowerCase(); document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = DV(v); i.classList.add('on'); }); };
   if (mode === 'k') kmKeys(K_KEYS, r.sp).forEach(k => { if (r[k] != null) set(k, dig2(r[k])); });
   else { kmKeys(mKeysOf(r.sp), r.sp).forEach(k => { const v = mKey(r, k); if (v != null) set(k, digK(k, v)); }); set('ch', '=' + r.ch); }
   // К/М считают по всей базе — поэтому сбрасываем и поиск, и день (Все/Вчера/Сегодня/Завтра),
@@ -486,6 +486,8 @@ function syncDQ(){
   q.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.d === DQ));
 }
 el('dq').addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (!b) return; DQ = b.dataset.d; syncDQ(); page = 0; render(); });
+// «=» в начале фильтра значит точное совпадение — в поле его не показываем
+const DV = v => (v && v[0] === '=') ? v.slice(1) : v;
 let qT; el('q').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(() => { Q = el('q').value.trim().toLowerCase(); page = 0; render(); }, 150); });
 el('per').value = String(PER);
 el('per').addEventListener('change', () => { PER = +el('per').value; try { localStorage.setItem('chk_per', PER); } catch(e){} page = 0; render(); });
@@ -551,13 +553,14 @@ function buildHead(){
     page = 0; render();
   }));
   el('tbl').querySelectorAll('thead input, thead select, tfoot input, tfoot select').forEach(i => i.addEventListener(i.tagName === 'SELECT' ? 'change' : 'input', () => {
-    const v = i.value.trim().toLowerCase().replace(',', '.');
-    if (v) filters[i.dataset.k] = v; else delete filters[i.dataset.k];
+    const v = i.value.trim().toLowerCase().replace(',', '.'), old = filters[i.dataset.k];
+    if (v && old && old[0] === '=' && old.slice(1) === v) {} // то же значение — точное совпадение остаётся
+    else if (v) filters[i.dataset.k] = v; else delete filters[i.dataset.k];
     document.querySelectorAll(`#tbl [data-k="${i.dataset.k}"]:is(input,select)`).forEach(o => { if (o !== i) o.value = i.value; o.classList.toggle('on', !!v); });
     page = 0; render();
   }));
   for (const c of COLS) if ((c.hide && c.hide.includes(view)) || (c.only && !c.only.includes(view))) delete filters[c.k];
-  for (const k in filters) document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = filters[k]; i.classList.add('on'); });
+  for (const k in filters) document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = DV(filters[k]); i.classList.add('on'); });
   const hh = th.rows[0].offsetHeight; th.querySelectorAll('tr.f th').forEach(t => t.style.top = hh + 'px');
   const tf = el('tbl').tFoot, fh = tf.rows[1].offsetHeight; tf.querySelectorAll('tr.h th').forEach(t => t.style.bottom = fh + 'px');
 }
@@ -675,13 +678,13 @@ el('tbl').tBodies[0].addEventListener('click', e => {
   if (kc && !e.target.closest('button')){
     const k = kc.dataset.fk, fv = kc.dataset.fv, v = filters[k] === fv.toLowerCase() ? '' : fv;
     if (v) filters[k] = v.toLowerCase(); else delete filters[k];
-    document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = v; i.classList.toggle('on', !!v); });
+    document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = DV(v); i.classList.toggle('on', !!v); });
     page = 0; render(); return;
   }
   const t = e.target.closest('td.tap');
   if (t){
     const v = '=' + t.dataset.ch; filters.ch = v.toLowerCase();
-    document.querySelectorAll('#tbl [data-k="ch"]:is(input,select)').forEach(i => { i.value = v; i.classList.add('on'); });
+    document.querySelectorAll('#tbl [data-k="ch"]:is(input,select)').forEach(i => { i.value = DV(v); i.classList.add('on'); });
     if (!DATA.some(d => d.ch === t.dataset.ch && VIEWS.find(x => x[0] === view)[2](d))){ view = t.dataset.sp === 'f' ? 'fall' : 'bsk'; buildTabs(); }
     page = 0; render(); el('wrap').scrollTop = 0; return;
   } const b = e.target.closest('button.km'); if (!b) return; const r = DATA[+b.dataset.i]; if (r) applyKM(r, b.dataset.km); });
