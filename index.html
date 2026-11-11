@@ -65,6 +65,10 @@ footer .in{padding-block:16px 28px;display:flex;flex-wrap:wrap;gap:6px 18px;just
 .tg{width:16px;height:16px;fill:currentColor;flex:none}
 nav.menu a.tgbtn{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:var(--brand);opacity:1}
 nav.menu a.tgbtn:hover{background:#8fd357}
+.lsw{display:inline-flex;gap:2px;align-items:center;margin:0 4px;padding:2px;border:1px solid rgba(255,255,255,.18);border-radius:8px}
+.lsw button{background:none;border:0;color:var(--head-ink);font:600 12px var(--f-ui);padding:5px 8px;border-radius:5px;cursor:pointer;opacity:.7}
+.lsw button[aria-pressed="true"]{background:var(--gold);color:var(--brand);opacity:1}
+@media (max-width:760px){.lsw{align-self:flex-start;margin:6px 0 2px 12px}}
 .tgbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid #2a9fd8;border-radius:0;padding:9px 12px;margin:2px 0 12px;font-size:13.5px}
 .tgbar .tg{color:#2a9fd8}
 .tgbar a{color:var(--brand);font-weight:600;text-decoration:none;border-bottom:1px solid var(--line)}
@@ -219,6 +223,7 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
     <a href="#combo" data-sec="combo">Комбо фильтр</a>
     <a href="https://fairkoef.com/journal/" target="_blank" rel="noopener">Журнал Fair Odds ↗</a>
     <a href="#about" data-sec="about">Как читать</a>
+    <span class="lsw" role="group" aria-label="Язык"><button type="button" data-l="ru">RU</button><button type="button" data-l="uk">UA</button><button type="button" data-l="en">EN</button></span>
     <a class="tgbtn" href="https://t.me/chesnyi_koef_channel" target="_blank" rel="noopener"><svg class="tg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.2 1.3-.2 1.6l4.8 1.5 1.8 5.6c.2.7.4.9.9.9s.7-.2 1-.5l2.4-2.3 4.9 3.6c.9.5 1.5.2 1.8-.8l3.2-15.1c.3-1.3-.5-1.9-1.8-1.7Zm-3.7 3.6-8.4 7.6-.3 3.4-1.5-4.7 9.7-6.1c.4-.3.8 0 .5-.2Z"/></svg>Telegram</a>
   </nav>
 </div></header>
@@ -344,6 +349,116 @@ td.tap{cursor:pointer;text-decoration:underline dotted var(--muted);text-underli
 </main>
 <footer><div class="in"><span>Честный коэффициент · открытая база карточек агента</span><span class="fl">Telegram: <a href="https://t.me/chesnyi_koef_channel" target="_blank" rel="noopener">@chesnyi_koef_channel</a> · <a href="https://t.me/chesnyi_koef_basketball" target="_blank" rel="noopener">@chesnyi_koef_basketball</a></span><span id="fstamp"></span><span class="vis" id="visits" hidden>👁 Просмотров сайта: <b id="visits-n"></b></span><p class="disc">Сайт носит исключительно информационный и аналитический характер: здесь публикуется статистика спортивных событий и результаты математической модели. Материалы не являются предложением, рекламой или призывом участвовать в азартных играх или делать ставки, и не являются финансовой рекомендацией. Сайт не принимает ставки, не сотрудничает с букмекерами и не получает от них вознаграждения. Коэффициенты приведены как рыночные данные для анализа. Участие в азартных играх может быть запрещено законодательством вашей страны — соблюдайте местные законы. 18+</p></div></footer>
 
+<script src="/names.js"></script>
+<script>
+/* ===== Языки RU / UA / EN (добавлено 11.11.26) =====
+   Код страницы пишет тексты по-русски; этот блок переводит их на лету.
+   Названия команд и лиг — из /names.js (функция nameIn). */
+let LANG = 'ru';
+try {
+  const s = localStorage.getItem('fk_lang');
+  if (s === 'ru' || s === 'uk' || s === 'en') LANG = s; // основной язык — русский, другой только по выбору
+} catch(e){}
+const TXD = {"Язык": ["Мова", "Language"], "К": ["К", "C"], "М": ["М", "M"], "База Честного Коэффициента": ["База Чесного Коефіцієнта", "Fair Odds Card Database"], "База": ["База", "Database"], "База карточек": ["База карток", "Card database"], "Фильтры": ["Фільтри", "Filters"], "Комбо фильтр": ["Комбо фільтр", "Combo filter"], "Журнал Fair Odds ↗": ["Журнал Fair Odds ↗", "Fair Odds journal ↗"], "Как читать": ["Як читати", "How to read"], "Меню": ["Меню", "Menu"], "Разделы": ["Розділи", "Sections"], "Честный коэффициент. Статистика. Анализ. Справедливость.": ["Чесний коефіцієнт. Статистика. Аналіз. Справедливість.", "Fair Odds. Statistics. Analysis. Fairness."], "Загрузка базы…": ["Завантаження бази…", "Loading database…"], "Не удалось загрузить базу. Обновите страницу.": ["Не вдалося завантажити базу. Оновіть сторінку.", "Could not load the database. Please refresh the page."], "Набор карточек": ["Набір карток", "Card set"], "Поиск": ["Пошук", "Search"], "Поиск: команда, чемпионат, дата": ["Пошук: команда, чемпіонат, дата", "Search: team, league, date"], "Даты": ["Дати", "Dates"], "Все": ["Усі", "All"], "Вчера": ["Учора", "Yesterday"], "Сегодня": ["Сьогодні", "Today"], "Завтра": ["Завтра", "Tomorrow"], "Показать": ["Показати", "Show"], "записей": ["записів", "entries"], "Наш кф ▾": ["Наш кф ▾", "Our odds ▾"], "Скрыть наш кф ▴": ["Сховати наш кф ▴", "Hide our odds ▴"], "Сбросить фильтры": ["Скинути фільтри", "Reset filters"], "Очистить кф": ["Очистити кф", "Clear odds"], "Создать фильтр": ["Створити фільтр", "Create filter"], "Название": ["Назва", "Name"], "Например: Х 3.4 Хорватия": ["Наприклад: Х 3.4 Хорватія", "For example: X 3.4 Croatia"], "Прогноз": ["Прогноз", "Pick"], "Баскет: фора хозяев": ["Баскет: фора господарів", "Basketball: home handicap"], "Баскет: фора гостей": ["Баскет: фора гостей", "Basketball: away handicap"], "Баскет: ТБ": ["Баскет: ТБ", "Basketball: Over"], "Баскет: ТМ": ["Баскет: ТМ", "Basketball: Under"], "Сохранить": ["Зберегти", "Save"], "Отмена": ["Скасувати", "Cancel"], "Сначала задайте фильтр в таблице: кэф, день или чемпионат.": ["Спершу задайте фільтр у таблиці: кеф, день або чемпіонат.", "First set a filter in the table: odds, day or league."], "Предыдущая": ["Попередня", "Previous"], "Следующая": ["Наступна", "Next"], "Под этот фильтр карточек нет. Сбросьте одно из полей.": ["Під цей фільтр карток немає. Скиньте одне з полів.", "No cards match this filter. Clear one of the fields."], "Мои фильтры": ["Мої фільтри", "My filters"], "Сохраняются в этом браузере. Настройте фильтр в «Базе» и нажмите «Создать фильтр».": ["Зберігаються в цьому браузері. Налаштуйте фільтр у «Базі» й натисніть «Створити фільтр».", "Saved in this browser. Set up a filter in the Database and press “Create filter”."], "Вид спорта": ["Вид спорту", "Sport"], "Футбол": ["Футбол", "Football"], "Баскетбол": ["Баскетбол", "Basketball"], "Действие": ["Дія", "Action"], "Значения": ["Значення", "Values"], "Вкладка": ["Вкладка", "Tab"], "Матчей": ["Матчів", "Matches"], "Удалить": ["Видалити", "Delete"], "Удалить?": ["Видалити?", "Delete?"], "Открыть в базе": ["Відкрити в базі", "Open in database"], "Матчи, которые подходят под ваши сохранённые фильтры.": ["Матчі, які підходять під ваші збережені фільтри.", "Matches that fit your saved filters."], "Показывать и сыгранные": ["Показувати й зіграні", "Show played matches too"], "Фильтр": ["Фільтр", "Filter"], "Совпадений нет.": ["Збігів немає.", "No matches."], "Сейчас нет несыгранных матчей под ваши фильтры. Включите «Показывать и сыгранные», чтобы увидеть историю.": ["Зараз немає незіграних матчів під ваші фільтри. Увімкніть «Показувати й зіграні», щоб побачити історію.", "There are no upcoming matches for your filters right now. Turn on “Show played matches too” to see the history."], "ДН": ["ДТ", "Day"], "Чемпионат": ["Чемпіонат", "League"], "Дата": ["Дата", "Date"], "Счёт": ["Рахунок", "Score"], "Пари": ["Пари", "Match"], "Кат": ["Кат", "Cat"], "Рейт": ["Рейт", "Rating"], "рейт": ["рейт", "rating"], "Место": ["Місце", "Pos"], "м.": ["м.", "pos."], "Маржа": ["Маржа", "Margin"], "Фора 1": ["Фора 1", "Hcp 1"], "Фора 2": ["Фора 2", "Hcp 2"], "Тотал": ["Тотал", "Total"], "ТВ": ["ТВ", "TV"], "голоса · ставка": ["голоси · ставка", "votes · pick"], "Читаем кф": ["Читаємо кф", "Odds reading"], "прогноз @ кф": ["прогноз @ кф", "pick @ odds"], "Правило": ["Правило", "Rule"], "Большой кор.": ["Великий кор.", "Wide corr."], "Узкий кор.": ["Вузький кор.", "Narrow corr."], "К / М": ["К / М", "C / M"], "Наш кф: история": ["Наш кф: історія", "Our odds: history"], "Наш кф: сезон": ["Наш кф: сезон", "Our odds: season"], "Наш кф: +очные": ["Наш кф: +очні", "Our odds: +H2H"], "Наш кф: Читаем кф": ["Наш кф: Читаємо кф", "Our odds: odds reading"], "Мод. Ан. H2H": ["Мод. Ан. H2H", "Mod. An. H2H"], "Хозяева / гости": ["Господарі / гості", "Home / away"], "Только этот чемпионат": ["Лише цей чемпіонат", "This league only"], "Все встречи этих команд": ["Усі зустрічі цих команд", "All meetings of these teams"], "Расх": ["Розб", "Div"], "Расхождение": ["Розбіжність", "Divergence"], "Футбол — все (как в отчёте)": ["Футбол — усі (як у звіті)", "Football — all (as in the report)"], "Футбол — все": ["Футбол — усі", "Football — all"], "ТВ футбол": ["ТВ футбол", "TV football"], "Расхождение футбол": ["Розбіжність футбол", "Divergence football"], "📚 Правила лиг": ["📚 Правила ліг", "📚 League rules"], "🔎 Мягкий коридор": ["🔎 М’який коридор", "🔎 Soft corridor"], "📚 Правила": ["📚 Правила", "📚 Rules"], "🔎 Мягкий": ["🔎 М’який", "🔎 Soft"], "гранд": ["гранд", "top"], "середняк": ["середняк", "middle"], "аутсайдер": ["аутсайдер", "underdog"], "Г": ["Г", "T"], "С": ["С", "M"], "А": ["А", "U"], "Г·С·А": ["Г·С·А", "T·M·U"], "ПН": ["ПН", "MO"], "ВТ": ["ВТ", "TU"], "СР": ["СР", "WE"], "ЧТ": ["ЧТ", "TH"], "ПТ": ["ПТ", "FR"], "СБ": ["СБ", "SA"], "ВС": ["НД", "SU"], "пн": ["пн", "mo"], "вт": ["вт", "tu"], "ср": ["ср", "we"], "чт": ["чт", "th"], "пт": ["пт", "fr"], "сб": ["сб", "sa"], "вс": ["нд", "su"], "👁 Просмотров сайта:": ["👁 Переглядів сайту:", "👁 Site views:"], "Честный коэффициент · открытая база карточек агента": ["Чесний коефіцієнт · відкрита база карток агента", "Fair Odds · open database of the agent’s cards"], "Сайт носит исключительно информационный и аналитический характер: здесь публикуется статистика спортивных событий и результаты математической модели. Материалы не являются предложением, рекламой или призывом участвовать в азартных играх или делать ставки, и не являются финансовой рекомендацией. Сайт не принимает ставки, не сотрудничает с букмекерами и не получает от них вознаграждения. Коэффициенты приведены как рыночные данные для анализа. Участие в азартных играх может быть запрещено законодательством вашей страны — соблюдайте местные законы. 18+": ["Сайт має виключно інформаційний та аналітичний характер: тут публікується статистика спортивних подій і результати математичної моделі. Матеріали не є пропозицією, рекламою чи закликом брати участь в азартних іграх або робити ставки, і не є фінансовою рекомендацією. Сайт не приймає ставок, не співпрацює з букмекерами і не отримує від них винагороди. Коефіцієнти наведено як ринкові дані для аналізу. Участь в азартних іграх може бути заборонена законодавством вашої країни — дотримуйтеся місцевих законів. 18+", "This site is for information and analysis only: it publishes sports statistics and the output of a mathematical model. Nothing here is an offer, advertisement or invitation to gamble or place bets, nor financial advice. The site does not accept bets, does not work with bookmakers and receives no payment from them. Odds are shown as market data for analysis. Gambling may be illegal in your country — follow local laws. 18+"], "Как читать базу": ["Як читати базу", "How to read the database"], "Здесь собраны все карточки, которые агент «Честный коэффициент» выпустил в канал до начала матча. Ничего не удаляется и не правится задним числом: выигрыши и проигрыши лежат рядом.": ["Тут зібрано всі картки, які агент «Чесний коефіцієнт» випустив у канал до початку матчу. Нічого не видаляється і не виправляється заднім числом: виграші й програші лежать поруч.", "This is every card the Fair Odds agent published to its channel before kick-off. Nothing is deleted or edited afterwards: wins and losses sit side by side."], "Разделы сайта": ["Розділи сайту", "Site sections"], "Таблица всех карточек агента с фильтрами, как на Бет-Базе. Разбита на вкладки по видам прогнозов.": ["Таблиця всіх карток агента з фільтрами, як на Бет-Базі. Розбита на вкладки за видами прогнозів.", "A table of all the agent’s cards with filters, like on Bet-Baza. Split into tabs by type of pick."], "Ваши сохранённые фильтры: значения, сколько матчей под них подходит и выбранный прогноз. Хранятся только в вашем браузере.": ["Ваші збережені фільтри: значення, скільки матчів під них підходить і вибраний прогноз. Зберігаються лише у вашому браузері.", "Your saved filters: their values, how many matches fit them and the chosen pick. Stored only in your browser."], "Несыгранные матчи, которые подходят под ваши сохранённые фильтры. Можно включить и сыгранные, чтобы посмотреть историю.": ["Незіграні матчі, які підходять під ваші збережені фільтри. Можна увімкнути й зіграні, щоб подивитися історію.", "Upcoming matches that fit your saved filters. You can include played matches to see the history."], "Журнал": ["Журнал", "Journal"], "Журнал Fair Odds: открытый учёт прогнозов, у каждой стратегии свой условный счёт. Открывается на отдельном сайте.": ["Журнал Fair Odds: відкритий облік прогнозів, у кожної стратегії свій умовний рахунок. Відкривається на окремій сторінці.", "The Fair Odds journal: an open record of picks, with a notional balance for each strategy. Opens on a separate page."], "Эта страница с пояснениями.": ["Ця сторінка з поясненнями.", "This page with explanations."], "Каналы, куда карточки выходят до начала матча.": ["Канали, куди картки виходять до початку матчу.", "The channels where cards are posted before kick-off."], "Вкладки базы": ["Вкладки бази", "Database tabs"], "Все футбольные карточки стратегий ТВ и «Расхождение» вместе. Та же выборка, что в ежедневном отчёте агента в канале.": ["Усі футбольні картки стратегій ТВ і «Розбіжність» разом. Та сама вибірка, що в щоденному звіті агента в каналі.", "All football cards of the TV and Divergence strategies together. The same set as in the agent’s daily report in the channel."], "Только карточки «Теории вероятности». Прогноз на исход, с которым согласились 2 или 3 метода агента.": ["Лише картки «Теорії ймовірності». Прогноз на результат, з яким погодилися 2 або 3 методи агента.", "Only Probability Theory (TV) cards. A pick on the outcome that 2 or 3 of the agent’s methods agreed on."], "Карточки, где агент видит фаворита не там, где его ставит букмекер. Прогноз на команду, которую букмекер недооценивает.": ["Картки, де агент бачить фаворита не там, де його ставить букмекер. Прогноз на команду, яку букмекер недооцінює.", "Cards where the agent sees a different favourite from the bookmaker’s. A pick on the team the bookmaker underrates."], "Карточки ТВ по баскетболу: П1 и П2, основной тотал (линия, ТМ, ТБ) и основная фора (линия на хозяев, Ф1, Ф2). Основная линия — та, где кэфы ближе всего к 2.00.": ["Картки ТВ з баскетболу: П1 і П2, основний тотал (лінія, ТМ, ТБ) і основна фора (лінія на господарів, Ф1, Ф2). Основна лінія — та, де кефи найближчі до 2.00.", "TV cards for basketball: 1 and 2, the main total (line, Under, Over) and the main handicap (home line, AH1, AH2). The main line is the one with odds closest to 2.00."], "Прогнозы по правилам чемпионатов: рынок и коридор кэфа, которые давали плюс в истории этой лиги. Своя колонка «Правило».": ["Прогнози за правилами чемпіонатів: ринок і коридор кефа, які давали плюс в історії цієї ліги. Своя колонка «Правило».", "Picks by league rules: a market and odds band that was profitable in that league’s history. Has its own “Rule” column."], "Прогнозы по коридорам кэфов из большой базы матчей всех лиг. Свои колонки «Большой кор.» и «Узкий кор.».": ["Прогнози за коридорами кефів із великої бази матчів усіх ліг. Свої колонки «Великий кор.» і «Вузький кор.».", "Picks by odds corridors from a large database of matches across all leagues. Has its own “Wide corr.” and “Narrow corr.” columns."], "У каждой вкладки свои колонки: то, чего у стратегии нет, на её вкладке не показывается.": ["У кожної вкладки свої колонки: те, чого в стратегії немає, на її вкладці не показується.", "Each tab has its own columns: what a strategy does not have is not shown on its tab."], "Что такое карточка": ["Що таке картка", "What a card is"], "Агент каждый день сканирует линию и сравнивает кэф букмекера со своей оценкой силы команд. Когда оценки расходятся, он выпускает карточку с прогнозом на исход: П1 или П2.": ["Агент щодня сканує лінію і порівнює кеф букмекера зі своєю оцінкою сили команд. Коли оцінки розходяться, він випускає картку з прогнозом на результат: П1 або П2.", "Every day the agent scans the line and compares the bookmaker’s odds with its own estimate of team strength. When they disagree, it publishes a card with a pick on the outcome: 1 or 2."], "Основная стратегия «Теория вероятности». Голоса 2/3 или 3/3 показывают, сколько независимых методов согласились с прогнозом.": ["Основна стратегія «Теорія ймовірності». Голоси 2/3 або 3/3 показують, скільки незалежних методів погодилися з прогнозом.", "The main Probability Theory strategy. Votes 2/3 or 3/3 show how many independent methods agreed with the pick."], "«Расхождение»: агент видит фаворита не там, где его ставит букмекер.": ["«Розбіжність»: агент бачить фаворита не там, де його ставить букмекер.", "Divergence: the agent sees a different favourite from the bookmaker’s."], "Колонки таблицы": ["Колонки таблиці", "Table columns"], "День недели. Под заголовком можно выбрать один день, как на Бет-Базе.": ["День тижня. Під заголовком можна вибрати один день, як на Бет-Базі.", "Day of the week. You can pick one day under the header, like on Bet-Baza."], "Итоговый счёт, в скобках счёт первого тайма.": ["Підсумковий рахунок, у дужках рахунок першого тайму.", "Final score, first-half score in brackets."], "Хозяева сверху, гости снизу. Жирным выделена команда, на которую был прогноз.": ["Господарі зверху, гості знизу. Жирним виділено команду, на яку був прогноз.", "Home team on top, away team below. The team that was picked is in bold."], "Категория команды по рейтингу за 10 сезонов: Г гранд, С середняк, А аутсайдер.": ["Категорія команди за рейтингом за 10 сезонів: Г гранд, С середняк, А аутсайдер.", "Team category by 10-season rating: T top, M middle, U underdog."], "Рейтинг за 10 сезонов. Чем меньше число, тем сильнее команда.": ["Рейтинг за 10 сезонів. Що менше число, то сильніша команда.", "10-season rating. The lower the number, the stronger the team."], "Место в турнирной таблице на момент карточки.": ["Місце в турнірній таблиці на момент картки.", "League table position at the time of the card."], "Кэфы на исход. Зелёная клетка значит, что этот исход зашёл.": ["Кефи на результат. Зелена клітинка означає, що цей результат зайшов.", "Odds on the outcome. A green cell means that outcome won."], "Только в баскетболе: кэф П1 или П2 изменился с открытия. Синяя клетка и ▼ — кэф упал, букмекер дожимает эту команду. Серая клетка и ▲ — кэф вырос. Три оттенка по сдвигу от открытия: бледный — до 3%, средний — 3–7%, яркий — от 7%. Нажмите и подержите стрелку, чтобы увидеть открытие.": ["Лише в баскетболі: кеф П1 чи П2 змінився з відкриття. Синя клітинка і ▼ — кеф упав, букмекер дотискає цю команду. Сіра клітинка і ▲ — кеф зріс. Три відтінки за зсувом від відкриття: блідий — до 3%, середній — 3–7%, яскравий — від 7%. Натисніть і потримайте стрілку, щоб побачити відкриття.", "Basketball only: the 1 or 2 odds have moved since opening. A blue cell and ▼ means the odds dropped — the bookmaker is backing that team. A grey cell and ▲ means the odds rose. Three shades by the move from opening: pale up to 3%, medium 3–7%, bright from 7%. Press and hold the arrow to see the opening odds."], "Фора 0 на хозяев и на гостей.": ["Фора 0 на господарів і на гостей.", "Draw no bet on the home and away team."], "Тотал меньше и больше 2.5 гола.": ["Тотал менше й більше 2.5 гола.", "Under and over 2.5 goals."], "Обе забьют.": ["Обидві заб’ють.", "Both teams to score."], "Честные кэфы агента по модели, по аналитике и по очным встречам.": ["Чесні кефи агента за моделлю, за аналітикою і за очними зустрічами.", "The agent’s fair odds by model, by analytics and by head-to-head."], "Исход, на который была карточка: ✓ зашла, ✕ не зашла, … матч ещё не сыгран.": ["Результат, на який була картка: ✓ зайшла, ✕ не зайшла, … матч ще не зіграно.", "The outcome the card picked: ✓ won, ✕ lost, … not played yet."], "Правила лиг и Мягкий коридор": ["Правила ліг і М’який коридор", "League rules and Soft corridor"], "Это две отдельные стратегии агента со своими вкладками. Они ставят не только на П1 и П2, но и на ничью, фору 0 и тоталы.": ["Це дві окремі стратегії агента зі своїми вкладками. Вони ставлять не лише на П1 і П2, а й на нічию, фору 0 і тотали.", "These are two separate strategies of the agent, each with its own tab. They pick not only 1 and 2 but also the draw, draw no bet and totals."], "Правило найдено по истории чемпионата за 2018–2026 и проверено на свежих сезонах. Колонка «Правило» показывает рынок и коридор кэфа, например «Х 3.40–4.00».": ["Правило знайдено за історією чемпіонату за 2018–2026 і перевірено на свіжих сезонах. Колонка «Правило» показує ринок і коридор кефа, наприклад «Х 3.40–4.00».", "The rule was found in the league’s 2018–2026 history and tested on recent seasons. The “Rule” column shows the market and odds band, for example “X 3.40–4.00”."], "Коридоры по всей базе матчей вокруг кэфов этого матча. «Большой кор.» и «Узкий кор.» показывают число матчей в коридоре и ROI по кэфу матча.": ["Коридори по всій базі матчів навколо кефів цього матчу. «Великий кор.» і «Вузький кор.» показують кількість матчів у коридорі та ROI за кефом матчу.", "Corridors across the whole match database around this match’s odds. “Wide corr.” and “Narrow corr.” show the number of matches in the corridor and the ROI at this match’s odds."], "Возврат: прогноз Ф(0) при ничьей — не засчитывается ни в плюс, ни в минус.": ["Повернення: прогноз Ф(0) при нічиїй — не зараховується ні в плюс, ні в мінус.", "Refund: a draw-no-bet pick when the match is drawn — counts neither as a win nor a loss."], "Фильтр стоит под каждой колонкой, сверху и снизу таблицы. Для кэфов вписывается начало числа: «2.» найдёт всё от 2.00 до 2.99, «2.1» найдёт от 2.10 до 2.19. Нажатие на название чемпионата оставляет только его матчи. «Очистить кф» убирает фильтры по кэфам и оставляет остальные.": ["Фільтр стоїть під кожною колонкою, зверху і знизу таблиці. Для кефів вписується початок числа: «2.» знайде все від 2.00 до 2.99, «2.1» знайде від 2.10 до 2.19. Натискання на назву чемпіонату лишає тільки його матчі. «Очистити кф» прибирає фільтри за кефами й лишає решту.", "There is a filter under every column, at the top and bottom of the table. For odds, type the start of the number: “2.” finds everything from 2.00 to 2.99, “2.1” finds 2.10 to 2.19. Clicking a league name keeps only its matches. “Clear odds” removes the odds filters and keeps the rest."], "Как сохранить фильтр": ["Як зберегти фільтр", "How to save a filter"], "Задайте фильтры в таблице: кэфы, день, чемпионат. Нажмите «Создать фильтр» под таблицей, дайте название и выберите прогноз. Матчи, которые подходят под сохранённые фильтры, подсвечиваются жёлтым в колонке ДН.": ["Задайте фільтри в таблиці: кефи, день, чемпіонат. Натисніть «Створити фільтр» під таблицею, дайте назву й виберіть прогноз. Матчі, які підходять під збережені фільтри, підсвічуються жовтим у колонці ДТ.", "Set filters in the table: odds, day, league. Press “Create filter” under the table, give it a name and choose a pick. Matches that fit your saved filters are highlighted yellow in the Day column."], "Жёлтые матчи в баскетболе": ["Жовті матчі в баскетболі", "Yellow matches in basketball"], "Жёлтым в колонке «Пари» выделены матчи, по которым карточка вышла в баскетбольный канал.": ["Жовтим у колонці «Пари» виділено матчі, за якими картка вийшла в баскетбольний канал.", "Matches highlighted yellow in the Match column are those whose card was posted to the basketball channel."], "Коридор и мат-модель": ["Коридор і мат-модель", "Corridor and math model"], "Коридор. Карточки, где П1, Х и П2 совпадают с этим матчем до второй цифры, во всех чемпионатах.": ["Коридор. Картки, де П1, Х і П2 збігаються з цим матчем до другої цифри, в усіх чемпіонатах.", "Corridor. Cards where 1, X and 2 match this game to the second digit, across all leagues."], "Мат-модель. Карточки из того же чемпионата, где рынки совпадают по первой цифре. В баскетболе сравниваются П1 и П2 на открытии и сейчас, обе форы и кф на них.": ["Мат-модель. Картки з того самого чемпіонату, де ринки збігаються за першою цифрою. У баскетболі порівнюються П1 і П2 на відкритті й зараз, обидві фори та кф на них.", "Math model. Cards from the same league where the markets match on the first digit. In basketball it compares 1 and 2 at opening and now, both handicaps and their odds."], "Число на кнопке показывает, сколько таких карточек в базе. Пока база молодая, коридоры маленькие. Они растут вместе с ней.": ["Число на кнопці показує, скільки таких карток у базі. Поки база молода, коридори маленькі. Вони ростуть разом із нею.", "The number on the button shows how many such cards are in the database. While the database is young, the corridors are small. They grow with it."], "Где смотреть карточки": ["Де дивитися картки", "Where to see the cards"], "Каждая карточка сначала выходит в Telegram, до начала матча, и только потом попадает в базу. Футбол:": ["Кожна картка спершу виходить у Telegram, до початку матчу, і лише потім потрапляє в базу. Футбол:", "Every card is first posted on Telegram, before kick-off, and only then goes into the database. Football:"], ". Баскетбол:": [". Баскетбол:", ". Basketball:"], "Как пополняется база": ["Як поповнюється база", "How the database is updated"], "Агент записывает кэфы в момент выпуска карточки, после матча дописывает счёт, а каждую ночь выкладывает обновлённую базу на сайт.": ["Агент записує кефи в момент випуску картки, після матчу дописує рахунок, а щоночі викладає оновлену базу на сайт.", "The agent records the odds when the card is published, adds the score after the match, and uploads the updated database to the site every night."], "Расх*": ["Розб*", "Div*"], "ТВ*": ["ТВ*", "TV*"]};
+const TOK_EN = {'П1':'1','П2':'2','Х':'X','Ф1(0)':'AH1(0)','Ф2(0)':'AH2(0)','Ф1':'AH1','Ф2':'AH2','ТМ2.5':'U2.5','ТБ2.5':'O2.5','ТМ':'U','ТБ':'O','ОЗ-Да':'BTTS','ОЗ-да':'BTTS','ТВ':'TV','Расх':'Div'};
+const TOK_UK = {'ОЗ-Да':'ОЗ-Так','ОЗ-да':'ОЗ-так','Расх':'Розб'};
+const TOK_RE = /(Ф1\(0\)|Ф2\(0\)|ТМ2\.5|ТБ2\.5|ОЗ-Да|ОЗ-да|Расх|П1|П2|Ф1|Ф2|ТМ|ТБ|ТВ|Х)(?=$|[\s@:✓✕…\d*·\/–-])/g;
+const TOK_ONLY = /^[\sПХФТМБОЗРасхДдВ0-9().@:✓✕…·\/–\-*+%]*(откр)?$/;
+function tok(s){
+  if (LANG === 'ru') return s;
+  const m = LANG === 'en' ? TOK_EN : TOK_UK;
+  s = s.replace(TOK_RE, t => m[t] || t);
+  return s.replace(/ откр$/, LANG === 'en' ? ' open' : ' відкр');
+}
+const I18PL = (n, f) => { n = Math.abs(n) % 100; const n1 = n % 10; return (n > 10 && n < 20) ? f[2] : n1 === 1 ? f[0] : (n1 >= 2 && n1 <= 4) ? f[1] : f[2]; };
+const RULES = [
+  [/^(\d+) карточек агента · обновлено (.+)$/, m => LANG === 'en' ? `${m[1]} agent cards · updated ${m[2]}` : `${m[1]} ${I18PL(+m[1], ['картка','картки','карток'])} агента · оновлено ${m[2]}`],
+  [/^(\d+) карточек агента$/, m => LANG === 'en' ? `${m[1]} agent cards` : `${m[1]} ${I18PL(+m[1], ['картка','картки','карток'])} агента`],
+  [/^Данные: (\d+) карточек$/, m => LANG === 'en' ? `Data: ${m[1]} cards` : `Дані: ${m[1]} ${I18PL(+m[1], ['картка','картки','карток'])}`],
+  [/^Записи с (\d+) до (\d+) из (\d+) записей(?: \(отфильтровано из (\d+) записей\))?$/, m => LANG === 'en'
+     ? `Showing ${m[1]} to ${m[2]} of ${m[3]} entries` + (m[4] ? ` (filtered from ${m[4]} entries)` : '')
+     : `Записи з ${m[1]} до ${m[2]} із ${m[3]} записів` + (m[4] ? ` (відфільтровано з ${m[4]} записів)` : '')],
+  [/^Открытие ([\d.]+) → сейчас ([\d.]+) \((.+)\)$/, m => LANG === 'en' ? `Opening ${m[1]} → now ${m[2]} (${m[3]})` : `Відкриття ${m[1]} → зараз ${m[2]} (${m[3]})`],
+  [/^Фильтр «(.*)» сохранён\. Его матчи подсвечены жёлтым, все фильтры — в разделе «Фильтры»\.$/, m => LANG === 'en'
+     ? `Filter “${m[1]}” saved. Its matches are highlighted yellow; all filters are in the Filters section.`
+     : `Фільтр «${m[1]}» збережено. Його матчі підсвічено жовтим, усі фільтри — в розділі «Фільтри».`],
+  [/^Фильтров (футбола|баскетбола): (\d+) · совпадений: (\d+)$/, m => LANG === 'en'
+     ? `${m[1] === 'футбола' ? 'Football' : 'Basketball'} filters: ${m[2]} · matches: ${m[3]}`
+     : `Фільтрів ${m[1] === 'футбола' ? 'футболу' : 'баскетболу'}: ${m[2]} · збігів: ${m[3]}`],
+  [/^Фильтров для (футбола|баскетбола) пока нет\. (.*)$/, m => {
+     const sp = m[1] === 'футбола';
+     const rest = /Настройте/.test(m[2])
+       ? (LANG === 'en' ? 'Set up filters in the Database table on the Basketball tab and press “Create filter”.' : 'Налаштуйте фільтри в таблиці «Бази» на вкладці «Баскетбол» і натисніть «Створити фільтр».')
+       : (LANG === 'en' ? 'First save at least one filter in the Database.' : 'Спершу збережіть хоча б один фільтр у «Базі».');
+     return LANG === 'en' ? `No ${sp ? 'football' : 'basketball'} filters yet. ${rest}` : `Фільтрів для ${sp ? 'футболу' : 'баскетболу'} поки немає. ${rest}`; }],
+  [/^Фильтр (.+)$/, m => (LANG === 'en' ? 'Filter ' : 'Фільтр ') + tx(m[1])],
+  [/^Вкладка: (.+)$/, m => (LANG === 'en' ? 'Tab: ' : 'Вкладка: ') + tx(m[1])],
+  [/^ТВ (\d\/\d) · (.+)$/, m => `${LANG === 'en' ? 'TV' : 'ТВ'} ${m[1]} · ${tok(m[2])}`],
+  [/^([КМ])(\d+)$/, m => (LANG === 'en' ? (m[1] === 'К' ? 'C' : 'M') : m[1]) + m[2]],
+  [/^на (\d+)$/, m => (LANG === 'en' ? 'on ' : 'на ') + m[1]],
+];
+function tx(s){
+  if (LANG === 'ru' || !s || !/[А-яЁё]/.test(s)) return s;
+  const t = s.trim(); if (!t) return s;
+  let r = null;
+  const d = TXD[t];
+  if (d) r = d[LANG === 'uk' ? 0 : 1];
+  else { for (const [re, f] of RULES){ const m = t.match(re); if (m){ r = f(m); break; } } }
+  if (r == null && t.length < 40 && TOK_ONLY.test(t)) r = tok(t);
+  if (r == null) return s;
+  const i = s.indexOf(t);
+  return s.slice(0, i) + r + s.slice(i + t.length);
+}
+/* перевод DOM: оригинал (русский) запоминается, чтобы переключать языки туда-обратно */
+const ORIG = new WeakMap(), SETV = new WeakMap(), AORIG = new WeakMap();
+const ATTRS = ['placeholder', 'title', 'aria-label', 'alt'];
+function trText(n){
+  if (SETV.get(n) !== n.data) ORIG.set(n, n.data);
+  const o = ORIG.get(n); const v = tx(o);
+  if (v !== n.data){ n.data = v; }
+  SETV.set(n, n.data);
+}
+function trAttrs(e){
+  let m = AORIG.get(e); if (!m){ m = {}; AORIG.set(e, m); }
+  for (const a of ATTRS){
+    if (!e.hasAttribute(a)) continue;
+    const cur = e.getAttribute(a);
+    if (m[a] == null || (m[a + '_set'] !== cur)) m[a] = cur;
+    const v = tx(m[a]); if (v !== cur) e.setAttribute(a, v);
+    m[a + '_set'] = e.getAttribute(a);
+  }
+}
+function trTree(root){
+  if (root.nodeType === 3){ if (root.parentElement && !/^(SCRIPT|STYLE)$/.test(root.parentElement.tagName)) trText(root); return; }
+  if (root.nodeType !== 1 || /^(SCRIPT|STYLE)$/.test(root.tagName)) return;
+  trAttrs(root);
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+  let n; while ((n = w.nextNode())){
+    if (n.nodeType === 1){ if (/^(SCRIPT|STYLE)$/.test(n.tagName)) continue; trAttrs(n); }
+    else if (n.parentElement && !/^(SCRIPT|STYLE)$/.test(n.parentElement.tagName)) trText(n);
+  }
+}
+let TR_BUSY = false;
+const TR_OBS = new MutationObserver(list => {
+  if (TR_BUSY) return; TR_BUSY = true;
+  try {
+    for (const m of list){
+      if (m.type === 'childList') m.addedNodes.forEach(trTree);
+      else if (m.type === 'characterData') trText(m.target);
+      else if (m.type === 'attributes' && m.target.nodeType === 1) trAttrs(m.target);
+    }
+  } finally { TR_OBS.takeRecords(); TR_BUSY = false; }
+});
+const TITLE0 = document.title;
+function applyLangDom(){
+  document.documentElement.lang = LANG;
+  document.title = tx(TITLE0);
+  TR_BUSY = true; try { trTree(document.body); } finally { TR_OBS.takeRecords(); TR_BUSY = false; }
+  document.querySelectorAll('.lsw button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === LANG));
+}
+TR_OBS.observe(document.body, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS});
+applyLangDom();
+</script>
 <script>
 let DATA = [];
 
@@ -804,27 +919,10 @@ function route(){
 }
 window.addEventListener('hashchange', () => { route(); window.scrollTo(0, 0); });
 route();
-// Названия команд и лиг приходят от бота по-украински — показываем по-русски
-const RU_DICT = [['Польща','Польша'],['Словаччина','Словакия'],['Туреччина','Турция'],['Угорщина','Венгрия'],['Румунія','Румыния'],['Німеччина','Германия'],['Вірменія','Армения'],['Південна Корея','Южная Корея'],['Північна Ірландія','Северная Ирландия'],
- ['Нідерланди','Нидерланды'],['Відень','Вена'],['Черкаси','Черкассы'],['Краків','Краков'],['Плоцьк','Плоцк'],['Ковалівка','Ковалевка'],
- ['Кудрівка','Кудровка'],['Лівий Берег','Левый Берег'],['Чорноморець','Черноморец'],['Лілестрьом','Лиллестрём'],['Гьозтепе','Гёзтепе'],
- ['Шльонськ','Шлёнск'],['Шльонск','Шлёнск'],['Кечьоренгюджю','Кечиоренгюджю'],['Льовен','Лёвен'],['Еспаньйол','Эспаньол'],['Єрусалим','Иерусалим']];
-const RU_LAT = {a:'а',e:'е',o:'о',p:'р',c:'с',x:'х',i:'і',y:'у',A:'А',E:'Е',O:'О',P:'Р',C:'С',X:'Х',I:'І',K:'К',M:'М',H:'Н',T:'Т',B:'В'};
-const RU_TR = {'і':'и','І':'И','ї':'и','Ї':'И','є':'е','Є':'Е','ґ':'г','Ґ':'Г'};
-function toRu(s){
-  if (!s || typeof s !== 'string') return s;
-  // латинские буквы-двойники внутри русских слов (Доксa, Лiг) → кириллица
-  s = s.replace(/[A-Za-zА-яЁёІіЇїЄєҐґ]+/g, w => /[А-яЁёІіЇїЄєҐґ]/.test(w) ? w.replace(/[aeopcxiyAEOPCXIKMHTB]/g, c => RU_LAT[c]) : w);
-  for (const [a, b] of RU_DICT) s = s.split(a).join(b);
-  s = s.replace(/['ʼ’]([єїюяЄЇЮЯ])/g, 'ь$1');
-  s = s.replace(/(^|[\s\-(])Е/g, '$1Э');
-  s = s.replace(/ць(?![а-яіїєґ])/g, 'ц').split('ця').join('ца');
-  return s.replace(/[іІїЇєЄґҐ]/g, c => RU_TR[c]);
-}
 function boot(d){
   DATA = d;
   // у одного матча бывает несколько карточек (ТВ + Правило + Мягкий) с тем же временем и хозяевами — К/М ищут строку по номеру
-  DATA.forEach((r, i) => { r._i = i; r.bfl2 = r.bfl == null ? null : -r.bfl; ['h', 'a', 'bt', 'ch'].forEach(k => { r[k] = toRu(r[k]); }); });
+  DATA.forEach((r, i) => { r._i = i; r.bfl2 = r.bfl == null ? null : -r.bfl; r._o = {h: r.h, a: r.a, bt: r.bt, ch: r.ch}; NAMES(r, LANG); });
   const last = DATA.reduce((m, r) => Math.max(m, r.ts || 0), 0);
   const ds = last ? new Date(last * 1000).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'2-digit'}) : '';
   const up = UPD && !isNaN(UPD) ? ' · обновлено ' + UPD.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}).replace(',', '') : '';
@@ -835,6 +933,37 @@ function boot(d){
 let UPD = null;
 fetch('base/data/base.json', {cache:'no-store'}).then(r => { if (!r.ok) throw new Error(r.status); const lm = r.headers.get('last-modified'); if (lm) UPD = new Date(lm); return r.json(); }).then(boot)
   .catch(() => { el('stamp').textContent = 'Не удалось загрузить базу. Обновите страницу.'; });
+</script>
+<script>
+/* ===== Языки: названия и переключатель (добавлено 11.11.26) ===== */
+function NAMES(r, L){ const o = r._o; if (!o) return r; r.h = nameIn(o.h, L, 't'); r.a = nameIn(o.a, L, 't'); r.bt = nameIn(o.bt, L, 't'); r.ch = nameIn(o.ch, L, 'l'); return r; }
+// фильтры по чемпионату и командам срабатывают на любом языке (сохранённые фильтры не ломаются)
+const ALT = new WeakMap();
+const _match = match;
+match = function(c, r, q){
+  if (_match(c, r, q)) return true;
+  if ((c.k === 'ch' || c.k === 'pair') && r._o){
+    let a = ALT.get(r); if (!a){ a = {}; ALT.set(r, a); }
+    for (const L of ['ru', 'uk', 'en']){
+      if (L === LANG) continue;
+      if (!a[L]) a[L] = NAMES({...r, _o: r._o}, L);
+      if (_match(c, a[L], q)) return true;
+    }
+  }
+  return false;
+};
+function setLang(L){
+  if (L === LANG) return;
+  LANG = L;
+  try { localStorage.setItem('fk_lang', L); } catch(e){}
+  if (typeof DATA !== 'undefined' && DATA) DATA.forEach(r => NAMES(r, L));
+  applyLangDom();
+  try { buildHead(); render(); } catch(e){}
+  try { renderFilters(); renderCombo(); } catch(e){}
+  applyLangDom();
+}
+document.querySelectorAll('.lsw button').forEach(b => b.addEventListener('click', e => { e.preventDefault(); setLang(b.dataset.l); }));
+applyLangDom();
 </script>
 
 <!-- счётчик посещений GoatCounter -->
