@@ -880,12 +880,12 @@ function renderCombo(){
   if (!out.length){ tb.innerHTML = `<tr><td colspan="7" class="emptyx">${all ? 'Совпадений нет.' : 'Сейчас нет несыгранных матчей под ваши фильтры. Включите «Показывать и сыгранные», чтобы увидеть историю.'}</td></tr>`; return; }
   tb.innerHTML = out.slice(0, 300).map(([f, r]) => { const res = betOut(f.bet, r), o = r[f.bet];
     const cls = res === 'w' ? 'won' : res === 'l' ? 'lost' : '';
-    return `<tr><td><button type="button" class="fname" data-id="${f.id}">${esc(f.name)}</button></td><td class="c">${esc(r.dn)}</td><td>${esc(r.ch)}</td><td class="c">${esc(String(r.dt).replace(/^(\d\d\.\d\d)\.\d\d/, '$1'))}</td>
+    return `<tr><td><button type="button" class="ico" data-id="${f.id}" aria-label="Открыть в базе">${EYE}</button><button type="button" class="fname" data-id="${f.id}">${esc(f.name)}</button></td><td class="c">${esc(r.dn)}</td><td>${esc(r.ch)}</td><td class="c">${esc(String(r.dt).replace(/^(\d\d\.\d\d)\.\d\d/, '$1'))}</td>
       <td class="c">${esc(r.sc ? String(r.sc).replace(/\s*-\s*/, ':') : '')}</td><td>${esc(r.h)} — ${esc(r.a)}</td>
       <td class="c ${cls}">${esc(MK[f.bet] || f.bet)}${o != null ? ' @' + Number(o).toFixed(2) : ''}${res ? ' ' + ({w:'✓', l:'✕', p:'↩'})[res] : ''}</td></tr>`; }).join('');
 }
 el('cplayed').addEventListener('change', renderCombo);
-el('ctb').addEventListener('click', e => { const b = e.target.closest('.fname'); if (!b) return; const f = SAVED.find(x => String(x.id) === b.dataset.id); if (f) applySF(f); });
+el('ctb').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (!b) return; const f = SAVED.find(x => String(x.id) === b.dataset.id); if (f) applySF(f); });
 const toast = t => { const n = el('toast'); n.textContent = t; n.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => n.hidden = true, 3500); };
 el('mkf').onclick = () => {
   const p = el('mkp');
