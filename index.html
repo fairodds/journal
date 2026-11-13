@@ -937,4 +937,69 @@ el('mkp').addEventListener('submit', e => {
   el('mkp').hidden = true; el('mkname').value = ''; render(); toast(`Фильтр «${name}» сохранён. Его матчи подсвечены жёлтым, все фильтры — в разделе «Фильтры».`);
 });
 
-el('mbtn').onclick = () => { const h = document.querySelector('header.site'); const o = h.classList.toggle('open'); el('mbtn').setAttribute('aria-
+el('mbtn').onclick = () => { const h = document.querySelector('header.site'); const o = h.classList.toggle('open'); el('mbtn').setAttribute('aria-expanded', o); };
+document.querySelectorAll('nav.menu a').forEach(a => a.addEventListener('click', () => { document.querySelector('header.site').classList.remove('open'); el('mbtn').setAttribute('aria-expanded', 'false'); }));
+function route(){
+  const h = location.hash.slice(1), sec = ['about','filters','combo'].includes(h) ? h : 'baza';
+  for (const x of ['baza','about','filters','combo']) el('v-' + x).hidden = sec !== x;
+  if (DATA.length){ if (sec === 'filters') renderFilters(); if (sec === 'combo') renderCombo(); if (sec === 'baza') render(); }
+  document.querySelectorAll('nav.menu a[data-sec]').forEach(a => { if (a.dataset.sec === sec) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+}
+window.addEventListener('hashchange', () => { route(); window.scrollTo(0, 0); });
+route();
+function boot(d){
+  DATA = d;
+  // у одного матча бывает несколько карточек (ТВ + Правило + Мягкий) с тем же временем и хозяевами — К/М ищут строку по номеру
+  DATA.forEach((r, i) => { r._i = i; r.scl = SHIFT(r) == null ? null : Math.abs(SHIFT(r)); r.bfl2 = r.bfl == null ? null : -r.bfl; r._o = {h: r.h, a: r.a, bt: r.bt, ch: r.ch}; NAMES(r, LANG); });
+  const last = DATA.reduce((m, r) => Math.max(m, r.ts || 0), 0);
+  const ds = last ? new Date(last * 1000).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'2-digit'}) : '';
+  const up = UPD && !isNaN(UPD) ? ' · обновлено ' + UPD.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}).replace(',', '') : '';
+  el('stamp').textContent = `${DATA.length} карточек агента${up}`;
+  el('fstamp').textContent = `Данные: ${DATA.length} карточек`;
+  DQ = defDQ(); syncDQ(); syncM(); buildTabs(); buildHead(); render(); route();
+}
+let UPD = null;
+fetch('base/data/base.json', {cache:'no-store'}).then(r => { if (!r.ok) throw new Error(r.status); const lm = r.headers.get('last-modified'); if (lm) UPD = new Date(lm); return r.json(); }).then(boot)
+  .catch(() => { el('stamp').textContent = 'Не удалось загрузить базу. Обновите страницу.'; });
+</script>
+<script>
+/* ===== Языки: названия и переключатель (добавлено 11.11.26) ===== */
+function NAMES(r, L){ const o = r._o; if (!o) return r; r.h = nameIn(o.h, L, 't'); r.a = nameIn(o.a, L, 't'); r.bt = nameIn(o.bt, L, 't'); r.ch = nameIn(o.ch, L, 'l'); return r; }
+// фильтры по чемпионату и командам срабатывают на любом языке (сохранённые фильтры не ломаются)
+const ALT = new WeakMap();
+const _match = match;
+match = function(c, r, q){
+  if (_match(c, r, q)) return true;
+  if ((c.k === 'ch' || c.k === 'pair') && r._o){
+    let a = ALT.get(r); if (!a){ a = {}; ALT.set(r, a); }
+    for (const L of ['ru', 'uk', 'en']){
+      if (L === LANG) continue;
+      if (!a[L]) a[L] = NAMES({...r, _o: r._o}, L);
+      if (_match(c, a[L], q)) return true;
+    }
+  }
+  return false;
+};
+function setLang(L){
+  if (L === LANG) return;
+  LANG = L;
+  try { localStorage.setItem('fk_lang', L); } catch(e){}
+  if (typeof DATA !== 'undefined' && DATA) DATA.forEach(r => NAMES(r, L));
+  applyLangDom();
+  try { buildHead(); render(); } catch(e){}
+  try { renderFilters(); renderCombo(); } catch(e){}
+  applyLangDom();
+}
+document.querySelectorAll('.lsw button').forEach(b => b.addEventListener('click', e => { e.preventDefault(); setLang(b.dataset.l); }));
+applyLangDom();
+</script>
+
+<!-- счётчик посещений GoatCounter -->
+<script data-goatcounter="https://fairodds.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script>
+fetch('https://fairodds.goatcounter.com/counter/TOTAL.json')
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { if (d && d.count) { document.getElementById('visits-n').textContent = d.count; document.getElementById('visits').hidden = false; } })
+  .catch(() => {});
+</script>
+</body></html>
