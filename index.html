@@ -146,7 +146,10 @@ td.team .lt{font:600 11px var(--f-num);color:var(--accent)}
 /* ДОБАВЛЕНО 13.11.26: «Весы бука» — куда бук перетянул шанс от открытия */
 td.scl{text-align:center;padding-top:2px;padding-bottom:2px}.scl svg{display:block;margin:0 auto}.scl .sct2{display:block;font-size:10px;line-height:1.1;color:#5f5e5a;white-space:nowrap}
 .ln.pull{color:#185FA5;font-weight:700}
-#tbl tbody tr.hot>td{animation:sclp 1.6s ease-in-out infinite}@keyframes sclp{0%,100%{box-shadow:inset 0 0 0 999px rgba(55,138,221,0)}50%{box-shadow:inset 0 0 0 999px rgba(55,138,221,.13)}}
+/* весы качаются: коромысло ходит от наклона к почти ровному, чаши остаются отвесными */
+.sclb{transform-origin:24px 16px;transform:rotate(var(--a));animation:sclsw var(--sp) ease-in-out infinite}.sclp{transform:rotate(var(--b));animation:sclsp var(--sp) ease-in-out infinite}
+@keyframes sclsw{0%,100%{transform:rotate(var(--a))}50%{transform:rotate(calc(var(--a) * .35))}}@keyframes sclsp{0%,100%{transform:rotate(var(--b))}50%{transform:rotate(calc(var(--b) * .35))}}
+@media (prefers-reduced-motion:reduce){.sclb,.sclp{animation:none}}
 td.stk{font:500 12.5px var(--f-num);text-align:center}
 .tm{display:grid;grid-template-columns:20px minmax(150px,1fr) 70px 58px;align-items:center;gap:6px;line-height:1.35}
 .tm .nm{white-space:nowrap}
@@ -511,11 +514,11 @@ const COLS = [
   {k:'kp', hide:['lr','sc'], l:'Место', t:'stk', stack:[r => r.ph == null ? '—' : r.ph, r => r.pa == null ? '—' : r.pa], get: r => r.ph + ' ' + r.pa},
   {k:'p1o', only:['bsk'], l:'П1 откр', t:'num', f:f2, hit:'p1', sep:true},
   {k:'p2o', only:['bsk'], l:'П2 откр', t:'num', f:f2, hit:'p2'},
+  // ДОБАВЛЕНО 13.11.26: весы бука между открытием и текущим кф (только баскетбол)
+  {k:'scl', only:['bsk'], sep:true, l:'Весы', lh:'<small class="hl">7 · х7 · г7 · 7+</small>', t:'txt', get: r => { const s = SHIFT(r); return s == null ? '' : s === 0 ? '0' : (s > 0 ? 'х' : 'г') + Math.abs(s); }},
   {k:'p1', l:'П1', t:'num', f:f2, hit:'p1', sep:true},
   {k:'x', l:'Х', t:'num', f:f2, hit:'x', hide:['bsk']},
   {k:'p2', l:'П2', t:'num', f:f2, hit:'p2'},
-  // ДОБАВЛЕНО 13.11.26: весы бука (только баскетбол)
-  {k:'scl', only:['bsk'], l:'Весы', lh:'<small class="hl">7 · х7 · г7 · 7+</small>', t:'txt', get: r => { const s = SHIFT(r); return s == null ? '' : s === 0 ? '0' : (s > 0 ? 'х' : 'г') + Math.abs(s); }},
   {k:'f1', hide:['lr','sc'], l:'Ф1(0)', t:'num', f:f2, hit:'f1'},
   {k:'f2', hide:['lr','sc'], l:'Ф2(0)', t:'num', f:f2, hit:'f2'},
   {k:'tm', hide:['lr','sc'], l:'ТМ2.5', t:'num', f:f2, hit:'tm'},
@@ -750,7 +753,7 @@ function render(){
   if (!rows.length){ tb.innerHTML = `<tr><td colspan="${VC().length}" class="empty">Под этот фильтр карточек нет. Сбросьте одно из полей.</td></tr>`; return; }
   tb.innerHTML = rows.map(r => {
     const g = goals(r);
-    return `<tr data-pin="${DATA.indexOf(r)}"${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd', view === 'bsk' && Math.abs(SHIFT(r) || 0) >= 7 && 'hot'].filter(Boolean).length ? ` class="${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd', view === 'bsk' && Math.abs(SHIFT(r) || 0) >= 7 && 'hot'].filter(Boolean).join(' ')}"` : ''}>` + VC().map(c => {
+    return `<tr data-pin="${DATA.indexOf(r)}"${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd'].filter(Boolean).length ? ` class="${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd'].filter(Boolean).join(' ')}"` : ''}>` + VC().map(c => {
       let cl = [c.t]; if (c.sep) cl.push('sep');
       if (c.hit && g && HIT[c.hit](g, r) && raw(c, r) != null) cl.push('hit');
       if ((c.k === 'bo' || c.k === 'mk') && r.res === 'w') cl.push('won');
@@ -768,10 +771,10 @@ function render(){
       // ДОБАВЛЕНО 31.10.26: в баскетболе П1/П2 подсвечиваются, если кф ушёл от открытия
       // ▼ кф упал (бук дожимает), ▲ кф вырос (бук отступает)
       // ИЗМЕНЕНО 31.10.26: три уровня по сдвигу в % от открытия: до 3% слабо, 3–7% средне, от 7% сильно
+      // ИЗМЕНЕНО 13.11.26: заливка П1/П2 и стрелки ▲▼ убраны — сдвиг показывают «Весы»
       if (view === 'bsk' && (c.k === 'p1' || c.k === 'p2') && r[c.k] != null && r[c.k + 'o'] != null){
         const d = Math.round((r[c.k] - r[c.k + 'o']) * 100) / 100;
-        if (d){ const pc = Math.abs(d) / r[c.k + 'o'] * 100, lv = pc >= 7 ? 3 : pc >= 3 ? 2 : 1; cl.push((d < 0 ? 'kdn' : 'kup') + lv);
-          v += `<span class="kmv" title="Открытие ${f2(r[c.k + 'o'])} → сейчас ${f2(r[c.k])} (${d < 0 ? '−' : '+'}${pc.toFixed(1)}%)">${d < 0 ? '▼' : '▲'}</span>`; }
+        if (d) cl.push('kmov');
       }
       if (KF.includes(c.k) && raw(c, r) != null){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="${c.k}" data-fv="${shown(c, r)}">${v}</td>`; }
       if (c.k === 'sc' && r.sc){ const sh = shown(c, r), mn = sh.split(' ')[0], ht = (sh.match(/\(.*\)/) || [''])[0];
@@ -791,15 +794,13 @@ function SHIFT(r){
   return Math.round((ch(r.p1, r.p2) - ch(r.p1o, r.p2o)) * 100);
 }
 function SCALE(r){
-  // весы как на логотипе ЧК: коромысло наклоняется, чаши висят отвесно
+  // весы как на логотипе ЧК: коромысло наклонено к стороне, куда бук перетянул шанс, и покачивается; чаши висят отвесно
   // ИЗМЕНЕНО 13.11.26: без сдвига весы не рисуем (фильтр «0» по-прежнему находит такие матчи)
   const s = SHIFT(r); if (s == null || s === 0) return '';
-  const ang = Math.max(-24, Math.min(24, -s * 2.4)) * Math.PI / 180, cx = 13 * Math.cos(ang), cy = 13 * Math.sin(ang);
-  const L = [24 - cx, 16 - cy], R = [24 + cx, 16 + cy], q = n => n.toFixed(1);
-  const pan = p => `<path d="M${q(p[0])} ${q(p[1])}l-5 10M${q(p[0])} ${q(p[1])}l5 10" fill="none"/><path d="M${q(p[0] - 6)} ${q(p[1] + 10)}h12a6 4 0 0 1-12 0Z" stroke="none" fill="#0d1310"/>`;
+  const a = Math.max(-24, Math.min(24, -s * 2.4)), sp = Math.abs(s) >= 10 ? 1.1 : Math.abs(s) >= 7 ? 1.5 : 2.2;
   const t = (s > 0 ? 'к хозяевам ' : 'к гостям ') + Math.abs(s) + '%';
-  const bg = '#7cc243';
-  return `<svg class="sclg" width="40" height="40" viewBox="0 0 48 48" role="img" aria-label="${t}"><rect x="1" y="1" width="46" height="46" rx="11" fill="${bg}"/><rect x="4.5" y="4.5" width="39" height="39" rx="8" fill="none" stroke="#0d1310" stroke-opacity=".25" stroke-width="1"/><g stroke="#0d1310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M24 11v25M16 38h16"/><path d="M${q(L[0])} ${q(L[1])}L${q(R[0])} ${q(R[1])}"/>${pan(L)}${pan(R)}</g><circle cx="24" cy="11" r="2.6" fill="#0d1310"/></svg><span class="sct2">${t}</span>`;
+  const pan = x => `<g class="sclp" style="transform-origin:${x}px 16px"><path d="M${x} 16l-5 10M${x} 16l5 10" fill="none"/><path d="M${x - 6} 26h12a6 4 0 0 1-12 0Z" stroke="none" fill="#0d1310"/></g>`;
+  return `<svg class="sclg" width="40" height="40" viewBox="0 0 48 48" role="img" aria-label="${t}" style="--a:${a}deg;--b:${-a}deg;--sp:${sp}s"><rect x="1" y="1" width="46" height="46" rx="11" fill="#7cc243"/><rect x="4.5" y="4.5" width="39" height="39" rx="8" fill="none" stroke="#0d1310" stroke-opacity=".25" stroke-width="1"/><g stroke="#0d1310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M24 11v25M16 38h16"/><g class="sclb"><path d="M11 16h26"/>${pan(11)}${pan(37)}</g></g><circle cx="24" cy="11" r="2.6" fill="#0d1310"/></svg><span class="sct2">${t}</span>`;
 }
 
 let PIN = null, PINT = false;
