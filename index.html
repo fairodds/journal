@@ -143,6 +143,10 @@ td.team small{display:block;color:var(--muted)}
 td.team strong{font-weight:700;color:var(--ink)}
 td.team .lt{font:600 11px var(--f-num);color:var(--accent)}
 .ln{line-height:1.45;white-space:nowrap}
+/* ДОБАВЛЕНО 13.11.26: «Весы бука» — куда бук перетянул шанс от открытия */
+td.scl{text-align:center;padding-top:2px;padding-bottom:2px}.scl svg{display:block;margin:0 auto}.scl .sct2{display:block;font-size:10px;line-height:1.1;color:#5f5e5a;white-space:nowrap}
+.ln.pull{color:#185FA5;font-weight:700}
+#tbl tbody tr.hot>td{animation:sclp 1.6s ease-in-out infinite}@keyframes sclp{0%,100%{box-shadow:inset 0 0 0 999px rgba(55,138,221,0)}50%{box-shadow:inset 0 0 0 999px rgba(55,138,221,.13)}}
 td.stk{font:500 12.5px var(--f-num);text-align:center}
 .tm{display:grid;grid-template-columns:20px minmax(150px,1fr) 70px 58px;align-items:center;gap:6px;line-height:1.35}
 .tm .nm{white-space:nowrap}
@@ -510,6 +514,8 @@ const COLS = [
   {k:'p1', l:'П1', t:'num', f:f2, hit:'p1', sep:true},
   {k:'x', l:'Х', t:'num', f:f2, hit:'x', hide:['bsk']},
   {k:'p2', l:'П2', t:'num', f:f2, hit:'p2'},
+  // ДОБАВЛЕНО 13.11.26: весы бука (только баскетбол)
+  {k:'scl', only:['bsk'], l:'Весы', lh:'<small class="hl">7 · х7 · г7 · 7+</small>', t:'txt', get: r => { const s = SHIFT(r); return s == null ? '' : s === 0 ? '0' : (s > 0 ? 'х' : 'г') + Math.abs(s); }},
   {k:'f1', hide:['lr','sc'], l:'Ф1(0)', t:'num', f:f2, hit:'f1'},
   {k:'f2', hide:['lr','sc'], l:'Ф2(0)', t:'num', f:f2, hit:'f2'},
   {k:'tm', hide:['lr','sc'], l:'ТМ2.5', t:'num', f:f2, hit:'tm'},
@@ -623,6 +629,9 @@ function stickCols(){
 function syncM(){ el('tgm').textContent = SHOWM ? 'Скрыть наш кф ▴' : 'Наш кф ▾'; el('tgm').setAttribute('aria-expanded', SHOWM); }
 el('tgm').onclick = () => { SHOWM = !SHOWM; try { localStorage.setItem('chk_showm', SHOWM ? '1' : '0'); } catch(e){} if (!SHOWM) MODK.forEach(k => delete filters[k]); syncM(); buildHead(); render(); };
 function match(c, r, q){
+  // ДОБАВЛЕНО 13.11.26: фильтр «Весы»: 7 = сдвиг 7% в любую сторону, х7 = к хозяевам, г7 = к гостям, 7+ = 7% и больше, 0 = ровно
+  if (c.k === 'scl'){ const s = SHIFT(r); if (s == null) return false; const m = q.replace(/^=/, '').replace(/[%\s]/g, '').replace(/^x/, 'х').match(/^([хг])?(\d+)(\+)?$/); if (!m) return false;
+    const n = +m[2], a = Math.abs(s); if (m[1] && n > 0 && (m[1] === 'х') !== (s > 0)) return false; return m[3] ? a >= n : a === n; }
   if (c.k === 'pair' && q[0] === '=' && q.includes('/')){ const p = q.slice(1).split('/'), t = [String(r.h).toLowerCase(), String(r.a).toLowerCase()]; return t.includes(p[0]) && t.includes(p[1]); }
   if (c.k === 'sc') return q[0] === '(' ? shown(c, r).toLowerCase().includes(q) : shown(c, r).toLowerCase().startsWith(q);
   if (c.stack && q[0] === '=' && q.includes('/')){ const p = q.slice(1).split('/'), t = String(raw(c, r)).toLowerCase().split(' '); return t[0] === p[0] && t[1] === p[1]; }
@@ -741,7 +750,7 @@ function render(){
   if (!rows.length){ tb.innerHTML = `<tr><td colspan="${VC().length}" class="empty">Под этот фильтр карточек нет. Сбросьте одно из полей.</td></tr>`; return; }
   tb.innerHTML = rows.map(r => {
     const g = goals(r);
-    return `<tr data-pin="${DATA.indexOf(r)}"${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd'].filter(Boolean).length ? ` class="${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd'].filter(Boolean).join(' ')}"` : ''}>` + VC().map(c => {
+    return `<tr data-pin="${DATA.indexOf(r)}"${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd', view === 'bsk' && Math.abs(SHIFT(r) || 0) >= 7 && 'hot'].filter(Boolean).length ? ` class="${[SAVED.some(f => f.view === view && fMatch(f, r)) && 'flg', r === PIN && view === 'bsk' && 'tapd', view === 'bsk' && Math.abs(SHIFT(r) || 0) >= 7 && 'hot'].filter(Boolean).join(' ')}"` : ''}>` + VC().map(c => {
       let cl = [c.t]; if (c.sep) cl.push('sep');
       if (c.hit && g && HIT[c.hit](g, r) && raw(c, r) != null) cl.push('hit');
       if ((c.k === 'bo' || c.k === 'mk') && r.res === 'w') cl.push('won');
@@ -750,9 +759,10 @@ function render(){
       if (c.k === 'ro' && r.ros && r.ror) cl.push(r.ror === 'w' ? 'won' : 'lost');
       let v;
       if (c.k === 'km') v = kmKeys(K_KEYS, r.sp).every(k => r[k] == null) ? `<button type="button" class="km" disabled>К0</button><button type="button" class="km" disabled>М0</button>` : `<button type="button" class="km" data-km="k" data-i="${r._i}">К${DATA.filter(d => corr(r, d)).length}</button><button type="button" class="km" data-km="m" data-i="${r._i}">М${DATA.filter(d => mm(r, d)).length}</button>`;
-      else if (c.k === 'pair'){ if (r.cc) cl.push('chcard'); v = `<div class="ln">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
+      else if (c.k === 'pair'){ if (r.cc) cl.push('chcard'); const sh_ = view === 'bsk' ? SHIFT(r) : null; v = `<div class="ln${sh_ > 0 ? ' pull' : ''}">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln${sh_ < 0 ? ' pull' : ''}">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
       else if (c.k === 'kc'){ const L1 = LET(r.ch_), L2 = LET(r.ca); v = c.stack.map(f => `<div class="ln">${f(r)}</div>`).join(''); if (L1 !== '?' && L2 !== '?'){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="kc" data-fv="=${L1}/${L2}" title="Хозяева / гости">${v}</td>`; } }
       else if (c.stack){ const sv = STV[c.k] ? STV[c.k](r) : []; v = c.stack.map((f, i) => sv[i] != null && sv[i] !== '—' && sv[i] !== '?' ? `<div class="ln"><span class="tg" data-fk="${c.k}" data-fv="=${esc(sv[i])}">${f(r)}</span></div>` : `<div class="ln">${f(r)}</div>`).join(''); }
+      else if (c.k === 'scl'){ v = SCALE(r); cl.push('scl'); }
       else if (c.k === 'vo' && r.vo) v = `<span class="pill${r.vo.startsWith('3') ? ' tv3' : ''}">${esc(r.vo)}</span>`;
       else v = esc(shown(c, r));
       // ДОБАВЛЕНО 31.10.26: в баскетболе П1/П2 подсвечиваются, если кф ушёл от открытия
@@ -772,6 +782,23 @@ function render(){
       return `<td class="${cl.join(' ')}">${v}</td>`;
     }).join('') + '</tr>';
   }).join('');
+}
+
+// ДОБАВЛЕНО 13.11.26: сдвиг шанса хозяев от открытия, в процентных пунктах (без маржи)
+function SHIFT(r){
+  if (r.p1 == null || r.p2 == null || r.p1o == null || r.p2o == null) return null;
+  const ch = (a, b) => (1 / a) / (1 / a + 1 / b);
+  return Math.round((ch(r.p1, r.p2) - ch(r.p1o, r.p2o)) * 100);
+}
+function SCALE(r){
+  // весы как на логотипе ЧК: коромысло наклоняется, чаши висят отвесно
+  const s = SHIFT(r); if (s == null) return '';
+  const ang = Math.max(-24, Math.min(24, -s * 2.4)) * Math.PI / 180, cx = 13 * Math.cos(ang), cy = 13 * Math.sin(ang);
+  const L = [24 - cx, 16 - cy], R = [24 + cx, 16 + cy], q = n => n.toFixed(1);
+  const pan = p => `<path d="M${q(p[0])} ${q(p[1])}l-5 10M${q(p[0])} ${q(p[1])}l5 10" fill="none"/><path d="M${q(p[0] - 6)} ${q(p[1] + 10)}h12a6 4 0 0 1-12 0Z" stroke="none" fill="#0d1310"/>`;
+  const t = s === 0 ? 'ровно' : (s > 0 ? 'к хозяевам ' : 'к гостям ') + Math.abs(s) + '%';
+  const bg = s === 0 ? '#c9cdc6' : '#7cc243';
+  return `<svg class="sclg" width="40" height="40" viewBox="0 0 48 48" role="img" aria-label="${t}"><rect x="1" y="1" width="46" height="46" rx="11" fill="${bg}"/><rect x="4.5" y="4.5" width="39" height="39" rx="8" fill="none" stroke="#0d1310" stroke-opacity=".25" stroke-width="1"/><g stroke="#0d1310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M24 11v25M16 38h16"/><path d="M${q(L[0])} ${q(L[1])}L${q(R[0])} ${q(R[1])}"/>${pan(L)}${pan(R)}</g><circle cx="24" cy="11" r="2.6" fill="#0d1310"/></svg><span class="sct2">${t}</span>`;
 }
 
 let PIN = null, PINT = false;
@@ -922,7 +949,7 @@ route();
 function boot(d){
   DATA = d;
   // у одного матча бывает несколько карточек (ТВ + Правило + Мягкий) с тем же временем и хозяевами — К/М ищут строку по номеру
-  DATA.forEach((r, i) => { r._i = i; r.bfl2 = r.bfl == null ? null : -r.bfl; r._o = {h: r.h, a: r.a, bt: r.bt, ch: r.ch}; NAMES(r, LANG); });
+  DATA.forEach((r, i) => { r._i = i; r.scl = SHIFT(r) == null ? null : Math.abs(SHIFT(r)); r.bfl2 = r.bfl == null ? null : -r.bfl; r._o = {h: r.h, a: r.a, bt: r.bt, ch: r.ch}; NAMES(r, LANG); });
   const last = DATA.reduce((m, r) => Math.max(m, r.ts || 0), 0);
   const ds = last ? new Date(last * 1000).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'2-digit'}) : '';
   const up = UPD && !isNaN(UPD) ? ' · обновлено ' + UPD.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}).replace(',', '') : '';
