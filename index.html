@@ -734,8 +734,8 @@ function render(){
     `<button type="button" class="clear" id="clr">Сбросить фильтры</button>`;
   el('clr').onclick = () => { PIN = null; for (const k in filters) delete filters[k]; Q = ''; el('q').value = ''; DQ = defDQ(); syncDQ(); document.querySelectorAll('#tbl input, #tbl select').forEach(i => { i.value = ''; i.classList.remove('on'); }); page = 0; render(); };
   // таблица
-  // ДОБАВЛЕНО 09.11.26: выбранный матч в «Баскетболе» идёт первой строкой
-  if (PIN && view === 'bsk'){ const i = rows.indexOf(PIN); if (i > 0) rows.unshift(rows.splice(i, 1)[0]); }
+  // ИЗМЕНЕНО 14.11.26: выбранный матч больше не прыгает наверх — строки идут по порядку, а таблица открывается на странице с ним
+  if (PIN && view === 'bsk' && PINJ){ const i = rows.indexOf(PIN); if (i >= 0) page = Math.floor(i / (PER || Math.max(rows.length, 1))); }
   const PP = PER || Math.max(rows.length, 1);
   const pages = Math.max(1, Math.ceil(rows.length / PP)); if (page >= pages) page = pages - 1;
   const from = page * PP, all = rows.length;
@@ -803,10 +803,10 @@ function SCALE(r){
   return `<svg class="sclg" width="40" height="40" viewBox="0 0 48 48" role="img" aria-label="${t}" style="--a:${a}deg;--b:${-a}deg;--sp:${sp}s"><rect x="1" y="1" width="46" height="46" rx="11" fill="#7cc243"/><rect x="4.5" y="4.5" width="39" height="39" rx="8" fill="none" stroke="#0d1310" stroke-opacity=".25" stroke-width="1"/><g stroke="#0d1310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M24 11v25M16 38h16"/><g class="sclb"><path d="M11 16h26"/>${pan(11)}${pan(37)}</g></g><circle cx="24" cy="11" r="2.6" fill="#0d1310"/></svg><span class="sct2">${t}</span>`;
 }
 
-let PIN = null, PINT = false;
+let PIN = null, PINT = false, PINJ = false;
 el('tbl').tBodies[0].addEventListener('click', e => {
   const tr = e.target.closest('tr[data-pin]'); PINT = false;
-  if (view === 'bsk' && tr && !e.target.closest('a')){ PIN = DATA[+tr.dataset.pin]; page = 0; PINT = true; }
+  if (view === 'bsk' && tr && !e.target.closest('a')){ PIN = DATA[+tr.dataset.pin]; page = 0; PINT = true; PINJ = true; }
 }, true);
 el('tbl').tBodies[0].addEventListener('click', e => {
   const sp = e.target.closest('span.sct');
@@ -832,8 +832,10 @@ el('tbl').tBodies[0].addEventListener('click', e => {
     if (!DATA.some(d => d.ch === t.dataset.ch && VIEWS.find(x => x[0] === view)[2](d))){ view = t.dataset.sp === 'f' ? 'fall' : 'bsk'; buildTabs(); }
     page = 0; render(); el('wrap').scrollTop = 0; return;
   } const b = e.target.closest('button.km'); if (!b) return; const r = DATA[+b.dataset.i]; if (r) applyKM(r, b.dataset.km); });
-el('tbl').tBodies[0].addEventListener('click', () => { if (!PINT) return; PINT = false; render(); el('wrap').scrollTop = 0; });
-el('clrk').onclick = () => { KF.forEach(k => { delete filters[k]; document.querySelectorAll(`#tbl [data-k="${k}"]:is(input,select)`).forEach(i => { i.value = ''; i.classList.remove('on'); }); }); page = 0; render(); };
+el('tbl').tBodies[0].addEventListener('click', () => { if (!PINT) return; PINT = false; render(); PINJ = false;
+  const t = el('tbl').querySelector('tbody tr.tapd'); if (t) t.scrollIntoView({block:'center'}); else el('wrap').scrollTop = 0; });
+// ИЗМЕНЕНО 14.11.26: «Очистить кф» убирает все фильтры колонок (категории, рейтинг, весы и т.д.), а не только кф
+el('clrk').onclick = () => { for (const k in filters) delete filters[k]; document.querySelectorAll('#tbl input, #tbl select').forEach(i => { i.value = ''; i.classList.remove('on'); }); page = 0; render(); };
 
 /* ===== Сохранённые фильтры и комбо фильтр ===== */
 const SF_KEY = 'chk_filters_v1';
