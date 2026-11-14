@@ -145,7 +145,7 @@ td.team .lt{font:600 11px var(--f-num);color:var(--accent)}
 .ln{line-height:1.45;white-space:nowrap}
 /* ДОБАВЛЕНО 13.11.26: «Весы бука» — куда бук перетянул шанс от открытия */
 td.scl{text-align:center;padding-top:2px;padding-bottom:2px}.scl svg{display:block;margin:0 auto}.scl .sct2{display:block;font-size:10px;line-height:1.1;color:#5f5e5a;white-space:nowrap}
-.ln.pull{color:#185FA5;font-weight:700}
+.ln.pull{color:#185FA5;font-weight:700}.scl .scx{color:#8a5a00;font-weight:600}
 /* весы качаются: коромысло ходит от наклона к почти ровному, чаши остаются отвесными */
 .sclb{transform-origin:24px 16px;transform:rotate(var(--a));animation:sclsw var(--sp) ease-in-out infinite}.sclp{transform:rotate(var(--b));animation:sclsp var(--sp) ease-in-out infinite}
 @keyframes sclsw{0%,100%{transform:rotate(var(--a))}50%{transform:rotate(calc(var(--a) * .35))}}@keyframes sclsp{0%,100%{transform:rotate(var(--b))}50%{transform:rotate(calc(var(--b) * .35))}}
@@ -512,10 +512,12 @@ const COLS = [
   {k:'kc', hide:['lr','sc'], l:'Кат', lh:'<small class="hl">Г·С·А</small>', t:'stk', stack:[r => CAT(r.ch_), r => CAT(r.ca)], get: r => LET(r.ch_) + ' ' + LET(r.ca)},
   {k:'kr', hide:['lr','sc'], l:'Рейт', t:'stk', stack:[r => R1(r.rh), r => R1(r.ra)], get: r => R1(r.rh) + ' ' + R1(r.ra)},
   {k:'kp', hide:['lr','sc'], l:'Место', t:'stk', stack:[r => r.ph == null ? '—' : r.ph, r => r.pa == null ? '—' : r.pa], get: r => r.ph + ' ' + r.pa},
-  {k:'p1o', only:['bsk'], l:'П1 откр', t:'num', f:f2, hit:'p1', sep:true},
-  {k:'p2o', only:['bsk'], l:'П2 откр', t:'num', f:f2, hit:'p2'},
+  // ИЗМЕНЕНО 14.11.26: кф открытия и весы — и в футболе (Ранняя линия бота)
+  {k:'p1o', only:FH, l:'П1 откр', t:'num', f:f2, hit:'p1', sep:true},
+  {k:'xo', only:['fall','tvf','rxf'], l:'Х откр', t:'num', f:f2, hit:'x'},
+  {k:'p2o', only:FH, l:'П2 откр', t:'num', f:f2, hit:'p2'},
   // ДОБАВЛЕНО 13.11.26: весы бука между открытием и текущим кф (только баскетбол)
-  {k:'scl', only:['bsk'], sep:true, l:'Весы', lh:'<small class="hl">7 · х7 · г7 · 7+</small>', t:'txt', get: r => { const s = SHIFT(r); return s == null ? '' : s === 0 ? '0' : (s > 0 ? 'х' : 'г') + Math.abs(s); }},
+  {k:'scl', only:FH, sep:true, l:'Весы', lh:'<small class="hl">7 · х7 · г7 · 7+</small>', t:'txt', get: r => { const s = SHIFT(r); return s == null ? '' : s === 0 ? '0' : (s > 0 ? 'х' : 'г') + Math.abs(s); }},
   {k:'p1', l:'П1', t:'num', f:f2, hit:'p1', sep:true},
   {k:'x', l:'Х', t:'num', f:f2, hit:'x', hide:['bsk']},
   {k:'p2', l:'П2', t:'num', f:f2, hit:'p2'},
@@ -660,7 +662,7 @@ function TAPV(c, r){
   if (c.k === 'mk') return r.mk ? (MK[r.mk] || r.mk) + ' @' : null;
   const v = shown(c, r); return v && v !== '…' ? v : null;
 }
-const KF = ['p1o','p2o','p1','x','p2','f1','f2','tm','tb','oz','mg','mgb','btl','btm','btb','bfl','bf1','bfl2','bf2'];
+const KF = ['p1o','xo','p2o','p1','x','p2','f1','f2','tm','tb','oz','mg','mgb','btl','btm','btb','bfl','bf1','bfl2','bf2'];
 const OPT = ['f1','f2','tm','tb','oz','mg'];
 const MODK = ['tvb','ro','m1','m2','a1','a2','q1','q2','r1','r2'];
 let SHOWM = false; try { SHOWM = localStorage.getItem('chk_showm') === '1'; } catch(e){}
@@ -743,7 +745,7 @@ function render(){
   el('pager').innerHTML = all ? `<span class="rec">Записи с ${from + 1} до ${Math.min(from + PP, all)} из ${all} записей${(Object.keys(filters).length || Q || DQ !== 'all') ? ` (отфильтровано из ${DATA.filter(VIEWS.find(v => v[0] === view)[2]).length} записей)` : ''}</span><span class="pn"><button type="button" data-p="${page - 1}"${page ? '' : ' disabled'}>Предыдущая</button>${nums[0] > 0 ? '<button type="button" data-p="0">1</button>' + (nums[0] > 1 ? '<span>…</span>' : '') : ''}${nums.map(p => `<button type="button" data-p="${p}"${p === page ? ' aria-current="page"' : ''}>${p + 1}</button>`).join('')}${nums[nums.length - 1] < pages - 1 ? (nums[nums.length - 1] < pages - 2 ? '<span>…</span>' : '') + `<button type="button" data-p="${pages - 1}">${pages}</button>` : ''}<button type="button" data-p="${page + 1}"${page < pages - 1 ? '' : ' disabled'}>Следующая</button></span>` : '';
   el('pager').onclick = e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; page = +b.dataset.p; render(); el('wrap').scrollTop = 0; el('wrap').scrollIntoView({block:'start'}); };
   rows = rows.slice(from, from + PP);
-  const emp = new Set((view === 'bsk' ? OPT : [...OPT, 'bfl', 'bf1', 'bfl2', 'bf2']).filter(k => !filters[k] && rows.every(r => { const c = COLS.find(x => x.k === k); return raw(c, r) == null; })));
+  const emp = new Set((view === 'bsk' ? OPT : [...OPT, 'bfl', 'bf1', 'bfl2', 'bf2', 'p1o', 'xo', 'p2o', 'scl']).filter(k => !filters[k] && rows.every(r => { const c = COLS.find(x => x.k === k); return k === 'scl' ? SHIFT(r) == null : raw(c, r) == null; })));
   if ([...emp].join() !== [...EMPTY].join()){
     const ae = document.activeElement, id = ae && ae.id, pos = ae && ae.selectionStart;
     EMPTY = emp; buildHead();
@@ -762,7 +764,7 @@ function render(){
       if (c.k === 'ro' && r.ros && r.ror) cl.push(r.ror === 'w' ? 'won' : 'lost');
       let v;
       if (c.k === 'km') v = kmKeys(K_KEYS, r.sp).every(k => r[k] == null) ? `<button type="button" class="km" disabled>К0</button><button type="button" class="km" disabled>М0</button>` : `<button type="button" class="km" data-km="k" data-i="${r._i}">К${DATA.filter(d => corr(r, d)).length}</button><button type="button" class="km" data-km="m" data-i="${r._i}">М${DATA.filter(d => mm(r, d)).length}</button>`;
-      else if (c.k === 'pair'){ if (r.cc) cl.push('chcard'); const sh_ = view === 'bsk' ? SHIFT(r) : null; v = `<div class="ln${sh_ > 0 ? ' pull' : ''}">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln${sh_ < 0 ? ' pull' : ''}">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
+      else if (c.k === 'pair'){ if (r.cc) cl.push('chcard'); const sh_ = SHIFT(r); v = `<div class="ln${sh_ > 0 ? ' pull' : ''}">${r.bo === 'П1' ? '<strong>' + esc(r.h) + '</strong>' : esc(r.h)}</div><div class="ln${sh_ < 0 ? ' pull' : ''}">${r.bo === 'П2' ? '<strong>' + esc(r.a) + '</strong>' : esc(r.a)}</div>`; cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="pair" data-fv="=${esc(r.h)}/${esc(r.a)}" title="Все встречи этих команд">${v}</td>`; }
       else if (c.k === 'kc'){ const L1 = LET(r.ch_), L2 = LET(r.ca); v = c.stack.map(f => `<div class="ln">${f(r)}</div>`).join(''); if (L1 !== '?' && L2 !== '?'){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="kc" data-fv="=${L1}/${L2}" title="Хозяева / гости">${v}</td>`; } }
       else if (c.stack){ const sv = STV[c.k] ? STV[c.k](r) : []; v = c.stack.map((f, i) => sv[i] != null && sv[i] !== '—' && sv[i] !== '?' ? `<div class="ln"><span class="tg" data-fk="${c.k}" data-fv="=${esc(sv[i])}">${f(r)}</span></div>` : `<div class="ln">${f(r)}</div>`).join(''); }
       else if (c.k === 'scl'){ v = SCALE(r); cl.push('scl'); }
@@ -789,18 +791,36 @@ function render(){
 
 // ДОБАВЛЕНО 13.11.26: сдвиг шанса хозяев от открытия, в процентных пунктах (без маржи)
 function SHIFT(r){
+  // ДОБАВЛЕНО 14.11.26: футбол — три исхода; сдвиг = (рост шанса хозяев − рост шанса гостей) / 2,
+  // открытие (Ранняя линия) против П1/Х/П2 строки — как в баскетболе: что видно в таблице, то и сравниваем
+  if (r.sp === 'f'){
+    const p = FOOT(r); return p ? Math.round(((p[1][0] - p[0][0]) - (p[1][2] - p[0][2])) / 2 * 100) : null;
+  }
   if (r.p1 == null || r.p2 == null || r.p1o == null || r.p2o == null) return null;
   const ch = (a, b) => (1 / a) / (1 / a + 1 / b);
   return Math.round((ch(r.p1, r.p2) - ch(r.p1o, r.p2o)) * 100);
 }
+// шансы П1/Х/П2 без маржи: [открытие, сейчас] или null
+function FOOT(r){
+  const o = [r.p1o, r.xo, r.p2o], n = [r.p1, r.x, r.p2];   // сравниваем с тем П1/Х/П2, что видно в таблице
+  if (o.concat(n).some(v => v == null || !(+v > 1))) return null;
+  const pr = t => { const s = 1 / t[0] + 1 / t[1] + 1 / t[2]; return t.map(v => (1 / v) / s); };
+  return [pr(o), pr(n)];
+}
+// сдвиг шанса ничьей в процентных пунктах (только футбол)
+function DSHIFT(r){
+  if (r.sp !== 'f') return null; const p = FOOT(r); return p ? Math.round((p[1][1] - p[0][1]) * 100) : null;
+}
 function SCALE(r){
   // весы как на логотипе ЧК: коромысло наклонено к стороне, куда бук перетянул шанс, и покачивается; чаши висят отвесно
   // ИЗМЕНЕНО 13.11.26: без сдвига весы не рисуем (фильтр «0» по-прежнему находит такие матчи)
-  const s = SHIFT(r); if (s == null || s === 0) return '';
+  const s = SHIFT(r), dx = DSHIFT(r), dl = dx != null && Math.abs(dx) >= 2 ? `<span class="sct2 scx">Х ${dx > 0 ? '↑' : '↓'}${Math.abs(dx)}%</span>` : '';
+  if (s == null) return '';
+  if (s === 0) return dl;
   const a = Math.max(-24, Math.min(24, -s * 2.4)), sp = Math.abs(s) >= 10 ? 1.1 : Math.abs(s) >= 7 ? 1.5 : 2.2;
   const t = (s > 0 ? 'к хозяевам ' : 'к гостям ') + Math.abs(s) + '%';
   const pan = x => `<g class="sclp" style="transform-origin:${x}px 16px"><path d="M${x} 16l-5 10M${x} 16l5 10" fill="none"/><path d="M${x - 6} 26h12a6 4 0 0 1-12 0Z" stroke="none" fill="#0d1310"/></g>`;
-  return `<svg class="sclg" width="40" height="40" viewBox="0 0 48 48" role="img" aria-label="${t}" style="--a:${a}deg;--b:${-a}deg;--sp:${sp}s"><rect x="1" y="1" width="46" height="46" rx="11" fill="#7cc243"/><rect x="4.5" y="4.5" width="39" height="39" rx="8" fill="none" stroke="#0d1310" stroke-opacity=".25" stroke-width="1"/><g stroke="#0d1310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M24 11v25M16 38h16"/><g class="sclb"><path d="M11 16h26"/>${pan(11)}${pan(37)}</g></g><circle cx="24" cy="11" r="2.6" fill="#0d1310"/></svg><span class="sct2">${t}</span>`;
+  return `<svg class="sclg" width="40" height="40" viewBox="0 0 48 48" role="img" aria-label="${t}" style="--a:${a}deg;--b:${-a}deg;--sp:${sp}s"><rect x="1" y="1" width="46" height="46" rx="11" fill="#7cc243"/><rect x="4.5" y="4.5" width="39" height="39" rx="8" fill="none" stroke="#0d1310" stroke-opacity=".25" stroke-width="1"/><g stroke="#0d1310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M24 11v25M16 38h16"/><g class="sclb"><path d="M11 16h26"/>${pan(11)}${pan(37)}</g></g><circle cx="24" cy="11" r="2.6" fill="#0d1310"/></svg><span class="sct2">${t}</span>${dl}`;
 }
 
 let PIN = null, PINT = false, PINJ = false;
