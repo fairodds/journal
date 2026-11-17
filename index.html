@@ -515,7 +515,7 @@ const COLS = [
   {k:'pair', l:'Пари', t:'team', get: r => r.h + ' ' + r.a},
   {k:'kc', hide:['lr','sc'], l:'Кат', lh:'<small class="hl">Г·С·А</small>', t:'stk', stack:[r => CAT(r.ch_), r => CAT(r.ca)], get: r => LET(r.ch_) + ' ' + LET(r.ca)},
   {k:'kr', hide:['lr','sc'], l:'Рейт', t:'stk', stack:[r => R1(r.rh), r => R1(r.ra)], get: r => R1(r.rh) + ' ' + R1(r.ra)},
-  {k:'kp', hide:['lr','sc','fea'], l:'Место', t:'stk', stack:[r => r.ph == null ? '—' : r.ph, r => r.pa == null ? '—' : r.pa], get: r => r.ph + ' ' + r.pa},
+  {k:'kp', hide:['lr','sc'], l:'Место', t:'stk', stack:[r => r.ph == null ? '—' : r.ph, r => r.pa == null ? '—' : r.pa], get: r => r.ph + ' ' + r.pa},
   // ИЗМЕНЕНО 14.11.26: кф открытия и весы — и в футболе (Ранняя линия бота)
   {k:'p1o', only:FH, l:'П1 откр', t:'num', f:f2, hit:'p1', sep:true},
   {k:'xo', only:['fall','tvf','rxf','fea'], l:'Х откр', t:'num', f:f2, hit:'x'},
