@@ -189,6 +189,8 @@ td.tapk{cursor:pointer}
 .tg:hover{outline:1px solid var(--gold)}
 .sct:hover{outline:1px solid var(--gold)}
 .sct.ht{color:var(--muted)}
+/* ДОБАВЛЕНО 17.11.26: четверти баскетбола — под счётом, мельче */
+.sct.qs{display:block;width:max-content;margin:2px auto 0;font-size:11.5px;line-height:1.25}
 .acts{gap:8px}
 .clear.primary{background:var(--brand);color:var(--head-ink);border-color:var(--brand)}
 [hidden]{display:none!important}
@@ -790,7 +792,10 @@ function render(){
       }
       if (KF.includes(c.k) && raw(c, r) != null){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="${c.k}" data-fv="${shown(c, r)}">${v}</td>`; }
       if (c.k === 'sc' && r.sc){ const sh = shown(c, r), mn = sh.split(' ')[0], ht = (sh.match(/\(.*\)/) || [''])[0];
-        return `<td class="${cl.join(' ')}"><span class="sct" data-fv="${mn}">${esc(mn)}</span>${ht ? ` <span class="sct ht" data-fv="${ht}" data-mn="${mn}">${esc(ht)}</span>` : ''}</td>`; }
+        // ИЗМЕНЕНО 17.11.26: баскетбол — все четверти под счётом, по две в строке
+        const qs = r.sp === 'b' && ht.includes(',') ? ht.slice(1, -1).split(/,\s*/) : null;
+        const htx = qs ? [qs.slice(0, 2).join(', '), qs.slice(2).join(', ')].filter(Boolean).map(esc).join('<br>') : esc(ht);
+        return `<td class="${cl.join(' ')}"><span class="sct" data-fv="${mn}">${esc(mn)}</span>${ht ? ` <span class="sct ht${qs ? ' qs' : ''}" data-fv="${ht}" data-mn="${mn}">${htx}</span>` : ''}</td>`; }
       if (c.k === 'ch'){ cl.push('tap'); return `<td class="${cl.join(' ')}" data-ch="${esc(r.ch)}" data-sp="${r.sp}" title="Только этот чемпионат">${v}</td>`; }
       const tv = TAPV(c, r);
       if (tv){ cl.push('tapk'); return `<td class="${cl.join(' ')}" data-fk="${c.k}" data-fv="${esc(tv)}">${v}</td>`; }
