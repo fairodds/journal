@@ -292,7 +292,7 @@ for (const c of COLS){
   if (!KEEP.includes(c.k)) c.hide = (c.hide || []).concat('ilg');
 }
 const iScl = COLS.findIndex(c => c.k === 'scl');
-COLS.splice(iScl + 1, 0, {k:'ilk', only:['fea', 'bsk', 'ilg'], l:'Нелогичный кф', t:'txt ilc', sep:true, get: r => ILL(r) || ''});
+COLS.splice(iScl + 1, 0, {k:'ilk', only:['ilg'], l:'Нелогичный кф', t:'txt ilc', sep:true, get: r => ILL(r) || ''});
 COLS.splice(COLS.findIndex(c => c.k === 'ch'), 0, {k:'spi', only:['ilg'], l:'Вид', t:'txt', nofilter:true, get: r => r.sp === 'b' ? '🏀' : '⚽'});
 COLS.push({k:'ires', only:['ilg'], l:'Итог', t:'txt ires', sep:true, nofilter:true, get: r => { const x = ILLRES(r); return x ? x.t : (goals(r) ? '' : '…'); }});
 COLS.push({k:'dec', only:['fea', 'bsk'], l:'Решение', t:'txt dec', sep:true, nofilter:true, get: () => ''});
