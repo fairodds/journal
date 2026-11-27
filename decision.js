@@ -49,6 +49,18 @@ Object.assign(TXD, {
   'линия тотала ±1 + маржа ±0.5': ['лінія тоталу ±1 + маржа ±0.5', 'total line ±1 + margin ±0.5'],
   'линия ±3 + маржа ±0.5': ['лінія ±3 + маржа ±0.5', 'line ±3 + margin ±0.5'],
   'линия ±3 + маржа ±1': ['лінія ±3 + маржа ±1', 'line ±3 + margin ±1'],
+  'Тоже в плюсе:': ['Теж у плюсі:', 'Also in profit:'],
+  'худший ROI': ['найгірший ROI', 'worst ROI'],
+  'Проверка по паре': ['Перевірка за парою', 'Pair check'],
+  '✕ — рынок отсеян: та же пара в минусе': ['✕ — ринок відсіяно: та сама пара в мінусі', '✕ — market dropped: same pair is in loss'],
+  '— меньше 3, не применяется': ['— менше 3, не застосовується', '— fewer than 3, not applied'],
+  'Тоже в плюсе': ['Теж у плюсі', 'Also in profit'],
+  'Если в обеих обязательных пробивках в плюсе несколько рынков, в «ДА» идёт тот, у которого лучше худший из двух ROI. Остальные показаны строкой «Тоже в плюсе».':
+    ['Якщо в обох обов’язкових пробивках у плюсі кілька ринків, у «ТАК» іде той, у якого кращий найгірший із двох ROI. Решта показані рядком «Теж у плюсі».',
+     'If several markets are in profit in both required checks, «YES» goes to the one with the better worst of the two ROIs. The rest are shown in the «Also in profit» line.'],
+  'В «Матмодели + маржа» отдельно проверяются матчи с той же парой категорий. Если их не меньше 3 и рынок там в минусе, он отсеивается (помечен ✕).':
+    ['У «Матмоделі + маржа» окремо перевіряються матчі з тією самою парою категорій. Якщо їх не менше 3 і ринок там у мінусі, його відсіяно (позначено ✕).',
+     'In «Math model + margin» matches with the same category pair are checked separately. If there are at least 3 and the market is in loss there, it is dropped (marked ✕).'],
   /* «Как читать» */
   'Кнопка «Решение»': ['Кнопка «Рішення»', 'The «Decision» button'],
   'Итог': ['Підсумок', 'Result'],
@@ -196,20 +208,27 @@ function probe(s, m){
     let rows = [], step = steps[steps.length - 1][0], ok = false;
     for (const [lab, f] of steps){ rows = hist.filter(f); step = lab; if (rows.length >= 5){ ok = true; break; } }
     const st = stats(s, m, rows);
-    if (i === 1){ const same = rows.filter(r => pair(r, m)); if (same.length >= 3) st._pair = stats(s, m, same); }
+    if (i === 1){ const same = rows.filter(r => pair(r, m)); st._pairN = same.length; if (same.length >= 3) st._pair = stats(s, m, same); }
     return {name, step, rows, ok, st, req: REQ.includes(i)};
   });
 }
+/* все рынки, прошедшие обе обязательные пробивки; главный — с лучшим худшим ROI,
+   остальные идут в v.also (27.11.26: «Тоже в плюсе») */
 function verdict(s, m, P){
-  let best = null; const PP = REQ.map(i => P[i]);
+  const PP = REQ.map(i => P[i]), all = [];
   if (PP.some(p => !p.ok)) return null;
   for (const [mk, lab] of MKD[s]){ if (!m[mk]) continue; let mn = 1e9, good = true;
     for (const p of PP){ const x = p.st[mk]; if (!x || x.n < 3){ good = false; continue; }
       if (x.roi <= 0) good = false; mn = Math.min(mn, x.roi);
-      if (p.st._pair && p.st._pair[mk] && p.st._pair[mk].n >= 3 && p.st._pair[mk].roi < 0) good = false; }
-    if (good && (!best || mn > best.mn)) best = {mk, lab, mn, k:m[mk]}; }
+      if (pairCut(p, mk)) good = false; }
+    if (good) all.push({mk, lab, mn, k:m[mk]}); }
+  if (!all.length) return null;
+  all.sort((a, b) => b.mn - a.mn);
+  const best = all[0]; best.also = all.slice(1);
   return best;
 }
+/* проверка по паре в матмодели: ≥3 матча той же пары и рынок там в минусе → рынок отсеян */
+function pairCut(p, mk){ const x = p.st._pair && p.st._pair[mk]; return !!(x && x.n >= 3 && x.roi < 0); }
 const pct = v => v == null ? '—' : (v > 0 ? '+' : '') + Math.round(v) + '%';
 const pc = v => v == null ? '' : v > 0 ? 'p' : 'n';
 const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
@@ -219,6 +238,7 @@ function panel(m){
   let h = '<div class="dverd">';
   h += v ? `<span class="dbig dyes">${S('ДА')} — ${S(v.lab)} ${v.k.toFixed(2)}</span>` : `<span class="dbig dno">${S('НЕТ')}</span>`;
   if (g){ const x = v ? won(s, v.mk, m) : undefined; h += `<span class="dres">${S('Счёт')} ${g[0]}:${g[1]}${v ? ' · ' + S(x == null ? 'возврат' : x ? 'зашло ✓' : 'не зашло ✕') : ''}</span>`; }
+  if (v && v.also.length) h += `<span class="dres">${S('Тоже в плюсе:')} ${v.also.map(a => `${S(a.lab)} ${a.k.toFixed(2)} (${S('худший ROI')} <b class="p">${pct(a.mn)}</b>)`).join(' · ')}</span>`;
   if (v){ const ex = P.filter(p => !p.req && !(p.name === 'Тотал + маржа' && !TOT.has(v.mk))).map(p => { const x = p.st[v.mk]; return `${S(p.name)}: ${x && x.n ? `<b class="${pc(x.roi)}">${pct(x.roi)}</b> (${x.w}/${x.n})` : '—'}`; }).join(' · ');
     if (ex) h += `<span class="dres">${S('Дополнительные:')} ${ex}</span>`; }
   h += '</div><div class="dgrid">';
@@ -229,6 +249,14 @@ function panel(m){
     for (const [mk, lab] of MKD[s]){ const x = p.st[mk]; if (!x) continue; if (p.name === 'Тотал + маржа' && !TOT.has(mk)) continue;
       h += `<tr><td>${S(lab)}</td><td>${m[mk].toFixed(2)}</td><td>${x.w}/${x.n}</td><td class="${pc(x.roi)}">${pct(x.roi)}</td></tr>`; }
     h += '</table>';
+    if (p.st._pairN != null){
+      if (p.st._pair){
+        const ls = MKD[s].filter(([mk]) => p.st._pair[mk] && p.st._pair[mk].n && !(p.name === 'Тотал + маржа' && !TOT.has(mk)))
+          .map(([mk, lab]) => { const x = p.st._pair[mk], cut = pairCut(p, mk);
+            return `${S(lab)} <b class="${pc(x.roi)}">${pct(x.roi)}</b> (${x.w}/${x.n})${cut ? ' ✕' : ''}`; }).join(' · ');
+        h += `<div class="dtot">${S('Проверка по паре')} · ${p.st._pairN} ${S('матч.')}: ${ls}<br><span class="dstep">${S('✕ — рынок отсеян: та же пара в минусе')}</span></div>`;
+      } else h += `<div class="dstep">${S('Проверка по паре')} · ${p.st._pairN} ${S('матч.')} ${S('— меньше 3, не применяется')}</div>`;
+    }
     if (!p.req) h += `<div class="dstep">${S('На усмотрение — в решении не учитывается')}</div>`;
     if (p.rows.length){
       if (s === 'b'){ const t = avg(p.rows.map(r => goals(r)[0] + goals(r)[1])), qs = p.rows.map(QTR).filter(Boolean);
@@ -324,6 +352,8 @@ el('tbl').tBodies[0].addEventListener('click', e => {
 <dl>
   <dt>Итог</dt><dd>Сверху — итог. «ДА — рынок и кф»: обе обязательные пробивки нашли не меньше 5 похожих матчей, и этот рынок в обеих в плюсе. «НЕТ» — ставки нет.</dd>
   <dt>Пробивки 1 и 2</dt><dd>Обязательные: «Коридор + категория + маржа» и «Матмодель + маржа». Решение принимают только они.</dd>
+  <dt>Тоже в плюсе</dt><dd>Если в обеих обязательных пробивках в плюсе несколько рынков, в «ДА» идёт тот, у которого лучше худший из двух ROI. Остальные показаны строкой «Тоже в плюсе».</dd>
+  <dt>Проверка по паре</dt><dd>В «Матмодели + маржа» отдельно проверяются матчи с той же парой категорий. Если их не меньше 3 и рынок там в минусе, он отсеивается (помечен ✕).</dd>
   <dt>Пробивки 3–5</dt><dd>Дополнительные: «Коридор + чемпионат», «Категория + весы» и «Тотал + маржа» (только тоталы). Это уточнение на ваше усмотрение, в решение не входят.</dd>
   <dt>Шаг и матчи</dt><dd>Серая строка под названием — на каком шаге остановился поиск и сколько матчей нашлось. Если похожих матчей меньше 5, условия по шагам расширяются; бледная карточка — матчей всё равно мало.</dd>
   <dt>Таблица</dt><dd>Рынок, кф сегодня, «Зашло» — сколько выиграло из скольких, ROI — сколько дал бы этот кф на найденных матчах. Зелёный — плюс, красный — минус.</dd>
