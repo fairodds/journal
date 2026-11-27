@@ -61,6 +61,8 @@ Object.assign(TXD, {
   'В «Матмодели + маржа» отдельно проверяются матчи с той же парой категорий: хозяева – гости, Г — гранд, С — середняк, А — аутсайдер (например, С–А). Если таких матчей не меньше 3 и рынок там в минусе, он отсеивается (помечен ✕). Плюс — зелёным, минус — красным.':
     ['У «Матмоделі + маржа» окремо перевіряються матчі з тією самою парою категорій: господарі – гості, Г — гранд, С — середняк, А — аутсайдер (наприклад, С–А). Якщо таких матчів не менше 3 і ринок там у мінусі, його відсіяно (позначено ✕). Плюс — зеленим, мінус — червоним.',
      'In «Math model + margin» matches with the same category pair are checked separately: home – away, G — grand, M — middle, O — outsider (e.g. M–O). If there are at least 3 such matches and the market is in loss there, it is dropped (marked ✕). Profit is green, loss is red.'],
+  'Проверка по дню': ['Перевірка за днем', 'Day check'],
+  'пн': ['пн', 'Mon'], 'вт': ['вт', 'Tue'], 'ср': ['ср', 'Wed'], 'чт': ['чт', 'Thu'], 'пт': ['пт', 'Fri'], 'сб': ['сб', 'Sat'], 'вс': ['нд', 'Sun'],
   'Г': ['Г', 'G'], 'С': ['С', 'M'], 'А': ['А', 'O'],
   /* «Как читать» */
   'Кнопка «Решение»': ['Кнопка «Рішення»', 'The «Decision» button'],
@@ -211,7 +213,8 @@ function probe(s, m){
     let rows = [], step = steps[steps.length - 1][0], ok = false;
     for (const [lab, f] of steps){ rows = hist.filter(f); step = lab; if (rows.length >= 5){ ok = true; break; } }
     const st = stats(s, m, rows);
-    if (i === 1){ const same = rows.filter(r => pair(r, m)); st._pairN = same.length; if (same.length >= 3) st._pair = stats(s, m, same); }
+    if (i === 1){ const same = rows.filter(r => pair(r, m)); st._pairN = same.length; if (same.length >= 3) st._pair = stats(s, m, same);
+      if (m.dn){ const sd = rows.filter(r => r.dn === m.dn); st._dayN = sd.length; if (sd.length >= 3) st._day = stats(s, m, sd); } }
     return {name, step, rows, ok, st, req: REQ.includes(i)};
   });
 }
@@ -259,6 +262,13 @@ function panel(m){
             return `${S(lab)} <b class="${pc(x.roi)}">${pct(x.roi)}</b> (${x.w}/${x.n})${cut ? ' ✕' : ''}`; }).join(' · ');
         h += `<div class="dtot">${S('Проверка по паре')}${PL(m)} · ${p.st._pairN} ${S('матч.')}: ${ls}<br><span class="dstep">${S('✕ — рынок отсеян: та же пара в минусе')}</span></div>`;
       } else h += `<div class="dstep">${S('Проверка по паре')}${PL(m)} · ${p.st._pairN} ${S('матч.')} ${S('— меньше 3, не применяется')}</div>`;
+    }
+    if (p.st._dayN != null){   // проверка по дню недели — только для сведения (27.11.26)
+      if (p.st._day){
+        const ls = MKD[s].filter(([mk]) => p.st._day[mk] && p.st._day[mk].n)
+          .map(([mk, lab]) => { const x = p.st._day[mk]; return `${S(lab)} <b class="${pc(x.roi)}">${pct(x.roi)}</b> (${x.w}/${x.n})`; }).join(' · ');
+        h += `<div class="dtot">${S('Проверка по дню')} ${S(m.dn)} · ${p.st._dayN} ${S('матч.')}: ${ls}</div>`;
+      } else h += `<div class="dstep">${S('Проверка по дню')} ${S(m.dn)} · ${p.st._dayN} ${S('матч.')} ${S('— меньше 3, не применяется')}</div>`;
     }
     if (!p.req) h += `<div class="dstep">${S('На усмотрение — в решении не учитывается')}</div>`;
     if (p.rows.length){
