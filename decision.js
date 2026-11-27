@@ -58,9 +58,10 @@ Object.assign(TXD, {
   'Если в обеих обязательных пробивках в плюсе несколько рынков, в «ДА» идёт тот, у которого лучше худший из двух ROI. Остальные показаны строкой «Тоже в плюсе».':
     ['Якщо в обох обов’язкових пробивках у плюсі кілька ринків, у «ТАК» іде той, у якого кращий найгірший із двох ROI. Решта показані рядком «Теж у плюсі».',
      'If several markets are in profit in both required checks, «YES» goes to the one with the better worst of the two ROIs. The rest are shown in the «Also in profit» line.'],
-  'В «Матмодели + маржа» отдельно проверяются матчи с той же парой категорий. Если их не меньше 3 и рынок там в минусе, он отсеивается (помечен ✕).':
-    ['У «Матмоделі + маржа» окремо перевіряються матчі з тією самою парою категорій. Якщо їх не менше 3 і ринок там у мінусі, його відсіяно (позначено ✕).',
-     'In «Math model + margin» matches with the same category pair are checked separately. If there are at least 3 and the market is in loss there, it is dropped (marked ✕).'],
+  'В «Матмодели + маржа» отдельно проверяются матчи с той же парой категорий: хозяева – гости, Г — гранд, С — середняк, А — аутсайдер (например, С–А). Если таких матчей не меньше 3 и рынок там в минусе, он отсеивается (помечен ✕). Плюс — зелёным, минус — красным.':
+    ['У «Матмоделі + маржа» окремо перевіряються матчі з тією самою парою категорій: господарі – гості, Г — гранд, С — середняк, А — аутсайдер (наприклад, С–А). Якщо таких матчів не менше 3 і ринок там у мінусі, його відсіяно (позначено ✕). Плюс — зеленим, мінус — червоним.',
+     'In «Math model + margin» matches with the same category pair are checked separately: home – away, G — grand, M — middle, O — outsider (e.g. M–O). If there are at least 3 such matches and the market is in loss there, it is dropped (marked ✕). Profit is green, loss is red.'],
+  'Г': ['Г', 'G'], 'С': ['С', 'M'], 'А': ['А', 'O'],
   /* «Как читать» */
   'Кнопка «Решение»': ['Кнопка «Рішення»', 'The «Decision» button'],
   'Итог': ['Підсумок', 'Result'],
@@ -143,6 +144,8 @@ const tenth = (a, b) => a != null && b != null && Math.floor(a * 10 + 1e-6) === 
 const near = (a, b, k) => a != null && b != null && Math.abs(a - b) <= b * k;
 const fl = (a, b) => a != null && b != null && Math.floor(a) === Math.floor(b);
 const pair = (r, m) => r.ch_ === m.ch_ && r.ca === m.ca;
+const CL = {'гранд':'Г', 'середняк':'С', 'аутсайдер':'А'};
+const PL = m => CL[m.ch_] && CL[m.ca] ? ` ${S(CL[m.ch_])}–${S(CL[m.ca])}` : '';   // пара категорий: хозяева–гости
 const rel = r => { const a = RKW[r.ch_], b = RKW[r.ca]; return a == null || b == null ? '?' : a < b ? 's' : a > b ? 'w' : 'e'; };
 const dir = v => Math.sign(v || 0);
 const mgN = (r, m, d) => r.mg != null && m.mg != null && Math.abs(r.mg - m.mg) <= d;
@@ -254,8 +257,8 @@ function panel(m){
         const ls = MKD[s].filter(([mk]) => p.st._pair[mk] && p.st._pair[mk].n && !(p.name === 'Тотал + маржа' && !TOT.has(mk)))
           .map(([mk, lab]) => { const x = p.st._pair[mk], cut = pairCut(p, mk);
             return `${S(lab)} <b class="${pc(x.roi)}">${pct(x.roi)}</b> (${x.w}/${x.n})${cut ? ' ✕' : ''}`; }).join(' · ');
-        h += `<div class="dtot">${S('Проверка по паре')} · ${p.st._pairN} ${S('матч.')}: ${ls}<br><span class="dstep">${S('✕ — рынок отсеян: та же пара в минусе')}</span></div>`;
-      } else h += `<div class="dstep">${S('Проверка по паре')} · ${p.st._pairN} ${S('матч.')} ${S('— меньше 3, не применяется')}</div>`;
+        h += `<div class="dtot">${S('Проверка по паре')}${PL(m)} · ${p.st._pairN} ${S('матч.')}: ${ls}<br><span class="dstep">${S('✕ — рынок отсеян: та же пара в минусе')}</span></div>`;
+      } else h += `<div class="dstep">${S('Проверка по паре')}${PL(m)} · ${p.st._pairN} ${S('матч.')} ${S('— меньше 3, не применяется')}</div>`;
     }
     if (!p.req) h += `<div class="dstep">${S('На усмотрение — в решении не учитывается')}</div>`;
     if (p.rows.length){
@@ -284,7 +287,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 .dverd{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;margin-bottom:10px}
 .dbig{font-size:clamp(22px,4vw,30px);font-weight:700;line-height:1.1}.dyes{color:var(--hit)}.dno{color:var(--muted)}
 .dres{font-size:13px;padding:3px 8px;border-radius:6px;background:var(--panel);border:1px solid var(--line)}
-.dres b.p,.dpb td.p{color:var(--hit);font-weight:600}.dres b.n,.dpb td.n{color:var(--miss)}
+.dres b.p,.dpb td.p,.dtot b.p{color:var(--hit);font-weight:600}.dres b.n,.dpb td.n,.dtot b.n{color:var(--miss);font-weight:600}
 .dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px}
 .dpb{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto}.dpb.dhint{opacity:.55}
 .dpb h4{margin:0 0 2px;font-size:14px}.dcat{font-size:11px;font-weight:600;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--muted)}
@@ -353,7 +356,7 @@ el('tbl').tBodies[0].addEventListener('click', e => {
   <dt>Итог</dt><dd>Сверху — итог. «ДА — рынок и кф»: обе обязательные пробивки нашли не меньше 5 похожих матчей, и этот рынок в обеих в плюсе. «НЕТ» — ставки нет.</dd>
   <dt>Пробивки 1 и 2</dt><dd>Обязательные: «Коридор + категория + маржа» и «Матмодель + маржа». Решение принимают только они.</dd>
   <dt>Тоже в плюсе</dt><dd>Если в обеих обязательных пробивках в плюсе несколько рынков, в «ДА» идёт тот, у которого лучше худший из двух ROI. Остальные показаны строкой «Тоже в плюсе».</dd>
-  <dt>Проверка по паре</dt><dd>В «Матмодели + маржа» отдельно проверяются матчи с той же парой категорий. Если их не меньше 3 и рынок там в минусе, он отсеивается (помечен ✕).</dd>
+  <dt>Проверка по паре</dt><dd>В «Матмодели + маржа» отдельно проверяются матчи с той же парой категорий: хозяева – гости, Г — гранд, С — середняк, А — аутсайдер (например, С–А). Если таких матчей не меньше 3 и рынок там в минусе, он отсеивается (помечен ✕). Плюс — зелёным, минус — красным.</dd>
   <dt>Пробивки 3–5</dt><dd>Дополнительные: «Коридор + чемпионат», «Категория + весы» и «Тотал + маржа» (только тоталы). Это уточнение на ваше усмотрение, в решение не входят.</dd>
   <dt>Шаг и матчи</dt><dd>Серая строка под названием — на каком шаге остановился поиск и сколько матчей нашлось. Если похожих матчей меньше 5, условия по шагам расширяются; бледная карточка — матчей всё равно мало.</dd>
   <dt>Таблица</dt><dd>Рынок, кф сегодня, «Зашло» — сколько выиграло из скольких, ROI — сколько дал бы этот кф на найденных матчах. Зелёный — плюс, красный — минус.</dd>
